@@ -1,7 +1,20 @@
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { logout } from '../store/authSlice';
 
 const Navbar = () =>
 {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const { isAuthenticated } = useSelector( ( state ) => state.auth );
+
+    const handleLogout = async () =>
+    {
+        dispatch( logout() );
+        navigate( '/' );
+    };
+
     return (
         <nav className="bg-stone-800 py-8">
             <div className="container mx-auto flex justify-between items-center">
@@ -31,13 +44,25 @@ const Navbar = () =>
                                 Contact
                             </Link>
                         </li>
-                        <li>
-                            <Link
-                                to="/login"
-                                className="rounded py-2 px-4 bg-amber-700 hover:bg-amber-600 active:bg-amber-800 transition">
-                                Login
-                            </Link>
-                        </li>
+                        {
+                            isAuthenticated ? (
+                                <li>
+                                    <Link
+                                        onClick={ () => handleLogout() }
+                                        className="rounded py-2 px-4 bg-amber-700 hover:bg-amber-600 active:bg-amber-800 transition">
+                                        Logout
+                                    </Link>
+                                </li>
+                            ) : (
+                                <li>
+                                    <Link
+                                        to={ '/login' }
+                                        className="rounded py-2 px-4 bg-amber-700 hover:bg-amber-600 active:bg-amber-800 transition">
+                                        Login
+                                    </Link>
+                                </li>
+                            )
+                        }
                     </ul>
                 </ul>
             </div>
