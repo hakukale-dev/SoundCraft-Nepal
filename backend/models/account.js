@@ -1,12 +1,12 @@
 const mongoose = require( 'mongoose' );
 
 const userSchema = new mongoose.Schema( {
-    firstName: {
+    first_name: {
         type: String,
         required: true,
         trim: true,
     },
-    lastName: {
+    last_name: {
         type: String,
         required: true,
         trim: true,
@@ -31,15 +31,23 @@ const userSchema = new mongoose.Schema( {
         street: { type: String, trim: true },
         city: { type: String, trim: true },
         state: { type: String, trim: true },
-        zipCode: { type: String, trim: true },
+        zip_code: { type: String, trim: true },
     },
-    phoneNumber: {
+    phone_number: {
         type: String,
+        trim: true,
+    },
+    dob: {
+        type: Date,
         trim: true,
     },
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    is_admin: {
+        type: Boolean,
+        default: false,
     },
 } );
 

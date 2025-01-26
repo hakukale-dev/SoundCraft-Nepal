@@ -1,29 +1,32 @@
 import { Provider } from 'react-redux';
-
-import CustomRoutes from './helpers/CustomRoutes';
-import store from './store/store';
 import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import 'src/index.css';
+import store from 'src/store/store';
+import ThemeProvider from 'src/theme';
+import CustomRouter from 'src/routes/sections';
 
 const App = () =>
 {
   return (
-    <Provider store={ store }>
-      <ToastContainer
-        position="bottom-right"
-        autoClose={ 2000 }
-        hideProgressBar={ false }
-        newestOnTop
-        closeOnClick
-        rtl={ false }
-        pauseOnFocusLoss={ false }
-        draggable
-        pauseOnHover={ false }
-        theme="light"
-        transition={ Bounce }
-      />
-
-      <CustomRoutes />
-    </Provider>
+    <ThemeProvider>
+      <Provider store={ store }>
+        <ToastContainer
+          autoClose={ 2000 }
+          hideProgressBar={ false }
+          newestOnTop
+          closeOnClick
+          rtl={ false }
+          pauseOnFocusLoss={ false }
+          draggable
+          pauseOnHover={ false }
+          theme="light"
+          transition={ Bounce }
+        />
+        <CustomRouter />
+      </Provider>
+    </ThemeProvider>
   );
 };
 
