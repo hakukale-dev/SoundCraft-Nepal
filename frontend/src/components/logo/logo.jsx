@@ -8,12 +8,13 @@ import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
-const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
+const Logo = forwardRef(({ disabledLink = false, sx }, ref) => {
     const logo = (
         <Box
             component="img"
             src="src/assets/icons/logo.png"
             sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
+            ref={ref}
         />
     );
 
@@ -27,6 +28,8 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
         </Link>
     );
 });
+
+Logo.displayName = 'Logo';
 
 Logo.propTypes = {
     disabledLink: PropTypes.bool,

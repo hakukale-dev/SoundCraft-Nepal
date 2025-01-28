@@ -8,10 +8,23 @@ import {
     DialogTitle,
     DialogActions,
     DialogContent,
-    Grid
+    Grid,
+    MenuItem
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
+
+const INSTRUMENT_CATEGORIES = [
+    'String Instruments',
+    'Woodwind Instruments', 
+    'Brass Instruments',
+    'Percussion Instruments',
+    'Keyboard Instruments',
+    'Electronic Instruments',
+    'Traditional Instruments',
+    'Accessories'
+];
+
 export const SimpleDialogForm = ({ isAdd, formData = {}, onClose, onSubmit }) => {
     const {
         register,
@@ -63,13 +76,44 @@ export const SimpleDialogForm = ({ isAdd, formData = {}, onClose, onSubmit }) =>
                 value: /^\d+$/,
                 message: 'Please enter a valid whole number'
             }
+        },
+        image: {
+            validate: {
+                acceptedFormats: (files) => {
+                    if (!files?.length) return true;
+                    for (const file of files) {
+                        const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+                        if (!acceptedTypes.includes(file.type)) {
+                            return 'Only JPG, JPEG, PNG and GIF files are allowed';
+                        }
+                        if (file.size > 5 * 1024 * 1024) {
+                            return 'File size must be less than 5MB';
+                        }
+                    }
+                    return true;
+                }
+            }
         }
+    };
+
+    const handleFormSubmit = async (data) => {
+        const formData = {
+            name: data.name,
+            model: data.model, 
+            description: data.description,
+            price: data.price,
+            category: data.category,
+            stock: data.stock,
+            image: data.image
+        };
+
+        onSubmit(formData);
     };
 
     return (
         <Dialog open onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>{isAdd ? 'Add New Product' : 'Edit Product'}</DialogTitle>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(handleFormSubmit)}>
                 <DialogContent>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
@@ -115,11 +159,18 @@ export const SimpleDialogForm = ({ isAdd, formData = {}, onClose, onSubmit }) =>
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
+                                select
                                 label="Category"
                                 {...register('category', validationRules.category)}
                                 error={!!errors.category}
                                 helperText={errors.category?.message}
-                            />
+                            >
+                                {INSTRUMENT_CATEGORIES.map((category) => (
+                                    <MenuItem key={category} value={category}>
+                                        {category}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -136,15 +187,16 @@ export const SimpleDialogForm = ({ isAdd, formData = {}, onClose, onSubmit }) =>
                             <TextField
                                 type="file"
                                 fullWidth
-                                label="Product Images"
+                                label="Product Image"
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
                                 inputProps={{
-                                    multiple: true,
                                     accept: 'image/*'
                                 }}
-                                {...register('images')}
+                                {...register('image', validationRules.image)}
+                                error={!!errors.image}
+                                helperText={errors.image?.message}
                             />
                         </Grid>
                     </Grid>
@@ -171,6 +223,6 @@ SimpleDialogForm.propTypes = {
         price: PropTypes.number,
         category: PropTypes.string,
         stock: PropTypes.number,
-        images: PropTypes.arrayOf(PropTypes.string)
+        image: PropTypes.string
     })
 };

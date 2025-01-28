@@ -11,8 +11,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
-import axiosInstance from 'src/utils/axios';
-
 import { logout } from 'src/store/authSlice';
 
 // ----------------------------------------------------------------------
@@ -39,7 +37,7 @@ const MENU_OPTIONS = [
     {
         label: 'Dashboard',
         icon: 'eva:grid-fill',
-        link: 'dashboard',
+        link: 'admin/dashboard',
         slug: 'dashboard',
     }
 ];
@@ -128,11 +126,6 @@ export default function AccountPopover() {
                 <Divider sx={{ borderStyle: 'dashed' }} />
 
                 {MENU_OPTIONS.map((option) => {
-                    // Show Purchase History only for regular users
-                    if (option.slug === 'purchase-history' && user.is_admin !== true) {
-                        return null;
-                    }
-                    
                     // Show Dashboard only for admin users
                     if (option.slug === 'dashboard' && user.is_admin !== true) {
                         return null;

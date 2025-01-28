@@ -25,18 +25,26 @@ import { checkForToken } from 'src/store/authSlice';
 // ----------------------------------------------------------------------
 export default function Router() {
     const dispatch = useDispatch();
-    const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
 
     useEffect(() => {
         dispatch(checkForToken());
     }, [dispatch]);
 
-    // Protected route wrapper
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    // eslint-disable-next-line react/prop-types
     const ProtectedRoute = ({ children }) => {
         if (!isAuthenticated) {
             return <Navigate to="/login" replace />;
         }
-        if (!user.is_admin) {
+        return children;
+    };
+    // eslint-disable-next-line react/prop-types
+    const AdminRoute = ({ children }) => {
+        if (!user?.is_admin) {
             return <Navigate to="/" replace />;
         }
         return children;
@@ -61,7 +69,7 @@ export default function Router() {
             </Route>
 
             {/* Dashboard Layout Routes - All Protected */}
-            <Route element={<ProtectedRoute><DashboardLayout user={user} /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><AdminRoute><DashboardLayout user={user} /></AdminRoute></ProtectedRoute>}>
                 <Route path="admin/dashboard" element={<DashboardPage />} />
                 <Route path="admin/users" element={<UserPage />} />
                 <Route path="admin/products" element={<AdminProductsPage />} />

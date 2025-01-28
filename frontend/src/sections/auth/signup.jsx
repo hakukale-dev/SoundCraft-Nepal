@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useTheme } from '@emotion/react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -21,7 +20,6 @@ import { bgGradient } from 'src/theme/css';
 
 export default function SignUpView() {
     const navigation = useNavigate();
-    const theme = useTheme();
 
     const [formData, setFormData] = useState({
         first_name: '',
@@ -30,7 +28,12 @@ export default function SignUpView() {
         email: '',
         phone_number: '',
         dob: '',
-        address: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zip_code: ''
+        },
         password: '',
         password2: '',
     });
@@ -40,10 +43,23 @@ export default function SignUpView() {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+        if (name.includes('.')) {
+            // Handle nested address fields
+            const [parent, child] = name.split('.');
+            setFormData(prev => ({
+                ...prev,
+                [parent]: {
+                    ...prev[parent],
+                    [child]: value
+                }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleSubmit = async () => {
@@ -165,21 +181,70 @@ export default function SignUpView() {
                     }}
                 />
 
-                <TextField
-                    fullWidth
-                    label="Address"
-                    name="address"
-                    error={!!errors.address}
-                    onChange={handleChange}
-                    helperText={errors.address}
-                    sx={{
-                        '& .MuiOutlinedInput-root': {
-                            '&:hover fieldset': {
-                                borderColor: '#8B4513',
+                <Stack spacing={2}>
+                    <TextField
+                        fullWidth
+                        label="Street Address"
+                        name="address.street"
+                        error={!!errors.address?.street}
+                        onChange={handleChange}
+                        helperText={errors.address?.street}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                    borderColor: '#8B4513',
+                                },
                             },
-                        },
-                    }}
-                />
+                        }}
+                    />
+                    <Stack direction="row" spacing={2}>
+                        <TextField
+                            fullWidth
+                            label="City"
+                            name="address.city"
+                            error={!!errors.address?.city}
+                            onChange={handleChange}
+                            helperText={errors.address?.city}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                        borderColor: '#8B4513',
+                                    },
+                                },
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="State"
+                            name="address.state"
+                            error={!!errors.address?.state}
+                            onChange={handleChange}
+                            helperText={errors.address?.state}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                        borderColor: '#8B4513',
+                                    },
+                                },
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="ZIP Code"
+                            name="address.zip_code"
+                            error={!!errors.address?.zip_code}
+                            onChange={handleChange}
+                            helperText={errors.address?.zip_code}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                        borderColor: '#8B4513',
+                                    },
+                                },
+                            }}
+                        />
+                    </Stack>
+                </Stack>
 
                 <TextField
                     fullWidth

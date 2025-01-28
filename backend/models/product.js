@@ -1,5 +1,16 @@
 const mongoose = require('mongoose');
 
+const INSTRUMENT_CATEGORIES = [
+    'String Instruments',
+    'Woodwind Instruments',
+    'Brass Instruments',
+    'Percussion Instruments',
+    'Keyboard Instruments',
+    'Electronic Instruments',
+    'Traditional Instruments',
+    'Accessories'
+];
+
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -22,7 +33,8 @@ const productSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        required: [true, 'Product category is required']
+        required: [true, 'Product category is required'],
+        enum: INSTRUMENT_CATEGORIES
     },
     stock: {
         type: Number,

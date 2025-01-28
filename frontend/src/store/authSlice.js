@@ -16,11 +16,9 @@ const authSlice = createSlice({
     reducers: {
         login: (state, action) => {
             state.isAuthenticated = true;
-            state.user = {
-                ...action.payload,
-                is_admin: action.payload.is_admin
-            };
+            state.user = action.payload;
             state.error = null;
+            state.is_admin = action.payload.is_admin;
             localStorage.setItem('token', action.payload.token);
         },
         logout: (state) => {
@@ -31,11 +29,9 @@ const authSlice = createSlice({
         },
         updateUserStore: (state, action) => {
             state.isAuthenticated = true;
-            state.user = {
-                ...action.payload,
-                is_admin: action.payload.is_admin
-            };
+            state.user = action.payload;
             state.error = null;
+            state.is_admin = action.payload.is_admin;
         },
     },
     extraReducers: (builder) => {
@@ -47,11 +43,9 @@ const authSlice = createSlice({
             .addCase(checkForToken.fulfilled, (state, action) => {
                 state.loading = false;
                 if (action.payload) {
-                    state.user = {
-                        ...action.payload,
-                        is_admin: action.payload.is_admin
-                    };
+                    state.user = action.payload;
                     state.isAuthenticated = true;
+                    state.is_admin = action.payload.is_admin;
                 } else {
                     state.isAuthenticated = false;
                 }
@@ -61,6 +55,8 @@ const authSlice = createSlice({
                 state.error = action.error.message;
                 state.isAuthenticated = false;
                 state.user = null;
+                state.is_admin = false;
+                localStorage.removeItem('token');
             });
     },
 });
@@ -77,7 +73,10 @@ export const checkForToken = createAsyncThunk(
             const response = await axiosInstance(token).get('api/account/user');
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to check token');
+            if (error.response?.status === 401) {
+                localStorage.removeItem('token');
+            }
+            return rejectWithValue(error.response?.data?.error || 'Failed to check token');
         }
     }
 );

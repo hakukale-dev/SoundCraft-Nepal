@@ -14,15 +14,14 @@ import Iconify from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export default function ProductTableRow({
-    id,
     selected,
     name,
+    model,
     description,
     price,
     category,
     stock,
-    images,
-    handleClick,
+    image,
     handleEdit,
     handleDelete,
 }) {
@@ -36,19 +35,22 @@ export default function ProductTableRow({
         setOpen(null);
     };
 
+    console.log(image);
+
     return (
         <>
-            <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-                <TableCell component="th" scope="row" padding="none">
+            <TableRow hover tabIndex={-1} role="checkbox" selected={selected} sx={{ height: '180px' }}>
+                <TableCell component="th" scope="row" sx={{ padding: 2, textAlign: 'center' }}>
                     <Stack direction="row" alignItems="center" spacing={2}>
                         <img
                             alt={name}
-                            src={images?.[0]}
+                            src={image}
                             height={180}
                             width={180}
                             style={{
                                 borderRadius: 5,
                                 objectFit: 'contain',
+                                margin: 'auto',
                             }}
                         />
                         <Typography variant="subtitle2" noWrap>
@@ -56,16 +58,17 @@ export default function ProductTableRow({
                         </Typography>
                     </Stack>
                 </TableCell>
+                <TableCell >{model}</TableCell>
 
-                <TableCell>{description}</TableCell>
+                <TableCell >{description}</TableCell>
 
-                <TableCell>${price}</TableCell>
+                <TableCell >${price}</TableCell>
 
-                <TableCell>{category}</TableCell>
+                <TableCell >{category}</TableCell>
 
-                <TableCell>{stock}</TableCell>
+                <TableCell >{stock}</TableCell>
 
-                <TableCell align="right">
+                <TableCell align="right" >
                     <IconButton onClick={handleOpenMenu}>
                         <Iconify icon="eva:more-vertical-fill" />
                     </IconButton>
@@ -99,10 +102,12 @@ export default function ProductTableRow({
 ProductTableRow.propTypes = {
     id: PropTypes.string,
     name: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired,
     category: PropTypes.string.isRequired,
     stock: PropTypes.number.isRequired,
+    image: PropTypes.string.isRequired,
     images: PropTypes.arrayOf(PropTypes.string),
     selected: PropTypes.bool,
     handleClick: PropTypes.func,

@@ -103,28 +103,39 @@ export default function ProductsView() {
     };
 
     const handleSubmit = (data) => {
-        const formData = {
-            name: data.name,
-            model: data.model,
-            description: data.description,
-            price: data.price,
-            category: data.category,
-            stock: data.stock,
-            image: data.image || ""
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('model', data.model);
+        formData.append('description', data.description);
+        formData.append('price', data.price);
+        formData.append('category', data.category);
+        formData.append('stock', data.stock);
+
+        if (data.image && data.image.length > 0) {
+            formData.append('image', data.image[0]);
+        }
+
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         };
 
         if (isAdd) {
             axiosInstance(user.token)
-                .post('api/products/', formData)
+                .post('api/products/', formData, config)
                 .then(() => {
                     toast.success('Product Added');
                     handleClose();
                     fetchData();
                 })
-                .catch((err) => toast.error('Failed to add product'));
+                .catch((err) => {
+                    toast.error('Failed to add product');
+                    console.log(err);
+                });
         } else {
             axiosInstance(user.token)
-                .put(`api/products/${editingProduct._id}/`, formData)
+                .put(`api/products/${editingProduct._id}/`, formData, config)
                 .then(() => {
                     toast.success('Edit Success');
                     handleClose();
@@ -135,8 +146,6 @@ export default function ProductsView() {
                     console.log(`Failed: ${e}`);
                 });
         }
-
-        fetchData();
     };
 
     const handleEdit = (event, id) => {
@@ -177,6 +186,7 @@ export default function ProductsView() {
                 })
                 .catch((err) => {
                     toast.error('Failed to fetch products');
+                    console.log(err);
                 }),
         [user]
     );
@@ -234,6 +244,7 @@ export default function ProductsView() {
                                     { id: 'price', label: 'Price' },
                                     { id: 'category', label: 'Category' },
                                     { id: 'stock', label: 'Stock' },
+                                    { id: '', label: ''}
                                 ]}
                             />
                             <TableBody>
@@ -241,14 +252,13 @@ export default function ProductsView() {
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row) => (
                                         <CustomTableRow
-                                            id={row._id}
                                             key={row._id}
                                             name={row.name}
                                             model={row.model}
                                             description={row.description}
                                             category={row.category}
                                             price={row.price}
-                                            images={row.images}
+                                            image={row.image}
                                             stock={row.stock}
                                             selected={selected.indexOf(row._id) !== -1}
                                             handleClick={(event) => handleClick(event, row._id)}

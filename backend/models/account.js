@@ -49,6 +49,11 @@ const userSchema = new mongoose.Schema( {
         type: Boolean,
         default: false,
     },
+    photo: {
+        type: String,
+        required: false,
+        default: null,
+    },
 } );
 
 const User = mongoose.model( 'User', userSchema );

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import { LoadingButton } from '@mui/lab';
-import { MusicNote } from '@mui/icons-material';
+import { MusicNote, AddAPhoto } from '@mui/icons-material';
 import {
     Box,
     Card,
@@ -14,23 +14,97 @@ import {
     TextField,
     Container,
     Typography,
+    Avatar,
+    IconButton,
 } from '@mui/material';
 
+import axiosInstance from 'src/utils/axios';
 
 export default function ProfileView() {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm();
 
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const [isLoading, setIsLoading] = useState(false);
+    const [profileImage, setProfileImage] = useState(user?.photo || null);
+    const [userData, setUserData] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance(user.token).get('api/account/user');
+                const fetchedUserData = response.data;
+                setUserData(fetchedUserData);
+                setProfileImage(fetchedUserData.photo || null);
+                
+                // Set form values
+                setValue('first_name', fetchedUserData.first_name);
+                setValue('last_name', fetchedUserData.last_name);
+                setValue('username', fetchedUserData.username);
+                setValue('email', fetchedUserData.email);
+                setValue('phone_number', fetchedUserData.phone_number);
+                setValue('address.street', fetchedUserData.address?.street);
+                setValue('address.city', fetchedUserData.address?.city);
+                setValue('address.state', fetchedUserData.address?.state);
+                setValue('address.zip_code', fetchedUserData.address?.zip_code);
+                if (fetchedUserData.dob) {
+                    setValue('dob', new Date(fetchedUserData.dob).toISOString().split('T')[0]);
+                }
+            } catch (err) {
+                toast.error('Failed to fetch user data');
+                console.error('Fetch user error:', err);
+            }
+        };
+
+        if (isAuthenticated && user) {
+            fetchUserData();
+        }
+    }, [isAuthenticated, user, setValue]);
+
+    const handleImageUpload = async (event) => {
+        console.log(user);
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!user || !user.id) {
+            toast.error('User ID not found. Please try logging in again.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('photo', file);
+
+        try {
+            const response = await axiosInstance(user.token).patch(
+                `api/account/user/${user.id}/photo`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            
+            if (response.data && response.data.photo) {
+                setProfileImage(response.data.photo);
+                toast.success('Profile Photo Updated Successfully');
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (err) {
+            toast.error('Failed to Update Profile Photo');
+            console.error('Upload error:', err);
+        }
+    };
 
     const formSubmit = async (data) => {
         setIsLoading(true);
         try {
-            // await axiosInstance(user.token).patch(`accounts/users/${user.id}/`, data);
+            await axiosInstance(user.token).patch(`api/account/user/${user._id}/`, data);
             toast.success('Profile Updated Successfully');
         } catch (err) {
             toast.error('Failed to Update Profile');
@@ -42,6 +116,37 @@ export default function ProfileView() {
 
     const renderForm = (
         <Stack spacing={3}>
+            <Stack alignItems="center" spacing={2}>
+                <Avatar
+                    src={profileImage}
+                    alt={userData?.first_name ? `${userData.first_name}'s photo` : 'Profile photo'}
+                    sx={{ width: 100, height: 100 }}
+                />
+                <Box position="relative">
+                    <input
+                        accept="image/*"
+                        type="file"
+                        id="profile-image-upload"
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                    />
+                    <label htmlFor="profile-image-upload">
+                        <IconButton
+                            component="span"
+                            sx={{
+                                bgcolor: '#8B4513',
+                                color: '#FDF5E6',
+                                '&:hover': {
+                                    bgcolor: '#654321',
+                                },
+                            }}
+                        >
+                            <AddAPhoto />
+                        </IconButton>
+                    </label>
+                </Box>
+            </Stack>
+
             <Stack direction="row" spacing={2}>
                 <TextField
                     fullWidth
@@ -50,7 +155,7 @@ export default function ProfileView() {
                     {...register('first_name', { required: true })}
                     error={!!errors.first_name}
                     helperText={errors.first_name?.message}
-                    defaultValue={user.first_name}
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
@@ -61,12 +166,12 @@ export default function ProfileView() {
                 />
                 <TextField
                     fullWidth
-                    size="small" 
+                    size="small"
                     label="Last Name"
                     {...register('last_name', { required: true })}
                     error={!!errors.last_name}
                     helperText={errors.last_name?.message}
-                    defaultValue={user.last_name}
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
@@ -84,7 +189,7 @@ export default function ProfileView() {
                 {...register('username', { required: true })}
                 error={!!errors.username}
                 helperText={errors.username?.message}
-                defaultValue={user.username}
+                InputLabelProps={{ shrink: true }}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         '&:hover fieldset': {
@@ -102,7 +207,7 @@ export default function ProfileView() {
                 {...register('email', { required: true })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
-                defaultValue={user.email}
+                InputLabelProps={{ shrink: true }}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         '&:hover fieldset': {
@@ -116,10 +221,10 @@ export default function ProfileView() {
                 fullWidth
                 size="small"
                 label="Phone Number"
-                {...register('phone_number', { required: true })}
+                {...register('phone_number')}
                 error={!!errors.phone_number}
                 helperText={errors.phone_number?.message}
-                defaultValue={user.phone_number}
+                InputLabelProps={{ shrink: true }}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         '&:hover fieldset': {
@@ -129,31 +234,87 @@ export default function ProfileView() {
                 }}
             />
 
-            <TextField
-                fullWidth
-                size="small"
-                label="Address"
-                {...register('address', { required: true })}
-                error={!!errors.address}
-                helperText={errors.address?.message}
-                defaultValue={user.address}
-                sx={{
-                    '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                            borderColor: '#8B4513',
+            <Stack spacing={2}>
+                <Typography variant="subtitle1" sx={{ color: '#8B4513' }}>
+                    Address
+                </Typography>
+                <TextField
+                    fullWidth
+                    size="small"
+                    label="Street"
+                    {...register('address.street')}
+                    error={!!errors.address?.street}
+                    helperText={errors.address?.street?.message}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                        '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                                borderColor: '#8B4513',
+                            },
                         },
-                    },
-                }}
-            />
+                    }}
+                />
+                <Stack direction="row" spacing={2}>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        label="City"
+                        {...register('address.city')}
+                        error={!!errors.address?.city}
+                        helperText={errors.address?.city?.message}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                    borderColor: '#8B4513',
+                                },
+                            },
+                        }}
+                    />
+                    <TextField
+                        fullWidth
+                        size="small"
+                        label="State"
+                        {...register('address.state')}
+                        error={!!errors.address?.state}
+                        helperText={errors.address?.state?.message}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                    borderColor: '#8B4513',
+                                },
+                            },
+                        }}
+                    />
+                </Stack>
+                <TextField
+                    fullWidth
+                    size="small"
+                    label="ZIP Code"
+                    {...register('address.zip_code')}
+                    error={!!errors.address?.zip_code}
+                    helperText={errors.address?.zip_code?.message}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                        '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                                borderColor: '#8B4513',
+                            },
+                        },
+                    }}
+                />
+            </Stack>
 
             <TextField
                 fullWidth
                 size="small"
                 type="date"
-                {...register('dob', { required: true })}
+                label="Date of Birth"
+                {...register('dob')}
                 error={!!errors.dob}
                 helperText={errors.dob?.message}
-                defaultValue={user.dob}
+                InputLabelProps={{ shrink: true }}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         '&:hover fieldset': {

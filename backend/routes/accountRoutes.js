@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/account');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const upload = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -54,7 +55,7 @@ router.get('/users', async (req, res) => {
 
 
 // Update User
-router.put('/user/:id', async (req, res) => {
+router.patch('/user/:id', async (req, res) => {
     try {
         const {
             first_name,
@@ -64,6 +65,8 @@ router.put('/user/:id', async (req, res) => {
             address,
             dob
         } = req.body;
+
+        console.log(req.body);
 
         // Validate email format if provided
         if (email) {
@@ -79,29 +82,64 @@ router.put('/user/:id', async (req, res) => {
             }
         }
 
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            {
-                $set: {
-                    first_name,
-                    last_name,
-                    email,
-                    phone_number,
-                    address,
-                    dob,
-                    updatedAt: new Date()
-                }
-            },
-            { new: true }
-        ).select('-password -__v');
+        const userId = req.params.id;
 
-        if (!updatedUser) {
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+        const user = await User.findById(userId);
+
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json(updatedUser);
+        user.first_name = first_name || user.first_name;
+        user.last_name = last_name || user.last_name;
+        user.email = email || user.email;
+        user.phone_number = phone_number || user.phone_number;
+        user.address = address || user.address;
+        user.dob = dob || user.dob;
+        user.updatedAt = new Date();
+
+        const updatedUser = await user.save();
+
+        res.json(user);
     } catch (err) {
         console.error('Update user error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update User Photo
+router.patch('/user/:id/photo', upload.single('photo'), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'No photo uploaded' });
+        }
+
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.photo = imageUrl;
+        user.updatedAt = new Date();
+        const updatedUser = await user.save();
+        
+        res.json({
+            message: 'Photo updated successfully',
+            photo: updatedUser.photo
+        });
+    } catch (err) {
+        console.error('Update photo error:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
