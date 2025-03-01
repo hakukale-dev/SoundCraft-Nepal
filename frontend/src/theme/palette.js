@@ -18,11 +18,11 @@ export const grey = {
 };
 
 export const primary = {
-  lighter: '#D0ECFE',
-  light: '#73BAFB',
-  main: '#1877F2',
-  dark: '#0C44AE',
-  darker: '#042174',
+  lighter: '#D4A98F', // Lighter shade of #8B4513
+  light: '#B06B3B',   // Light shade of #8B4513
+  main: '#8B4513',    // Base saddle brown color
+  dark: '#662F0D',    // Dark shade of #8B4513
+  darker: '#401D08',  // Darker shade of #8B4513
   contrastText: '#FFFFFF',
 };
 
@@ -59,7 +59,7 @@ export const warning = {
   main: '#FFAB00',
   dark: '#B76E00',
   darker: '#7A4100',
-  contrastText: grey[ 800 ],
+  contrastText: grey[800],
 };
 
 export const error = {
@@ -77,11 +77,11 @@ export const common = {
 };
 
 export const action = {
-  hover: alpha( grey[ 500 ], 0.08 ),
-  selected: alpha( grey[ 500 ], 0.16 ),
-  disabled: alpha( grey[ 500 ], 0.8 ),
-  disabledBackground: alpha( grey[ 500 ], 0.24 ),
-  focus: alpha( grey[ 500 ], 0.24 ),
+  hover: alpha(grey[500], 0.08),
+  selected: alpha(grey[500], 0.16),
+  disabled: alpha(grey[500], 0.8),
+  disabledBackground: alpha(grey[500], 0.24),
+  focus: alpha(grey[500], 0.24),
   hoverOpacity: 0.08,
   disabledOpacity: 0.48,
 };
@@ -95,30 +95,29 @@ const base = {
   error,
   grey,
   common,
-  divider: alpha( grey[ 500 ], 0.2 ),
+  divider: alpha(grey[500], 0.2),
   action,
 };
 
 // ----------------------------------------------------------------------
 
-export function palette ()
-{
+export function palette() {
   return {
     ...base,
     mode: 'light',
     text: {
-      primary: grey[ 800 ],
-      secondary: grey[ 600 ],
-      disabled: grey[ 500 ],
+      primary: grey[800],
+      secondary: grey[600],
+      disabled: grey[500],
     },
     background: {
-      paper: '#FFFFFF',
-      default: grey[ 100 ],
-      neutral: grey[ 200 ],
+      paper: '#FDF5E6',
+      default: grey[100],
+      neutral: grey[200],
     },
     action: {
       ...base.action,
-      active: grey[ 600 ],
+      active: grey[600],
     },
   };
 }

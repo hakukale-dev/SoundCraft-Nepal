@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import Popover from '@mui/material/Popover';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -45,6 +45,7 @@ const MENU_OPTIONS = [
 // ----------------------------------------------------------------------
 
 export default function AccountPopover() {
+    const theme = useTheme();
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -76,10 +77,9 @@ export default function AccountPopover() {
                 sx={{
                     width: 40,
                     height: 40,
-                    background: (theme) => alpha(theme.palette.grey[500], 0.08),
+                    background: alpha(theme.palette.grey[500], 0.08),
                     ...(open && {
-                        background: (theme) =>
-                            `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
                     }),
                 }}
             >
@@ -89,7 +89,7 @@ export default function AccountPopover() {
                     sx={{
                         width: 36,
                         height: 36,
-                        border: (theme) => `solid 2px ${theme.palette.background.default}`,
+                        border: `solid 2px ${theme.palette.background.default}`,
                     }}
                 >
                     {fullName.charAt(0).toUpperCase()}
@@ -108,22 +108,45 @@ export default function AccountPopover() {
                         mt: 1,
                         ml: 0.75,
                         width: 200,
+                        backgroundColor: theme.palette.background.paper,
+                        boxShadow: theme.shadows[3],
                     },
                 }}
             >
                 <Box sx={{ my: 1.5, px: 2 }}>
-                    <Typography variant="subtitle2" noWrap>
+                    <Typography 
+                        variant="subtitle2" 
+                        noWrap
+                        sx={{
+                            color: theme.palette.text.primary,
+                            fontFamily: theme.typography.fontFamily,
+                        }}
+                    >
                         {fullName}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+                    <Typography 
+                        variant="body2" 
+                        sx={{ 
+                            color: theme.palette.text.secondary,
+                            fontFamily: theme.typography.fontFamily,
+                        }} 
+                        noWrap
+                    >
                         {user.email}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>
+                    <Typography 
+                        variant="caption" 
+                        sx={{ 
+                            color: theme.palette.text.secondary,
+                            fontFamily: theme.typography.fontFamily,
+                        }} 
+                        noWrap
+                    >
                         {user.username}
                     </Typography>
                 </Box>
 
-                <Divider sx={{ borderStyle: 'dashed' }} />
+                <Divider sx={{ borderStyle: 'dashed', borderColor: theme.palette.divider }} />
 
                 {MENU_OPTIONS.map((option) => {
                     // Show Dashboard only for admin users
@@ -138,19 +161,34 @@ export default function AccountPopover() {
                                 navigate(option.link);
                                 handleClose();
                             }}
+                            sx={{
+                                color: theme.palette.text.primary,
+                                fontFamily: theme.typography.fontFamily,
+                                '&:hover': {
+                                    backgroundColor: theme.palette.action.hover,
+                                },
+                            }}
                         >
                             {option.label}
                         </MenuItem>
                     );
                 })}
 
-                <Divider sx={{ borderStyle: 'dashed', m: 0 }} />
+                <Divider sx={{ borderStyle: 'dashed', borderColor: theme.palette.divider, m: 0 }} />
 
                 <MenuItem
                     disableRipple
                     disableTouchRipple
                     onClick={handleLogout}
-                    sx={{ typography: 'body2', color: 'error.main', py: 1.5 }}
+                    sx={{ 
+                        typography: 'body2', 
+                        color: theme.palette.error.main,
+                        py: 1.5,
+                        fontFamily: theme.typography.fontFamily,
+                        '&:hover': {
+                            backgroundColor: theme.palette.error.lighter,
+                        },
+                    }}
                 >
                     Logout
                 </MenuItem>

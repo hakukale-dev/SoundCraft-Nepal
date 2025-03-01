@@ -35,8 +35,6 @@ export default function ProductTableRow({
         setOpen(null);
     };
 
-    console.log(image);
-
     return (
         <>
             <TableRow hover tabIndex={-1} role="checkbox" selected={selected} sx={{ height: '180px' }}>

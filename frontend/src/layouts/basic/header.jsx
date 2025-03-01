@@ -1,11 +1,10 @@
-import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import { useTheme } from '@mui/material/styles';
-import { Box, Stack, Button, IconButton, Typography } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { Box, Stack, Button, IconButton } from '@mui/material';
 
 import { bgBlur } from 'src/theme/css';
 
@@ -17,18 +16,17 @@ import AccountPopover from '../common/account-popover';
 
 function BasicHeader() {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
-
     const theme = useTheme();
     const navigation = useNavigate();
 
     return (
         <AppBar
             sx={{
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: theme.shadows[1],
                 height: '100px',
                 zIndex: theme.zIndex.appBar + 1,
                 ...bgBlur({
-                    color: '#FDF5E6',
+                    color: theme.palette.background.default,
                 }),
                 transition: theme.transitions.create(['height'], {
                     duration: theme.transitions.duration.shorter,
@@ -48,7 +46,9 @@ function BasicHeader() {
                         p: 0,
                         '&:hover': {
                             transform: 'scale(1.05)',
-                            transition: 'transform 0.2s ease-in-out'
+                            transition: theme.transitions.create('transform', {
+                                duration: theme.transitions.duration.shorter,
+                            })
                         }
                     }}
                 >
@@ -68,17 +68,19 @@ function BasicHeader() {
                             key={page.title}
                             onClick={() => navigation(page.path)}
                             sx={{ 
-                                color: '#8B4513',
+                                color: theme.palette.primary.main,
                                 display: 'block',
-                                fontFamily: "'Playfair Display', serif",
-                                fontSize: '1.1rem',
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: theme.typography.h6.fontSize,
                                 textTransform: 'none',
                                 py: 2,
                                 '&:hover': {
-                                    color: '#654321',
-                                    bgcolor: 'rgba(139, 69, 19, 0.1)',
+                                    color: theme.palette.primary.dark,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
                                     transform: 'translateY(-2px)',
-                                    transition: 'all 0.2s ease-in-out'
+                                    transition: theme.transitions.create(['color', 'background-color', 'transform'], {
+                                        duration: theme.transitions.duration.shorter,
+                                    })
                                 }
                             }}
                         >
@@ -96,12 +98,12 @@ function BasicHeader() {
                                 variant="outlined" 
                                 onClick={() => navigation('dashboard')}
                                 sx={{
-                                    color: '#8B4513',
-                                    borderColor: '#8B4513',
+                                    color: theme.palette.primary.main,
+                                    borderColor: theme.palette.primary.main,
                                     height: '48px',
                                     '&:hover': {
-                                        borderColor: '#654321',
-                                        bgcolor: 'rgba(139, 69, 19, 0.1)'
+                                        borderColor: theme.palette.primary.dark,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.08)
                                     }
                                 }}
                             >
@@ -117,14 +119,16 @@ function BasicHeader() {
                             variant="outlined"
                             onClick={() => navigation('signup')}
                             sx={{
-                                color: '#8B4513',
-                                borderColor: '#8B4513',
+                                color: theme.palette.primary.main,
+                                borderColor: theme.palette.primary.main,
                                 height: '48px',
                                 '&:hover': {
-                                    borderColor: '#654321',
-                                    bgcolor: 'rgba(139, 69, 19, 0.1)',
+                                    borderColor: theme.palette.primary.dark,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
                                     transform: 'translateY(-2px)',
-                                    transition: 'all 0.2s ease-in-out'
+                                    transition: theme.transitions.create(['border-color', 'background-color', 'transform'], {
+                                        duration: theme.transitions.duration.shorter,
+                                    })
                                 },
                                 px: 3,
                                 borderRadius: 2
@@ -136,16 +140,18 @@ function BasicHeader() {
                             variant="contained"
                             onClick={() => navigation('login')}
                             sx={{
-                                bgcolor: '#8B4513',
+                                bgcolor: theme.palette.primary.main,
                                 height: '48px',
                                 '&:hover': { 
-                                    bgcolor: '#654321',
+                                    bgcolor: theme.palette.primary.dark,
                                     transform: 'translateY(-2px)',
-                                    transition: 'all 0.2s ease-in-out'
+                                    transition: theme.transitions.create(['background-color', 'transform'], {
+                                        duration: theme.transitions.duration.shorter,
+                                    })
                                 },
                                 px: 3,
                                 borderRadius: 2,
-                                boxShadow: '0 2px 8px rgba(139, 69, 19, 0.2)'
+                                boxShadow: theme.shadows[2]
                             }}
                         >
                             Sign In

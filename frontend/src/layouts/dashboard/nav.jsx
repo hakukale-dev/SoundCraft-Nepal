@@ -28,7 +28,7 @@ export default function Nav({ openNav, onCloseNav }) {
     const upLg = useResponsive('up', 'lg');
 
     useEffect(() => {
-        if (openNav) {
+        if (!openNav) {
             onCloseNav();
         }
     }, [pathname, openNav, onCloseNav]);
@@ -110,6 +110,10 @@ export default function Nav({ openNav, onCloseNav }) {
                 <Drawer
                     open={openNav}
                     onClose={onCloseNav}
+                    ModalProps={{
+                        onEscapeKeyDown: onCloseNav,
+                        onKeyDown: onCloseNav,
+                    }}
                     PaperProps={{
                         sx: {
                             width: NAV.WIDTH,

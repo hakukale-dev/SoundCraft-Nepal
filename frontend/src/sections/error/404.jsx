@@ -3,13 +3,14 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { MusicNote } from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 import { RouterLink } from 'src/routes/components';
-import { bgGradient } from 'src/theme/css';
 import { Stack } from '@mui/material';
 
 export default function NotFoundView() {
+    const theme = useTheme();
+
     return (
         <Box
             sx={{
@@ -31,22 +32,22 @@ export default function NotFoundView() {
                     }}
                 >
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 5 }}>
-                        <MusicNote sx={{ color: '#8B4513', fontSize: '2rem' }} />
+                        <MusicNote sx={{ color: theme.palette.primary.main, fontSize: '2rem' }} />
                         <Typography
                             variant="h3"
                             sx={{
-                                color: '#8B4513',
-                                fontFamily: "'Playfair Display', serif",
+                                color: theme.palette.primary.main,
+                                fontFamily: theme.typography.fontFamily,
                                 mb: 3
                             }}
                         >
                             Page Not Found
                         </Typography>
-                        <MusicNote sx={{ color: '#8B4513', fontSize: '2rem' }} />
+                        <MusicNote sx={{ color: theme.palette.primary.main, fontSize: '2rem' }} />
                     </Stack>
 
-                    <Typography sx={{ color: '#8B4513' }}>
-                        Sorry, we couldn't find the page you're looking for. Perhaps you've mistyped the
+                    <Typography sx={{ color: theme.palette.primary.main }}>
+                        Sorry, we couldn&apos;t find the page you&apos;re looking for. Perhaps you&apos;ve mistyped the
                         URL? Be sure to check your spelling.
                     </Typography>
 
@@ -54,7 +55,7 @@ export default function NotFoundView() {
                         variant="h1"
                         sx={{
                             fontWeight: 800,
-                            color: '#8B4513',
+                            color: theme.palette.primary.main,
                             fontSize: '10rem',
                             my: { xs: 5, sm: 10 },
                         }}
@@ -68,9 +69,9 @@ export default function NotFoundView() {
                         variant="contained"
                         component={RouterLink}
                         sx={{
-                            bgcolor: '#8B4513',
+                            bgcolor: theme.palette.primary.main,
                             '&:hover': {
-                                bgcolor: '#654321',
+                                bgcolor: theme.palette.primary.dark,
                             },
                         }}
                     >

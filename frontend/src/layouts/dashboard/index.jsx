@@ -8,13 +8,15 @@ import Nav from './nav';
 import Main from './main';
 import Header from './header';
 
+import { AdminThemeProvider } from 'src/theme';
+
 // ----------------------------------------------------------------------
 
 export default function DashboardLayout({ user }) {
     const [openNav, setOpenNav] = useState(false);
 
     return user && user.is_admin ? (
-        <>
+        <AdminThemeProvider>
             <Header onOpenNav={() => setOpenNav(true)} />
 
             <Box
@@ -30,7 +32,7 @@ export default function DashboardLayout({ user }) {
                     <Outlet />
                 </Main>
             </Box>
-        </>
+        </AdminThemeProvider>
     ) : (
         <Navigate to="404" />
     );

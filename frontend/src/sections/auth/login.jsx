@@ -74,7 +74,7 @@ export default function LoginView() {
                     sx={{
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
-                                borderColor: '#8B4513',
+                                borderColor: theme.palette.primary.main,
                             },
                         },
                     }}
@@ -103,7 +103,7 @@ export default function LoginView() {
                     sx={{
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
-                                borderColor: '#8B4513',
+                                borderColor: theme.palette.primary.main,
                             },
                         },
                     }}
@@ -115,8 +115,8 @@ export default function LoginView() {
                     variant="subtitle2"
                     underline="hover"
                     sx={{
-                        color: '#8B4513',
-                        '&:hover': { color: '#654321' }
+                        color: theme.palette.primary.main,
+                        '&:hover': { color: theme.palette.primary.dark }
                     }}
                 >
                     Forgot password?
@@ -131,10 +131,10 @@ export default function LoginView() {
                 onClick={handleLogin}
                 loading={isLoading}
                 sx={{
-                    bgcolor: '#8B4513',
-                    color: '#FDF5E6',
+                    bgcolor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
                     '&:hover': {
-                        bgcolor: '#654321',
+                        bgcolor: theme.palette.primary.dark,
                     },
                 }}
             >
@@ -146,10 +146,10 @@ export default function LoginView() {
                 textAlign="center"
                 onClick={() => navigation('/signup')}
                 sx={{
-                    color: '#8B4513',
+                    color: theme.palette.primary.main,
                     cursor: 'pointer',
                     '&:hover': {
-                        color: '#654321',
+                        color: theme.palette.primary.dark,
                         textDecoration: 'underline',
                     },
                 }}
@@ -162,10 +162,10 @@ export default function LoginView() {
                 textAlign="center"
                 onClick={() => navigation('/')}
                 sx={{
-                    color: '#8B4513',
+                    color: theme.palette.primary.main,
                     cursor: 'pointer',
                     '&:hover': {
-                        color: '#654321',
+                        color: theme.palette.primary.dark,
                         textDecoration: 'underline',
                     },
                 }}
@@ -179,7 +179,7 @@ export default function LoginView() {
         <Box
             sx={{
                 ...bgGradient({
-                    color: alpha("#000000", 0.4),
+                    color: alpha(theme.palette.common.black, 0.4),
                     imgUrl: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpng.pngtree.com%2Fbackground%2F20230611%2Foriginal%2Fpngtree-an-antique-musical-instrument-picture-image_3132823.jpg&f=1&nofb=1&ipt=40f5bda6264c41d3f81fcfa66b139f074186706c4272ccb5acd9363c93603783&ipo=images',
                 }),
                 height: 1,
@@ -191,22 +191,22 @@ export default function LoginView() {
                         p: 5,
                         width: 1,
                         maxWidth: 420,
-                        backgroundColor: '#FDF5E6',
-                        boxShadow: '0 4px 12px rgba(139, 69, 19, 0.15)',
+                        backgroundColor: theme.palette.background.paper,
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     }}
                 >
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 5 }}>
-                        <MusicNote sx={{ color: '#8B4513', fontSize: '2rem' }} />
+                        <MusicNote sx={{ color: theme.palette.primary.main, fontSize: '2rem' }} />
                         <Typography
                             variant="h4"
                             sx={{
-                                color: '#8B4513',
-                                fontFamily: "'Playfair Display', serif",
+                                color: theme.palette.primary.main,
+                                fontFamily: theme.typography.fontFamily,
                             }}
                         >
                             Welcome Back
                         </Typography>
-                        <MusicNote sx={{ color: '#8B4513', fontSize: '2rem' }} />
+                        <MusicNote sx={{ color: theme.palette.primary.main, fontSize: '2rem' }} />
                     </Stack>
 
                     {renderForm}

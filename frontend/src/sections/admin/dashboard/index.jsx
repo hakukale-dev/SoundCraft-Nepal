@@ -1,23 +1,26 @@
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-toastify';
 
 import Container from '@mui/material/Container';
 import { Grid, Typography } from '@mui/material';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import PeopleIcon from '@mui/icons-material/People';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import InventoryIcon from '@mui/icons-material/Inventory';
 
 import axiosInstance from 'src/utils/axios';
 
-import Iconify from 'src/components/iconify';
-
 import AppTasks from './app-tasks';
-import AppNewsUpdate from './app-news-update';
-import AppOrderTimeline from './app-order-timeline';
+// import AppNewsUpdate from './app-news-update';
+// import AppOrderTimeline from './app-order-timeline';
 import AppCurrentVisits from './app-current-visits';
 import AppWebsiteVisits from './app-website-visits';
 import AppWidgetSummary from './app-widget-summary';
-import AppTrafficBySite from './app-traffic-by-site';
-import AppCurrentSubject from './app-current-subject';
-import AppConversionRates from './app-conversion-rates';
+// import AppTrafficBySite from './app-traffic-by-site';
+// import AppCurrentSubject from './app-current-subject';
+// import AppConversionRates from './app-conversion-rates';
 
 // ----------------------------------------------------------------------
 
@@ -27,24 +30,20 @@ export default function DashboardView() {
     const [details, setDetails] = useState({
         totalUsers: 0,
         totalProducts: 0,
-        recentProducts: [],
-        recentUsers: [],
-        newUsersToday: 0,
+        totalOrders: 0,
         lowStockProducts: 0,
-        adminUsers: 0,
-        regularUsers: 0,
         stockLabels: [],
         stockData: [],
         categories: []
     });
 
     const fetchData = useCallback(async () => {
-        // axiosInstance(user.token)
-        //     .get('api/dashboard/')
-        //     .then((res) => {
-        //         setDetails(res.data);
-        //     })
-        //     .catch(() => toast.error('Failed to fetch dashboard data'));
+        axiosInstance(user.token)
+            .get('api/admin/dashboard')
+            .then((res) => {
+                setDetails(res.data);
+            })
+            .catch(() => toast.error('Failed to fetch dashboard data'));
     }, [user]);
 
     useEffect(() => {
@@ -63,7 +62,7 @@ export default function DashboardView() {
                         title="Total Products"
                         total={details.totalProducts || 0}
                         color="success"
-                        icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
+                        icon={<ShoppingBagIcon />}
                     />
                 </Grid>
 
@@ -72,16 +71,16 @@ export default function DashboardView() {
                         title="Total Users"
                         total={details.totalUsers || 0}
                         color="info"
-                        icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
+                        icon={<PeopleIcon />}
                     />
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={3}>
                     <AppWidgetSummary
-                        title="New Users Today"
-                        total={details.newUsersToday || 0}
+                        title="Total Orders"
+                        total={details.totalOrders || 0}
                         color="warning"
-                        icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
+                        icon={<ShoppingCartIcon />}
                     />
                 </Grid>
 
@@ -90,7 +89,7 @@ export default function DashboardView() {
                         title="Low Stock Products"
                         total={details.lowStockProducts || 0}
                         color="error"
-                        icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
+                        icon={<InventoryIcon />}
                     />
                 </Grid>
 
@@ -114,17 +113,14 @@ export default function DashboardView() {
 
                 <Grid item xs={12} md={6} lg={4}>
                     <AppCurrentVisits
-                        title="User Distribution"
+                        title="Product Categories"
                         chart={{
-                            series: [
-                                { label: 'Admin Users', value: details.adminUsers || 0 },
-                                { label: 'Regular Users', value: details.regularUsers || 0 }
-                            ],
+                            series: details.categoriesWithCount || [],
                         }}
                     />
                 </Grid>
 
-                <Grid item xs={12} md={6} lg={8}>
+                {/* <Grid item xs={12} md={6} lg={8}>
                     <AppNewsUpdate
                         title="Recent Products"
                         list={details.recentProducts || []}
@@ -136,14 +132,14 @@ export default function DashboardView() {
                         title="Recent Users"
                         list={details.recentUsers || []}
                     />
-                </Grid>
+                </Grid> */}
 
-                <Grid item xs={12} md={6} lg={4}>
+                {/* <Grid item xs={12} md={6} lg={4}>
                     <AppTrafficBySite
                         title="Product Categories"
                         list={details.categories || []}
                     />
-                </Grid>
+                </Grid> */}
 
                 <Grid item xs={12} md={6} lg={8}>
                     <AppTasks

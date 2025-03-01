@@ -1,17 +1,17 @@
-import axios from 'axios';
+import axios from 'axios'
 
-export default function axiosInstance ( token = null )
-{
-    const data = {
-        baseURL: 'http://localhost:8080/',
-    };
+export default function axiosInstance(
+	token = localStorage.getItem('token') || null
+) {
+	const data = {
+		baseURL: 'http://localhost:8080/',
+	}
 
-    if ( token )
-    {
-        data.headers = {
-            Authorization: `Bearer ${token}`,
-        };
-    }
+	if (token) {
+		data.headers = {
+			Authorization: `Bearer ${token}`,
+		}
+	}
 
-    return axios.create( data );
+	return axios.create(data)
 }

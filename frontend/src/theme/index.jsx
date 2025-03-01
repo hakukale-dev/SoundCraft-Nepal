@@ -9,10 +9,35 @@ import { shadows } from './shadows';
 import { overrides } from './overrides';
 import { typography } from './typography';
 import { customShadows } from './custom-shadows';
-
+import { adminPalette } from './adminPalette';
 // ----------------------------------------------------------------------
 
-export default function ThemeProvider ( { children } )
+function AdminThemeProvider({ children }) {
+    const memoizedValue = useMemo(
+        () => ({
+            palette: adminPalette(),
+            typography,
+            shadows: shadows(),
+            customShadows: customShadows(),
+            shape: { borderRadius: 8 },
+            components: {},
+        }),
+        []
+    );
+
+    const theme = createTheme(memoizedValue);
+
+    theme.components = overrides(theme);
+
+    return (
+        <MUIThemeProvider theme={theme}>
+            <CssBaseline />
+            {children}
+        </MUIThemeProvider>
+    );
+}
+
+function ThemeProvider ( { children } )
 {
     const memoizedValue = useMemo(
         () => ( {
@@ -21,6 +46,7 @@ export default function ThemeProvider ( { children } )
             shadows: shadows(),
             customShadows: customShadows(),
             shape: { borderRadius: 8 },
+            components: {},
         } ),
         []
     );
@@ -28,7 +54,7 @@ export default function ThemeProvider ( { children } )
     const theme = createTheme( memoizedValue );
 
     theme.components = overrides( theme );
-
+    
     return (
         <MUIThemeProvider theme={ theme }>
             <CssBaseline />
@@ -40,3 +66,9 @@ export default function ThemeProvider ( { children } )
 ThemeProvider.propTypes = {
     children: PropTypes.node,
 };
+
+AdminThemeProvider.propTypes = {
+    children: PropTypes.node,
+};
+
+export { ThemeProvider, AdminThemeProvider };

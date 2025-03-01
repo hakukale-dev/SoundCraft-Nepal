@@ -1,9 +1,10 @@
-import React from 'react';
-
 import { Box, Grid, Avatar, Container, Typography, Stack } from '@mui/material';
 import { MusicNote } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
 export default function AboutUsView() {
+    const theme = useTheme();
+
     return (
         <Box
             sx={{
@@ -17,12 +18,12 @@ export default function AboutUsView() {
                     <Grid item xs={12} md={6}>
                         <Stack spacing={3}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <MusicNote sx={{ color: '#8B4513', fontSize: 40 }} />
+                                <MusicNote sx={{ color: theme.palette.primary.main, fontSize: 40 }} />
                                 <Typography
                                     variant="h3"
                                     sx={{
-                                        fontFamily: "'Playfair Display', serif",
-                                        color: '#8B4513'
+                                        fontFamily: theme.typography.fontFamily,
+                                        color: theme.palette.primary.main
                                     }}
                                 >
                                     About Our Shop
@@ -32,9 +33,10 @@ export default function AboutUsView() {
                                 variant="body1"
                                 paragraph
                                 sx={{
-                                    color: '#654321',
+                                    color: theme.palette.text.primary,
                                     fontSize: '1.1rem',
-                                    lineHeight: 1.8
+                                    lineHeight: 1.8,
+                                    fontFamily: theme.typography.fontFamily
                                 }}
                             >
                                 Lorem ipsum dolor sit, amet consectetur adipisicing elit. Est, ab! Sit velit ea magni nesciunt nulla
@@ -44,9 +46,10 @@ export default function AboutUsView() {
                                 variant="body1"
                                 paragraph
                                 sx={{
-                                    color: '#654321',
+                                    color: theme.palette.text.primary,
                                     fontSize: '1.1rem',
-                                    lineHeight: 1.8
+                                    lineHeight: 1.8,
+                                    fontFamily: theme.typography.fontFamily
                                 }}
                             >
                                 Lorem ipsum dolor sit, amet consectetur adipisicing elit. Est, ab! Sit velit ea magni nesciunt nulla
@@ -59,9 +62,9 @@ export default function AboutUsView() {
                             <Box
                                 sx={{
                                     p: 4,
-                                    bgcolor: 'white',
+                                    bgcolor: theme.palette.background.paper,
                                     borderRadius: 2,
-                                    boxShadow: '0 4px 12px rgba(139, 69, 19, 0.1)'
+                                    boxShadow: theme.shadows[2]
                                 }}
                             >
                                 <Stack direction="row" spacing={3} alignItems="center">
@@ -71,15 +74,15 @@ export default function AboutUsView() {
                                         sx={{
                                             width: 120,
                                             height: 120,
-                                            border: '3px solid #8B4513'
+                                            border: `3px solid ${theme.palette.primary.main}`
                                         }}
                                     />
                                     <Stack spacing={2}>
                                         <Typography
                                             variant="h5"
                                             sx={{
-                                                fontFamily: "'Playfair Display', serif",
-                                                color: '#8B4513'
+                                                fontFamily: theme.typography.fontFamily,
+                                                color: theme.palette.primary.main
                                             }}
                                         >
                                             Our Craftsmen
@@ -87,8 +90,9 @@ export default function AboutUsView() {
                                         <Typography
                                             variant="body1"
                                             sx={{
-                                                color: '#654321',
-                                                lineHeight: 1.6
+                                                color: theme.palette.text.primary,
+                                                lineHeight: 1.6,
+                                                fontFamily: theme.typography.fontFamily
                                             }}
                                         >
                                             Lorem ipsum dolor sit, amet consectetur adipisicing elit. Est, ab! Sit velit ea magni nesciunt nulla
