@@ -12,6 +12,10 @@ import {
 	Box,
 	Stack,
 	Container,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -39,6 +43,7 @@ export default function CartPageView() {
 		0
 	)
 	const navigate = useNavigate()
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
 
 	useEffect(() => {
 		fetchRecommendedItems()
@@ -62,13 +67,70 @@ export default function CartPageView() {
 	}
 
 	const handleAddToCart = (item) => {
-		dispatch(addToCart(item))
-		toast.success('Items added to cart!')
+		try {
+			if (item.stock <= 0) {
+				toast.error('This item is out of stock')
+				return
+			}
+
+			const cartItem = {
+				_id: item._id,
+				name: item.name,
+				price_per: item.price,
+				thumbnail: item.image,
+				stock: item.stock,
+				quantity: 1
+			}
+
+			dispatch(addToCart(cartItem))
+			toast.success('Item added to cart!')
+		} catch (error) {
+			toast.error('Failed to add item to cart')
+			console.error('Add to cart error:', error)
+		}
+	}
+
+	const handleIncreaseQty = (itemId) => {
+		const item = cartItems.find(i => i._id === itemId)
+		if (item && item.quantity < item.stock) {
+			dispatch(increaseQty(itemId))
+		} else {
+			toast.error('Cannot add more than available stock')
+		}
+	}
+
+	const handleDecreaseQty = (itemId) => {
+		const item = cartItems.find(i => i._id === itemId)
+		if (item && item.quantity > 1) {
+			dispatch(decreaseQty(itemId))
+		}
+	}
+
+	const handleRemoveItem = (itemId) => {
+		dispatch(removeFromCart(itemId))
+		toast.success('Item removed from cart')
+	}
+
+	const handleCheckout = () => {
+		if (cartItems.length === 0) {
+			toast.error('Your cart is empty')
+			return
+		}
+		navigate('/checkout')
 	}
 
 	const handleClearCart = () => {
+		setOpenConfirmDialog(true)
+	}
+
+	const handleConfirmClearCart = () => {
 		dispatch(clearCart())
-		toast.info('Cart Cleared')
+		setOpenConfirmDialog(false)
+		toast.success('Cart cleared successfully!')
+	}
+
+	const handleCloseConfirmDialog = () => {
+		setOpenConfirmDialog(false)
 	}
 
 	return (
@@ -186,9 +248,7 @@ export default function CartPageView() {
 												}}>
 												<IconButton
 													onClick={() =>
-														dispatch(
-															decreaseQty(item.id)
-														)
+														handleDecreaseQty(item.id)
 													}
 													disabled={item.qty === 1}
 													size="small">
@@ -205,9 +265,7 @@ export default function CartPageView() {
 												</Typography>
 												<IconButton
 													onClick={() =>
-														dispatch(
-															increaseQty(item.id)
-														)
+														handleIncreaseQty(item.id)
 													}
 													size="small">
 													<AddIcon fontSize="small" />
@@ -240,11 +298,7 @@ export default function CartPageView() {
 												justifyContent="flex-end">
 												<IconButton
 													onClick={() =>
-														dispatch(
-															removeFromCart(
-																item.id
-															)
-														)
+														handleRemoveItem(item.id)
 													}
 													sx={{
 														color: theme.palette
@@ -279,7 +333,7 @@ export default function CartPageView() {
 									</Button>
 									<Button
 										variant="contained"
-										onClick={() => navigate('/checkout')}
+										onClick={handleCheckout}
 										sx={{ px: 5, fontWeight: 600 }}>
 										Checkout
 									</Button>
@@ -364,6 +418,36 @@ export default function CartPageView() {
 					</Card>
 				</Grid>
 			</Grid>
+
+			{/* Clear Cart Confirmation Dialog */}
+			<Dialog
+				open={openConfirmDialog}
+				onClose={handleCloseConfirmDialog}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description">
+				<DialogTitle id="alert-dialog-title">
+					Clear Cart Confirmation
+				</DialogTitle>
+				<DialogContent>
+					<Typography>
+						Are you sure you want to clear your cart? This action
+						cannot be undone.
+					</Typography>
+				</DialogContent>
+				<DialogActions>
+					<Button
+						onClick={handleCloseConfirmDialog}
+						color="primary">
+						Cancel
+					</Button>
+					<Button
+						onClick={handleConfirmClearCart}
+						color="error"
+						autoFocus>
+						Clear Cart
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Container>
 	)
 }

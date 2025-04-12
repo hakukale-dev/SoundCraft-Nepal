@@ -71,7 +71,7 @@ export default function CheckoutPageView() {
 				price_per: item.price_per,
 			}))
 			sessionStorage.setItem('products', JSON.stringify(productsData))
-			
+
 			window.location.href = data
 		} catch (error) {
 			toast.error(

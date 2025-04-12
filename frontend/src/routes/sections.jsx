@@ -17,6 +17,7 @@ import AboutUsPage from 'src/pages/public/about'
 import ContactPage from 'src/pages/public/contact'
 import ProfilePage from 'src/pages/public/profile'
 import ProductsPage from 'src/pages/public/products'
+import ProductDetailsPage from 'src/sections/public/product-details'
 
 import NotFoundPage from 'src/pages/404'
 
@@ -25,8 +26,8 @@ import LoadingPage from '../pages/Loading'
 import CartItemsPage from '../pages/public/cartItems'
 import CheckoutPageView from '../sections/public/checkout'
 import PurchaseHistoryPage from '../pages/public/purchase-history'
-import PaymentSuccessPage from '../pages/public/payment-success'
-import PaymentFailurePage from '../pages/public/payment-failure'
+import PaymentSuccessPage from 'src/pages/public/payment-success'
+import PaymentFailurePage from 'src/pages/public/payment-failure'
 
 // ----------------------------------------------------------------------
 export default function Router() {
@@ -105,6 +106,10 @@ export default function Router() {
 					element={<ProductsPage />}
 				/>
 				<Route
+					path="products/:id"
+					element={<ProductDetailsPage />}
+				/>
+				<Route
 					path="profile"
 					element={
 						<ProtectedRoute>
@@ -114,7 +119,11 @@ export default function Router() {
 				/>
 				<Route
 					path="cart"
-					element={<CartItemsPage />}
+					element={
+						<ProtectedRoute>
+							<CartItemsPage />
+						</ProtectedRoute>
+					}
 				/>
 				<Route
 					path="checkout"

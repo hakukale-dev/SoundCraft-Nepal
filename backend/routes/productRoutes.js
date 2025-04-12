@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const Product = require('../models/product')
 const upload = require('../middleware/uploadMiddleware')
-const { protect, admin } = require('../middleware/authMiddleware')
+const { cloudinary } = require('../config/cloudinary')
 
 router.get('/', async (req, res) => {
 	try {
@@ -15,15 +15,52 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		console.log('/:id')
-		const product = await Product.findById(req.params.id)
-		if (product) {
-			res.json(product)
-		} else {
-			res.status(404).json({ message: 'Product not found' })
+		const product = await Product.findById(req.params.id).populate({
+			path: 'reviews.user',
+			select: 'first_name last_name photo',
+			options: { strictPopulate: false },
+		})
+
+		if (!product) {
+			return res.status(404).json({
+				success: false,
+				message: 'Product not found',
+				code: 'PRODUCT_NOT_FOUND',
+			})
 		}
+
+		const reviews = product.reviews || []
+		const totalRating = reviews.reduce(
+			(sum, review) => sum + (review?.rating || 0),
+			0
+		)
+		const averageRating =
+			reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0
+
+		const productWithStats = {
+			...product.toObject(),
+			totalReviews: reviews.length,
+			averageRating: Number(averageRating),
+			isInStock: (product.stock || 0) > 0,
+			hasDiscount: (product.price || 0) < 100,
+			categoryLabel: product.category?.replace(' Instruments', '') || '',
+		}
+
+		res.json(productWithStats)
 	} catch (error) {
-		res.status(500).json({ message: 'Server Error' })
+		console.error('Error fetching product:', error)
+		res.status(500).json({
+			success: false,
+			message: 'Internal Server Error',
+			error:
+				process.env.NODE_ENV === 'development'
+					? {
+							message: error.message,
+							stack: error.stack,
+					  }
+					: undefined,
+			code: 'SERVER_ERROR',
+		})
 	}
 })
 
@@ -63,12 +100,11 @@ router.get('/:id/recommendation', async (req, res) => {
 router.post('/', upload.single('image'), async (req, res) => {
 	try {
 		const { name, model, description, price, category, stock } = req.body
-
 		let imageUrl
+
 		if (req.file) {
-			imageUrl = `${req.protocol}://${req.get('host')}/uploads/${
-				req.file.filename
-			}`
+			const result = await cloudinary.uploader.upload(req.file.path)
+			imageUrl = result.secure_url
 		}
 
 		const product = new Product({
@@ -79,13 +115,14 @@ router.post('/', upload.single('image'), async (req, res) => {
 			category,
 			stock,
 			image: imageUrl,
+			sku: require('uuid').v4(),
 		})
 
 		const createdProduct = await product.save()
 		res.status(201).json(createdProduct)
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({ message: error.message })
-		console.log(error)
 	}
 })
 
@@ -103,9 +140,17 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 				req.body.stock !== undefined ? req.body.stock : product.stock
 
 			if (req.file) {
-				product.image = `${req.protocol}://${req.get('host')}/uploads/${
-					req.file.filename
-				}`
+				const result = await cloudinary.uploader.upload(req.file.path)
+
+				if (product.image) {
+					const publicId = product.image
+						.split('/')
+						.pop()
+						.split('.')[0]
+					await cloudinary.uploader.destroy(publicId)
+				}
+
+				product.image = result.secure_url
 			}
 
 			const updatedProduct = await product.save()
@@ -123,7 +168,11 @@ router.delete('/:id', async (req, res) => {
 		const product = await Product.findById(req.params.id)
 
 		if (product) {
-			await product.deleteOne()
+			if (product.image) {
+				const publicId = product.image.split('/').pop().split('.')[0]
+				await cloudinary.uploader.destroy(publicId)
+			}
+			await product.remove()
 			res.json({ message: 'Product removed' })
 		} else {
 			res.status(404).json({ message: 'Product not found' })

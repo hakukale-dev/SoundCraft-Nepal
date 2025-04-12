@@ -7,8 +7,89 @@ const axios = require('axios')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
-	res.send('Hello World')
+router.get('/homepage', async (req, res) => {
+	try {
+		// Fetch distinct categories from products
+		const categories = await Product.distinct('category', {
+			stock: { $gt: 0 },
+		})
+
+		// Create category map with image URLs
+		const categoryMap = {}
+		for (const category of categories) {
+			// Get a random product image for each category
+			const product = await Product.findOne({
+				category,
+				stock: { $gt: 0 },
+			})
+				.select('image')
+				.sort({ $natural: -1 })
+				.limit(1)
+
+			if (product) {
+				categoryMap[category] = product.image
+			}
+		}
+
+		// Get list of featured products (most recently added in-stock products)
+		const featuredProducts = await Product.find({ stock: { $gt: 0 } })
+			.sort({ createdAt: -1 })
+			.select('name model image price description category')
+			.limit(5) // Get top 5 featured products
+
+		// Get list of trending products (most viewed products in last 7 days)
+		const trendingProducts = await Product.find({ stock: { $gt: 0 } })
+			.sort({ views: -1 })
+			.select('name model image price description category')
+			.limit(5) // Get top 5 trending products
+
+		// Get list of new arrivals (products added in last 7 days)
+		const oneWeekAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+		let newArrivals = await Product.find({
+			stock: { $gt: 0 },
+			createdAt: { $gte: oneWeekAgo },
+		})
+			.sort({ createdAt: -1 })
+			.select('name model image price description category')
+			.limit(5) // Get top 5 new arrivals
+
+		// If new arrivals is empty, return some random products
+		if (newArrivals.length === 0) {
+			newArrivals = await Product.aggregate([
+				{ $match: { stock: { $gt: 0 } } },
+				{ $sample: { size: 5 } }, // Get 5 random products
+				{
+					$project: {
+						name: 1,
+						model: 1,
+						image: '$image',
+						price: 1,
+						description: 1,
+						category: 1,
+					},
+				},
+			])
+		}
+
+		res.json({
+			success: true,
+			categories: categoryMap,
+			featuredProducts: featuredProducts || [],
+			trendingProducts: trendingProducts || [],
+			newArrivals: newArrivals || [],
+			timestamp: new Date().toISOString(),
+		})
+	} catch (error) {
+		console.error('Homepage categories error:', error)
+		res.status(500).json({
+			success: false,
+			message: 'Failed to retrieve homepage data',
+			error:
+				process.env.NODE_ENV === 'development'
+					? error.message
+					: undefined,
+		})
+	}
 })
 
 router.get('/recommendations', async (req, res) => {

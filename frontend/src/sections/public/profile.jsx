@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
-import axiosInstance from 'src/utils/axios'
+import axios from 'src/utils/axios'
 
 export default function ProfileView() {
 	const theme = useTheme()
@@ -38,9 +38,7 @@ export default function ProfileView() {
 	useEffect(() => {
 		const fetchUserData = async () => {
 			try {
-				const response = await axiosInstance(user.token).get(
-					'api/account/user'
-				)
+				const response = await axios.get('api/account/user')
 				const fetchedUserData = response.data
 				setUserData(fetchedUserData)
 				setProfileImage(fetchedUserData.photo || null)
@@ -88,7 +86,7 @@ export default function ProfileView() {
 		formData.append('photo', file)
 
 		try {
-			const response = await axiosInstance(user.token).patch(
+			const response = await axios.patch(
 				`api/account/user/${user.id}/photo`,
 				formData,
 				{
@@ -113,10 +111,7 @@ export default function ProfileView() {
 	const formSubmit = async (data) => {
 		setIsLoading(true)
 		try {
-			await axiosInstance(user.token).patch(
-				`api/account/user/${user._id}/`,
-				data
-			)
+			await axios.patch(`api/account/user/${user._id}/`, data)
 			toast.success('Profile Updated Successfully')
 		} catch (err) {
 			toast.error('Failed to Update Profile')

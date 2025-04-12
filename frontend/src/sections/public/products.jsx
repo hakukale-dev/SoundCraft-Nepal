@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
 	Box,
 	Grid,
@@ -8,121 +9,228 @@ import {
 	Container,
 	CardMedia,
 	CardContent,
-	CircularProgress,
+	Skeleton,
 	TextField,
 	MenuItem,
 	Button,
 	IconButton,
 	Tooltip,
 	Pagination,
+	Chip,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import axiosInstance from 'src/utils/axios'
-import SearchIcon from '@mui/icons-material/Search'
-import ClearIcon from '@mui/icons-material/Clear'
-import AddShoppingCart from '@mui/icons-material/AddShoppingCart'
+import axios from 'src/utils/axios'
+import { Search, Close, ShoppingCart, Info } from '@mui/icons-material'
 import { useDispatch } from 'react-redux'
 import { addToCart } from '../../store/cartSlice'
 import { toast } from 'react-toastify'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+
+const MotionCard = motion(Card)
+const MotionGrid = motion(Grid)
 
 export default function ProductsView() {
 	const theme = useTheme()
 	const dispatch = useDispatch()
+	const navigate = useNavigate()
+	const location = useLocation()
+	const [searchParams, setSearchParams] = useSearchParams()
+
+	// State management
 	const [products, setProducts] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
-	const [filterCategory, setFilterCategory] = useState('all')
-	const [searchQuery, setSearchQuery] = useState('')
-	const [page, setPage] = useState(1)
-	const productsPerPage = 8
+	const [filterCategory, setFilterCategory] = useState(
+		searchParams.get('category') || 'all'
+	)
+	const [searchQuery, setSearchQuery] = useState(
+		searchParams.get('search') || ''
+	)
+	const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
+	const productsPerPage = 12
 
+	// Fetch products from API
 	useEffect(() => {
 		const fetchProducts = async () => {
 			try {
-				const response = await axiosInstance().get('api/products')
+				const response = await axios.get('api/products')
 				setProducts(response.data)
 			} catch (err) {
 				setError(
 					err.response?.data?.message || 'Failed to fetch products'
 				)
+				toast.error('Failed to load products')
 			} finally {
 				setLoading(false)
 			}
 		}
-
 		fetchProducts()
 	}, [])
 
-	const categories = [
-		'all',
-		...new Set(products.map((product) => product.category)),
-	]
+	// Sync state when URL search params change externally
+	useEffect(() => {
+		const params = new URLSearchParams(location.search)
+		const newCategory = params.get('category') || 'all'
+		const newSearch = params.get('search') || ''
+		const newPage = params.get('page') ? Number(params.get('page')) : 1
 
-	const handleClearSearch = () => {
+		if (newCategory !== filterCategory) setFilterCategory(newCategory)
+		if (newSearch !== searchQuery) setSearchQuery(newSearch)
+		if (newPage !== page) setPage(newPage)
+	}, [location.search])
+
+	// Update URL search params when state changes by merging existing params
+	useEffect(() => {
+		const params = new URLSearchParams(location.search)
+
+		// Update category param
+		if (filterCategory && filterCategory !== 'all') {
+			params.set('category', filterCategory)
+		} else {
+			params.delete('category')
+		}
+
+		// Update search query param
+		if (searchQuery && searchQuery.trim() !== '') {
+			params.set('search', searchQuery)
+		} else {
+			params.delete('search')
+		}
+
+		// Update page param
+		if (page && page > 1) {
+			params.set('page', page)
+		} else {
+			params.delete('page')
+		}
+
+		// Only navigate if the query string has changed
+		if (params.toString() !== location.search.replace(/^\?/, '')) {
+			navigate({ search: params.toString() }, { replace: true })
+		}
+	}, [filterCategory, searchQuery, page, navigate, location.search])
+
+	// Memoize categories and filtered/paginated products
+	const categories = useMemo(
+		() => ['all', ...new Set(products.map((product) => product.category))],
+		[products]
+	)
+
+	const filteredProducts = useMemo(
+		() =>
+			products.filter((product) => {
+				const matchesCategory =
+					filterCategory === 'all' ||
+					product.category === filterCategory
+				const searchLower = searchQuery.toLowerCase()
+				return (
+					matchesCategory &&
+					(product.name.toLowerCase().includes(searchLower) ||
+						product.model.toLowerCase().includes(searchLower) ||
+						product.category.toLowerCase().includes(searchLower))
+				)
+			}),
+		[products, filterCategory, searchQuery]
+	)
+
+	const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+	const paginatedProducts = useMemo(
+		() =>
+			filteredProducts.slice(
+				(page - 1) * productsPerPage,
+				page * productsPerPage
+			),
+		[filteredProducts, page, productsPerPage]
+	)
+
+	// Handlers
+	const handlePageChange = useCallback((_, value) => {
+		setPage(value)
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}, [])
+
+	const handleAddToCart = useCallback(
+		(product) => {
+			dispatch(
+				addToCart({
+					equipment_id: product._id,
+					name: product.name,
+					thumbnail: product.image,
+					price_per: product.price,
+				})
+			)
+			toast.success(`${product.name} added to cart!`)
+		},
+		[dispatch]
+	)
+
+	const handleClearSearch = useCallback(() => {
 		setSearchQuery('')
 		setFilterCategory('all')
 		setPage(1)
-	}
+	}, [])
 
-	const filteredProducts = products.filter((product) => {
-		const matchesCategory =
-			filterCategory === 'all' || product.category === filterCategory
-		const matchesSearch =
-			product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			product.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			product.category.toLowerCase().includes(searchQuery.toLowerCase())
-		return matchesCategory && matchesSearch
-	})
-
-	// Calculate pagination
-	const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
-	const startIndex = (page - 1) * productsPerPage
-	const paginatedProducts = filteredProducts.slice(
-		startIndex,
-		startIndex + productsPerPage
+	const handleViewDetails = useCallback(
+		(productId) => {
+			navigate(`/products/${productId}`)
+		},
+		[navigate]
 	)
 
-	const handlePageChange = (event, value) => {
-		setPage(value)
-		window.scrollTo({ top: 0, behavior: 'smooth' })
-	}
-
-	const handleAddToCart = (product) => {
-		dispatch(
-			addToCart({
-				equipment_id: product._id,
-				name: product.name,
-				thumbnail: product.image,
-				price_per: product.price,
-			})
-		)
-        toast.success("Items added to cart!")
-	}
-
+	// Loading and error states
 	if (loading) {
 		return (
-			<Box
-				sx={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					minHeight: 'calc(100vh - 100px)',
-				}}>
-				<CircularProgress sx={{ color: theme.palette.primary.main }} />
-			</Box>
+			<Container sx={{ py: 8 }}>
+				<Grid
+					container
+					spacing={4}>
+					{[...Array(8)].map((_, i) => (
+						<Grid
+							item
+							xs={12}
+							sm={6}
+							md={4}
+							lg={3}
+							key={i}>
+							<Skeleton
+								variant="rectangular"
+								height={300}
+							/>
+							<Skeleton
+								variant="text"
+								height={40}
+							/>
+							<Skeleton
+								variant="text"
+								width="60%"
+							/>
+							<Skeleton
+								variant="text"
+								width="40%"
+							/>
+						</Grid>
+					))}
+				</Grid>
+			</Container>
 		)
 	}
 
 	if (error) {
 		return (
-			<Container sx={{ mt: '100px' }}>
+			<Container sx={{ py: 8, textAlign: 'center' }}>
 				<Typography
-					variant="h6"
+					variant="h5"
 					color="error"
-					align="center"
-					fontFamily={theme.typography.fontFamily}>
-					{error}
+					gutterBottom>
+					Error Loading Products
 				</Typography>
+				<Typography color="text.secondary">{error}</Typography>
+				<Button
+					variant="contained"
+					sx={{ mt: 3 }}
+					onClick={() => window.location.reload()}>
+					Retry
+				</Button>
 			</Container>
 		)
 	}
@@ -130,249 +238,311 @@ export default function ProductsView() {
 	return (
 		<Container
 			maxWidth="xl"
-			sx={{ mt: '120px' }}>
+			sx={{ py: 8 }}>
+			{/* Header Section */}
 			<Stack
-				direction="row"
-				alignItems="center"
-				justifyContent="space-between"
-				mb={5}>
-				<Typography
-					variant="h4"
-					fontFamily={theme.typography.fontFamily}
-					color={theme.palette.primary.main}
-					sx={{
-						fontSize: '2.5rem',
-						fontWeight: 600,
-					}}>
-					Our Musical Instruments
-				</Typography>
-				<Typography
-					variant="body1"
-					color="text.secondary">
-					Showing {filteredProducts.length} of {products.length}{' '}
-					products
-				</Typography>
-			</Stack>
-
-			<Stack
-				direction={{ xs: 'column', sm: 'row' }}
 				spacing={3}
-				mb={4}>
+				mb={6}>
+				<Typography
+					variant="h2"
+					sx={{ fontWeight: 800, textAlign: 'center' }}>
+					Explore Our Collection
+				</Typography>
+
+				{/* Filters Section */}
 				<Stack
-					direction="column"
-					spacing={2}
-					sx={{ width: { xs: '100%', sm: 'auto' } }}>
+					direction={{ xs: 'column', md: 'row' }}
+					spacing={3}
+					alignItems="center">
 					<TextField
-						label="Search"
+						select
+						variant="outlined"
+						label="Category"
+						value={filterCategory}
+						onChange={(e) => {
+							setFilterCategory(e.target.value)
+							setPage(1)
+						}}
+						sx={{
+							minWidth: 200,
+							'& .MuiOutlinedInput-root': {
+								borderRadius: 4,
+								boxShadow: theme.shadows[1],
+							},
+						}}>
+						{categories.map((category) => (
+							<MenuItem
+								key={category}
+								value={category}>
+								{category.charAt(0).toUpperCase() +
+									category.slice(1)}
+							</MenuItem>
+						))}
+					</TextField>
+					<TextField
+						fullWidth
+						variant="outlined"
+						placeholder="Search instruments..."
 						value={searchQuery}
 						onChange={(e) => {
 							setSearchQuery(e.target.value)
 							setPage(1)
 						}}
-						placeholder="Search by name, model or category"
-						sx={{ minWidth: 250 }}
 						InputProps={{
+							startAdornment: (
+								<Search
+									sx={{ mr: 1, color: 'action.active' }}
+								/>
+							),
 							endAdornment: searchQuery && (
 								<IconButton
 									size="small"
 									onClick={handleClearSearch}>
-									<ClearIcon />
+									<Close />
 								</IconButton>
 							),
 						}}
-					/>
-					<Stack
-						direction="row"
-						spacing={2}>
-						<TextField
-							select
-							label="Category"
-							value={filterCategory}
-							onChange={(e) => {
-								setFilterCategory(e.target.value)
-								setPage(1)
-							}}
-							sx={{ minWidth: 150 }}>
-							{categories.map((category) => (
-								<MenuItem
-									key={category}
-									value={category}>
-									{category.charAt(0).toUpperCase() +
-										category.slice(1)}
-								</MenuItem>
-							))}
-						</TextField>
-						<Tooltip title="Apply filters">
-							<Button
-								variant="contained"
-								color="primary"
-								startIcon={<SearchIcon />}
-								onClick={() => {
-									/* Add search functionality if needed */
-								}}>
-								Search
-							</Button>
-						</Tooltip>
-					</Stack>
-				</Stack>
-			</Stack>
-
-			<Grid
-				container
-				spacing={3}>
-				{paginatedProducts.map((product) => (
-					<Grid
-						key={product._id}
-						item
-						xs={12}
-						sm={6}
-						md={4}
-						lg={3}>
-						<Card
-							sx={{
-								height: '100%',
-								display: 'flex',
-								flexDirection: 'column',
-								transition: 'all 0.3s ease-in-out',
-								borderRadius: 2,
-								bgcolor: theme.palette.background.paper,
-								'&:hover': {
-									transform: 'translateY(-8px)',
-									boxShadow: theme.shadows[8],
-								},
-							}}>
-							<Box
-								sx={{
-									position: 'relative',
-									width: '100%',
-									paddingTop: '100%',
-									backgroundColor: 'white',
-								}}>
-								<CardMedia
-									component="img"
-									image={
-										product.image ||
-										'/assets/images/placeholder.png'
-									}
-									alt={product.name}
-									sx={{
-										position: 'absolute',
-										top: 0,
-										left: 0,
-										width: '100%',
-										height: '100%',
-										objectFit: 'cover',
-										borderBottom: `1px solid ${theme.palette.divider}`,
-										transition:
-											'object-fit 0.3s ease-in-out',
-										'&:hover': {
-											objectFit: 'contain',
-										},
-									}}
-								/>
-							</Box>
-							<CardContent sx={{ flexGrow: 1, p: 3 }}>
-								<Typography
-									gutterBottom
-									variant="h6"
-									component="div"
-									fontFamily={theme.typography.fontFamily}
-									color={theme.palette.primary.main}
-									sx={{
-										fontSize: '1.25rem',
-										fontWeight: 600,
-										overflow: 'hidden',
-										textOverflow: 'ellipsis',
-										whiteSpace: 'nowrap',
-									}}>
-									{product.name}
-								</Typography>
-								<Typography
-									variant="body2"
-									color="text.secondary"
-									mb={1}
-									sx={{
-										fontFamily: theme.typography.fontFamily,
-									}}>
-									Model: {product.model}
-								</Typography>
-								<Typography
-									variant="body2"
-									color="text.secondary"
-									mb={2}
-									sx={{
-										fontFamily: theme.typography.fontFamily,
-									}}>
-									Category: {product.category}
-								</Typography>
-								<Box
-									sx={{
-										display: 'flex',
-										justifyContent: 'space-between',
-										alignItems: 'center',
-									}}>
-									<Typography
-										variant="h6"
-										color={theme.palette.primary.main}
-										sx={{
-											fontFamily:
-												theme.typography.fontFamily,
-											fontSize: '1.5rem',
-											fontWeight: 600,
-										}}>
-										${product.price.toLocaleString()}
-									</Typography>
-									<Tooltip title="Add to Cart">
-										<IconButton
-											color="primary"
-											onClick={() =>
-												handleAddToCart(product)
-											}>
-											<AddShoppingCart />
-										</IconButton>
-									</Tooltip>
-								</Box>
-								<Typography
-									variant="body2"
-									sx={{
-										color:
-											product.stock > 0
-												? theme.palette.success.main
-												: theme.palette.error.main,
-										fontFamily: theme.typography.fontFamily,
-										mt: 1,
-										fontWeight: 500,
-									}}>
-									{product.stock > 0
-										? `${product.stock} In Stock`
-										: 'Out of Stock'}
-								</Typography>
-							</CardContent>
-						</Card>
-					</Grid>
-				))}
-			</Grid>
-
-			{totalPages > 1 && (
-				<Box
-					sx={{
-						display: 'flex',
-						justifyContent: 'center',
-						mt: 5,
-						mb: 3,
-					}}>
-					<Pagination
-						count={totalPages}
-						page={page}
-						onChange={handlePageChange}
-						color="primary"
-						size="large"
 						sx={{
-							'& .MuiPaginationItem-root': {
-								fontFamily: theme.typography.fontFamily,
+							maxWidth: 600,
+							'& .MuiOutlinedInput-root': {
+								borderRadius: 4,
+								boxShadow: theme.shadows[1],
 							},
 						}}
 					/>
+				</Stack>
+
+				<Typography
+					variant="body1"
+					color="text.secondary"
+					textAlign="center">
+					Showing {filteredProducts.length} of {products.length}{' '}
+					instruments
+				</Typography>
+			</Stack>
+
+			{/* Products Grid */}
+			{paginatedProducts.length > 0 ? (
+				<>
+					<Grid
+						container
+						spacing={4}>
+						<AnimatePresence initial={false}>
+							{paginatedProducts.map((product) => (
+								<MotionGrid
+									key={product._id}
+									item
+									xs={12}
+									sm={6}
+									md={4}
+									lg={3}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.3 }}>
+									<MotionCard
+										whileHover={{ scale: 1.02 }}
+										sx={{
+											height: '100%',
+											display: 'flex',
+											flexDirection: 'column',
+											borderRadius: 4,
+											overflow: 'hidden',
+											boxShadow: theme.shadows[2],
+											transition: 'all 0.3s ease',
+											'&:hover': {
+												boxShadow: theme.shadows[6],
+											},
+										}}>
+										{/* Product Image */}
+										<Box
+											sx={{
+												position: 'relative',
+												pt: '100%',
+												bgcolor: 'background.default',
+											}}>
+											<CardMedia
+												component="img"
+												image={
+													product.image ||
+													'/assets/images/placeholder.png'
+												}
+												alt={product.name}
+												sx={{
+													position: 'absolute',
+													top: 0,
+													left: 0,
+													width: '100%',
+													height: '100%',
+													objectFit: 'cover',
+													transition:
+														'transform 0.3s ease',
+													'&:hover': {
+														transform:
+															'scale(1.05)',
+													},
+												}}
+											/>
+											{product.stock <= 0 && (
+												<Box
+													sx={{
+														position: 'absolute',
+														top: 0,
+														left: 0,
+														right: 0,
+														bottom: 0,
+														bgcolor:
+															'rgba(0,0,0,0.4)',
+														display: 'flex',
+														alignItems: 'center',
+														justifyContent:
+															'center',
+													}}>
+													<Chip
+														label="Out of Stock"
+														color="error"
+														sx={{ fontWeight: 700 }}
+													/>
+												</Box>
+											)}
+										</Box>
+
+										{/* Product Details */}
+										<CardContent sx={{ flexGrow: 1, p: 3 }}>
+											<Stack spacing={1.5}>
+												<Typography
+													variant="h6"
+													fontWeight={700}
+													noWrap>
+													{product.name}
+												</Typography>
+
+												<Stack
+													direction="row"
+													spacing={1}
+													alignItems="center">
+													<Typography
+														variant="body2"
+														color="text.secondary">
+														{product.category}
+													</Typography>
+													<Typography
+														variant="body2"
+														color="text.secondary">
+														•
+													</Typography>
+													<Typography
+														variant="body2"
+														color="text.secondary">
+														{product.model}
+													</Typography>
+												</Stack>
+
+												<Typography
+													variant="h5"
+													fontWeight={800}
+													color="primary">
+													Rs.{' '}
+													{product.price.toLocaleString()}
+												</Typography>
+
+												<Stack
+													direction="row"
+													justifyContent="space-between"
+													alignItems="center">
+													<Chip
+														label={`${product.stock} in stock`}
+														size="small"
+														color={
+															product.stock > 0
+																? 'success'
+																: 'error'
+														}
+														sx={{ fontWeight: 500 }}
+													/>
+
+													<Stack
+														direction="row"
+														spacing={1}>
+														<Tooltip title="Quick View">
+															<IconButton
+																color="primary"
+																onClick={() =>
+																	handleViewDetails(
+																		product._id
+																	)
+																}>
+																<Info />
+															</IconButton>
+														</Tooltip>
+														<Tooltip title="Add to Cart">
+															<IconButton
+																color="primary"
+																onClick={() =>
+																	handleAddToCart(
+																		product
+																	)
+																}
+																disabled={
+																	product.stock <=
+																	0
+																}>
+																<ShoppingCart />
+															</IconButton>
+														</Tooltip>
+													</Stack>
+												</Stack>
+											</Stack>
+										</CardContent>
+									</MotionCard>
+								</MotionGrid>
+							))}
+						</AnimatePresence>
+					</Grid>
+
+					{/* Pagination */}
+					{totalPages > 1 && (
+						<Box
+							sx={{
+								display: 'flex',
+								justifyContent: 'center',
+								mt: 6,
+							}}>
+							<Pagination
+								count={totalPages}
+								page={page}
+								onChange={handlePageChange}
+								color="primary"
+								size="large"
+								shape="rounded"
+								sx={{
+									'& .MuiPaginationItem-root': {
+										fontSize: '1.1rem',
+										borderRadius: 2,
+									},
+								}}
+							/>
+						</Box>
+					)}
+				</>
+			) : (
+				<Box sx={{ textAlign: 'center', py: 8 }}>
+					<Typography
+						variant="h5"
+						gutterBottom>
+						No products found
+					</Typography>
+					<Typography
+						color="text.secondary"
+						sx={{ mb: 3 }}>
+						Try adjusting your search or filters
+					</Typography>
+					<Button
+						variant="outlined"
+						startIcon={<Close />}
+						onClick={handleClearSearch}>
+						Clear Filters
+					</Button>
 				</Box>
 			)}
 		</Container>

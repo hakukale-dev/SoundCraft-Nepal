@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/material/styles'
 import Carousel from 'react-material-ui-carousel'
-
+import { useState, useEffect } from 'react'
 import {
 	Card,
 	Grid,
@@ -11,16 +11,23 @@ import {
 	Typography,
 	CardContent,
 	Box,
+	CircularProgress,
+	Chip,
+	useMediaQuery,
+	Avatar,
+	Rating,
 } from '@mui/material'
-
-const categories = {
-	'Electric Guitars':
-		'https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fimages5.fanpop.com%2Fimage%2Fphotos%2F27300000%2FLes-Paul-guitar-27367484-1920-1200.jpg&f=1&nofb=1&ipt=97502988971c35c5c38e9c18f348d79f49c8cbc327db9a431762f02bdf8362c7&ipo=images',
-	'Acoustic Guitars':
-		'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.wallpapersafari.com%2F34%2F23%2FucRNav.jpg&f=1&nofb=1&ipt=701d1fc5fb87acf9c6a73a38e78e43c052f87c776527bfa893bddddef28fdda7&ipo=images',
-	'Bass Guitars':
-		'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.talkbass.com%2Fattachments%2Fwyn-97-pic-jpeg.661004%2F&f=1&nofb=1&ipt=d60661418dcf0e95640e17a51882473b46008f927726fad0d03ea52270b5ebd0&ipo=images',
-}
+import axios from 'src/utils/axios'
+import {
+	KeyboardArrowRight,
+	NewReleases,
+	Whatshot,
+	Star,
+} from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import ProductScrollSection from '../../components/ProductScrollSection'
+import { useNavigate } from 'react-router-dom'
+import Skeleton from '@mui/material/Skeleton'
 
 const carouselItems = [
 	{
@@ -35,355 +42,257 @@ const carouselItems = [
 	},
 ]
 
+const MotionCard = motion(Card)
+const MotionButton = motion(Button)
+const MotionChip = motion(Chip)
+
 function HomepageView() {
 	const theme = useTheme()
+	const navigate = useNavigate()
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+	const [homepageData, setHomepageData] = useState({
+		categories: {},
+		featuredProducts: [],
+		trendingProducts: [],
+		newArrivals: [],
+	})
+	const [loading, setLoading] = useState(true)
+
+	useEffect(() => {
+		const fetchHomepageData = async () => {
+			try {
+				const response = await axios.get('/api/homepage')
+				setHomepageData({
+					categories: response.data.categories,
+					featuredProducts: response.data.featuredProducts,
+					trendingProducts: response.data.trendingProducts,
+					newArrivals: response.data.newArrivals,
+				})
+			} catch (error) {
+				console.error('Error fetching homepage data:', error)
+			} finally {
+				setLoading(false)
+			}
+		}
+		fetchHomepageData()
+	}, [])
 
 	return (
-		<Box sx={{ py: 5 }}>
-			<Box sx={{ mb: 8 }}>
-				<Carousel
-					animation="fade"
-					indicators={true}
-					navButtonsAlwaysVisible={true}
-					height={500}
-					autoPlay={true}
-					interval={5000}>
-					{carouselItems.map((item, i) => (
-						<Box
-							key={i}
-							sx={{ position: 'relative', height: 500 }}>
-							<CardMedia
-								component="img"
-								image={item.image}
-								alt={item.title}
-								sx={{
-									height: '100%',
-									objectFit: 'cover',
-									filter: 'brightness(0.7)',
-								}}
-							/>
+		<Box sx={{ py: 8 }}>
+			{/* Hero Carousel */}
+			<Box sx={{ mb: 10 }}>
+				{loading ? (
+					<Skeleton
+						variant="rectangular"
+						height={isMobile ? 400 : 600}
+					/>
+				) : (
+					<Carousel
+						animation="fade"
+						indicators={false}
+						navButtonsAlwaysVisible={!isMobile}
+						height={isMobile ? 400 : 600}
+						autoPlay
+						interval={5000}
+						sx={{
+							borderRadius: 4,
+							overflow: 'hidden',
+							boxShadow: theme.shadows[6],
+							mx: 2,
+						}}>
+						{carouselItems.map((item, i) => (
 							<Box
-								sx={{
-									position: 'absolute',
-									top: '50%',
-									left: '50%',
-									transform: 'translate(-50%, -50%)',
-									textAlign: 'center',
-									color: 'white',
-								}}>
-								<Typography
-									variant="h2"
+								key={i}
+								sx={{ position: 'relative', height: '100%' }}>
+								<CardMedia
+									component="img"
+									image={item.image}
+									alt={item.title}
 									sx={{
-										fontWeight: 700,
-										mb: 2,
-										textShadow:
-											'2px 2px 4px rgba(0,0,0,0.5)',
-									}}>
-									{item.title}
-								</Typography>
-								<Typography
-									variant="h5"
+										height: '100%',
+										objectFit: 'cover',
+										filter: 'brightness(0.7)',
+									}}
+								/>
+								<Box
 									sx={{
-										textShadow:
-											'1px 1px 2px rgba(0,0,0,0.5)',
+										position: 'absolute',
+										top: '50%',
+										left: '50%',
+										transform: 'translate(-50%, -50%)',
+										textAlign: 'center',
+										color: 'white',
+										width: '90%',
 									}}>
-									{item.description}
-								</Typography>
-							</Box>
-						</Box>
-					))}
-				</Carousel>
-			</Box>
-			<Container maxWidth="xl">
-				<Grid
-					container
-					spacing={4}>
-					<Grid
-						item
-						xs={12}
-						md={6}>
-						<Box
-							sx={{
-								p: 3,
-								bgcolor: 'background.paper',
-								borderRadius: 2,
-								boxShadow: theme.shadows[4],
-							}}>
-							<Typography
-								variant="h3"
-								gutterBottom
-								sx={{
-									fontFamily: theme.typography.fontFamily,
-									color: theme.palette.text.primary,
-								}}>
-								Discover Your Perfect Sound at GuitarHub
-							</Typography>
-							<Typography
-								variant="body1"
-								paragraph
-								sx={{
-									color: theme.palette.text.secondary,
-									fontSize: '1.1rem',
-									lineHeight: 1.8,
-								}}>
-								Welcome to GuitarHub, your premier destination
-								for quality guitars and musical equipment. From
-								vintage acoustics to modern electric guitars, we
-								offer a carefully curated selection of
-								instruments for players of all skill levels. Our
-								expert staff is here to help you find the
-								perfect instrument to match your style and
-								sound.
-							</Typography>
-							<Button
-								variant="contained"
-								size="large"
-								sx={{
-									bgcolor: theme.palette.primary.main,
-									'&:hover': {
-										bgcolor: theme.palette.primary.dark,
-									},
-									px: 4,
-									py: 1.5,
-									borderRadius: 2,
-								}}>
-								Explore Guitars
-							</Button>
-						</Box>
-					</Grid>
-					<Grid
-						item
-						xs={12}
-						md={6}>
-						<Card
-							sx={{
-								display: 'flex',
-								flexDirection: 'column',
-								borderRadius: 2,
-								boxShadow: theme.shadows[4],
-								bgcolor: theme.palette.background.paper,
-							}}>
-							<CardMedia
-								component="img"
-								image="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpapercave.com%2Fwp%2F7CHUvpx.jpg&f=1&nofb=1&ipt=652940ba0a656c3b5863be61f431ad69d003bd570e85c6d659b932e2db750189&ipo=images"
-								alt="Featured Guitar"
-								sx={{
-									width: '100%',
-									height: 400,
-									objectFit: 'cover',
-								}}
-							/>
-							<CardContent sx={{ flexGrow: 1, p: 3 }}>
-								<Stack
-									direction="column"
-									spacing={2}>
-									<Typography
-										variant="h5"
-										gutterBottom
-										sx={{
-											color: theme.palette.primary.main,
-											fontWeight: 600,
-										}}>
-										New Arrival Special!
-									</Typography>
-									<Typography
-										variant="body1"
-										sx={{
-											color: theme.palette.text.secondary,
-										}}>
-										Get 15% off on all Gibson guitars this
-										month. Plus, free setup and first
-										maintenance included!
-									</Typography>
-									<Button
-										variant="outlined"
-										size="medium"
-										sx={{
-											color: theme.palette.primary.main,
-											borderColor:
-												theme.palette.primary.main,
-											'&:hover': {
-												borderColor:
-													theme.palette.primary.dark,
-												bgcolor:
-													theme.palette.action.hover,
-											},
-										}}>
-										View Special Offers
-									</Button>
-								</Stack>
-							</CardContent>
-						</Card>
-					</Grid>
-				</Grid>
-
-				<Grid
-					container
-					spacing={4}
-					sx={{ mt: 6 }}>
-					<Grid
-						item
-						xs={12}>
-						<Typography
-							variant="h4"
-							gutterBottom
-							sx={{
-								textAlign: 'center',
-								color: theme.palette.text.primary,
-							}}>
-							Categories
-						</Typography>
-					</Grid>
-					{Object.keys(categories).map((category) => (
-						<Grid
-							item
-							xs={12}
-							sm={6}
-							md={4}
-							key={category}>
-							<Card
-								sx={{
-									borderRadius: 2,
-									boxShadow: theme.shadows[4],
-									transition: 'transform 0.3s ease-in-out',
-									'&:hover': {
-										transform: 'translateY(-8px)',
-									},
-									height: '100%',
-									display: 'flex',
-									flexDirection: 'column',
-								}}>
-								<Box sx={{ pt: '100%', position: 'relative' }}>
-									<CardMedia
-										component="img"
-										image={categories[category]}
-										alt={category}
-										sx={{
-											position: 'absolute',
-											top: 0,
-											left: 0,
-											width: '100%',
-											height: '100%',
-											objectFit: 'cover',
-										}}
-									/>
+									<motion.div
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}>
+										<Typography
+											variant={isMobile ? 'h3' : 'h1'}
+											sx={{
+												fontWeight: 900,
+												mb: 2,
+												textShadow:
+													'2px 2px 8px rgba(0,0,0,0.7)',
+												lineHeight: 1.2,
+											}}>
+											{item.title}
+										</Typography>
+										<Typography
+											variant={isMobile ? 'h6' : 'h5'}
+											sx={{
+												mb: 4,
+												textShadow:
+													'1px 1px 4px rgba(0,0,0,0.7)',
+												maxWidth: 800,
+												mx: 'auto',
+											}}>
+											{item.description}
+										</Typography>
+										<MotionButton
+											whileHover={{ scale: 1.05 }}
+											variant="contained"
+											size="large"
+											endIcon={<KeyboardArrowRight />}
+											sx={{
+												px: 5,
+												py: 1.5,
+												fontSize: isMobile
+													? '1rem'
+													: '1.1rem',
+												borderRadius: 3,
+												textTransform: 'none',
+											}}>
+											Shop Now
+										</MotionButton>
+									</motion.div>
 								</Box>
-								<CardContent
-									sx={{
-										bgcolor: theme.palette.background.paper,
-										p: 3,
-										flexGrow: 1,
-										display: 'flex',
-										flexDirection: 'column',
-										justifyContent: 'space-between',
-									}}>
-									<Typography
-										variant="h6"
-										gutterBottom
-										sx={{
-											color: theme.palette.primary.main,
-											fontWeight: 600,
-										}}>
-										{category}
-									</Typography>
-									<Button
-										variant="contained"
-										size="medium"
-										sx={{
-											bgcolor: theme.palette.primary.main,
-											'&:hover': {
-												bgcolor:
-													theme.palette.primary.dark,
-											},
-											width: '100%',
-										}}>
-										Browse {category}
-									</Button>
-								</CardContent>
-							</Card>
-						</Grid>
-					))}
-				</Grid>
+							</Box>
+						))}
+					</Carousel>
+				)}
+			</Box>
 
-				<Grid
-					container
-					spacing={4}
-					sx={{ mt: 6 }}>
+			<Container maxWidth="xl">
+				{/* Categories */}
+				<Box sx={{ mb: 10 }}>
+					<Typography
+						variant="h3"
+						gutterBottom
+						sx={{
+							fontWeight: 700,
+							color: 'text.primary',
+							textAlign: 'center',
+							mb: 6,
+						}}>
+						Explore Categories
+					</Typography>
 					<Grid
-						item
-						xs={12}>
-						<Typography
-							variant="h4"
-							gutterBottom
-							sx={{
-								textAlign: 'center',
-								color: theme.palette.text.primary,
-							}}>
-							Featured Accessories
-						</Typography>
-					</Grid>
-					<Grid
-						item
-						xs={12}
-						sm={6}
-						md={4}>
-						<Card>
-							<CardMedia
-								component="img"
-								image="https://example.com/path/to/accessory1.jpg"
-								alt="Guitar Strap"
+						container
+						spacing={3}
+						justifyContent="center">
+						{loading ? (
+							<Skeleton
+								variant="rectangular"
+								height={50}
+								width="100%"
 							/>
-							<CardContent>
-								<Typography variant="h6">
-									Guitar Strap
-								</Typography>
-								<Typography variant="body2">
-									Comfortable and stylish guitar strap.
-								</Typography>
-							</CardContent>
-						</Card>
+						) : (
+							Object.entries(homepageData.categories).map(
+								([category, count]) => (
+									<Grid
+										item
+										key={category}
+										xs={6}
+										sm={4}
+										md={3}
+										lg={2}>
+										<MotionChip
+											whileHover={{ scale: 1.05 }}
+											clickable
+											variant="outlined"
+											avatar={<Avatar>{count}</Avatar>}
+											label={category}
+											onClick={() =>
+												navigate(
+													`/products?category=${category}`
+												)
+											}
+											sx={{
+												width: '100%',
+												py: 2,
+												fontSize: '1.1rem',
+												borderRadius: 2,
+												borderWidth: 2,
+												borderColor: 'primary.main',
+												color: 'primary.main',
+												'&:hover': {
+													bgcolor: 'primary.light',
+													color: 'primary.secondary',
+												},
+												transition: 'all 0.3s ease',
+											}}
+										/>
+									</Grid>
+								)
+							)
+						)}
 					</Grid>
-					<Grid
-						item
-						xs={12}
-						sm={6}
-						md={4}>
-						<Card>
-							<CardMedia
-								component="img"
-								image="https://example.com/path/to/accessory2.jpg"
-								alt="Guitar Picks"
+				</Box>
+
+				{/* Featured Products */}
+				{loading ? (
+					<Skeleton
+						variant="rectangular"
+						height={300}
+					/>
+				) : (
+					<ProductScrollSection
+						title="Featured Collection"
+						icon={
+							<Whatshot
+								sx={{ fontSize: 40, color: 'warning.main' }}
 							/>
-							<CardContent>
-								<Typography variant="h6">
-									Guitar Picks
-								</Typography>
-								<Typography variant="body2">
-									High-quality picks for every player.
-								</Typography>
-							</CardContent>
-						</Card>
-					</Grid>
-					<Grid
-						item
-						xs={12}
-						sm={6}
-						md={4}>
-						<Card>
-							<CardMedia
-								component="img"
-								image="https://example.com/path/to/accessory3.jpg"
-								alt="Capo"
+						}
+						items={homepageData.featuredProducts}
+					/>
+				)}
+
+				{/* Trending Products */}
+				{loading ? (
+					<Skeleton
+						variant="rectangular"
+						height={300}
+					/>
+				) : (
+					<ProductScrollSection
+						title="Trending Now"
+						icon={
+							<Whatshot
+								sx={{ fontSize: 40, color: 'error.main' }}
 							/>
-							<CardContent>
-								<Typography variant="h6">Capo</Typography>
-								<Typography variant="body2">
-									Essential tool for every guitarist.
-								</Typography>
-							</CardContent>
-						</Card>
-					</Grid>
-				</Grid>
+						}
+						items={homepageData.trendingProducts}
+					/>
+				)}
+
+				{/* New Arrivals */}
+				{loading ? (
+					<Skeleton
+						variant="rectangular"
+						height={300}
+					/>
+				) : (
+					<ProductScrollSection
+						title="New Arrivals"
+						icon={
+							<NewReleases
+								sx={{ fontSize: 40, color: 'success.main' }}
+							/>
+						}
+						items={homepageData.newArrivals}
+					/>
+				)}
 			</Container>
 		</Box>
 	)

@@ -23,6 +23,12 @@ const productSchema = new mongoose.Schema(
 			required: [true, 'Product model is required'],
 			trim: true,
 		},
+		sku: {
+			type: String,
+			required: [true, 'Product SKU is required'],
+			unique: true,
+			trim: true,
+		},
 		description: {
 			type: String,
 			required: [true, 'Product description is required'],
