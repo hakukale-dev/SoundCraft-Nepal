@@ -14,7 +14,7 @@ import {
 	Typography,
 } from '@mui/material'
 
-import axios from 'src/utils/axios'
+import axiosInstance from 'src/utils/axios'
 
 export default function ContactView() {
 	const theme = useTheme()
@@ -30,7 +30,7 @@ export default function ContactView() {
 	const onSubmit = async (data) => {
 		setIsLoading(true)
 		try {
-			// await axios.post('/feedback/', data);
+			// await axiosInstance().post('/feedback/', data);
 			toast.success('Message Sent Successfully')
 			reset()
 		} catch (err) {
@@ -198,12 +198,12 @@ export default function ContactView() {
 								<Typography
 									variant="body1"
 									sx={{ color: theme.palette.text.primary }}>
-									Email: info@info.com
+									Email: soundcraftnepal@info.com
 								</Typography>
 								<Typography
 									variant="body1"
 									sx={{ color: theme.palette.text.primary }}>
-									Phone: +977 9818000000
+									Phone: +977 9861343816
 								</Typography>
 								<Typography
 									variant="body1"

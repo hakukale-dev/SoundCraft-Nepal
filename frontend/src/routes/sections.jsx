@@ -8,6 +8,7 @@ import DashboardLayout from 'src/layouts/dashboard'
 import DashboardPage from 'src/pages/admin/dashboard'
 import UserPage from 'src/pages/admin/users'
 import AdminProductsPage from 'src/pages/admin/products'
+import BillingHistoryPage from '../pages/admin/billing-history'
 
 import LoginPage from 'src/pages/auth/login'
 import SignUpPage from 'src/pages/auth/signup'
@@ -18,6 +19,7 @@ import ContactPage from 'src/pages/public/contact'
 import ProfilePage from 'src/pages/public/profile'
 import ProductsPage from 'src/pages/public/products'
 import ProductDetailsPage from 'src/sections/public/product-details'
+import LearningZonePage from 'src/sections/public/learning-zone'
 
 import NotFoundPage from 'src/pages/404'
 
@@ -166,6 +168,10 @@ export default function Router() {
 					}
 				/>
 				<Route
+					path="learning-zone"
+					element={<LearningZonePage />}
+				/>
+				<Route
 					path="404"
 					element={<NotFoundPage />}
 				/>
@@ -199,6 +205,10 @@ export default function Router() {
 				<Route
 					path="admin/profile"
 					element={<ProfilePage />}
+				/>
+				<Route
+					path="admin/billing-history"
+					element={<BillingHistoryPage />}
 				/>
 			</Route>
 		</Routes>

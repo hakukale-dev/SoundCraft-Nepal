@@ -12,23 +12,63 @@ import {
 	Box,
 	Chip,
 	useTheme,
+	Button,
+	Skeleton,
+	IconButton,
 } from '@mui/material'
 import axios from '../../utils/axios'
-import { EventNote, Payments, ShoppingBag, Info } from '@mui/icons-material'
+import {
+	EventNote,
+	Payments,
+	ShoppingBag,
+	Info,
+	Download,
+	Receipt,
+} from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import { styled } from '@mui/material/styles'
+
+const StyledCard = styled(Card)(({ theme }) => ({
+	marginBottom: theme.spacing(3),
+	borderRadius: '16px',
+	boxShadow: theme.shadows[4],
+	transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+	'&:hover': {
+		transform: 'translateY(-4px)',
+		boxShadow: theme.shadows[8],
+	},
+}))
+
+const StatusChip = styled(Chip)(({ theme, status }) => ({
+	fontWeight: 700,
+	textTransform: 'uppercase',
+	letterSpacing: '0.5px',
+	backgroundColor:
+		status === 'completed'
+			? theme.palette.success.light
+			: status === 'failed'
+			? theme.palette.error.light
+			: theme.palette.warning.light,
+	color:
+		status === 'completed'
+			? theme.palette.success.contrastText
+			: status === 'failed'
+			? theme.palette.error.contrastText
+			: theme.palette.warning.contrastText,
+}))
 
 function PurchaseHistoryView() {
 	const [billingHistory, setBillingHistory] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const [page, setPage] = useState(1)
 	const user = useSelector((state) => state.auth.user)
 	const theme = useTheme()
 
 	useEffect(() => {
 		const fetchPurchaseHistory = async () => {
 			try {
-				const { data } = await axios.get(
-					'/api/billing-history'
-				)
+				const { data } = await axios.get('/api/billing-history')
 				setBillingHistory(data)
 				setError(null)
 			} catch (err) {
@@ -54,26 +94,30 @@ function PurchaseHistoryView() {
 		return new Date(dateString).toLocaleDateString(undefined, options)
 	}
 
+	const handleDownloadReceipt = (purchaseId) => {
+		// Implement receipt download logic
+		console.log('Downloading receipt for:', purchaseId)
+	}
+
 	if (loading) {
 		return (
-			<Container
-				sx={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					minHeight: '50vh',
-					flexDirection: 'column',
-					gap: 2,
-				}}>
-				<CircularProgress
-					thickness={5}
-					size={60}
-				/>
-				<Typography
-					variant="body1"
-					color="text.secondary">
-					Loading purchase history...
-				</Typography>
+			<Container sx={{ py: 8 }}>
+				<Grid
+					container
+					spacing={3}>
+					{[1, 2, 3].map((item) => (
+						<Grid
+							item
+							xs={12}
+							key={item}>
+							<Skeleton
+								variant="rounded"
+								height={200}
+								sx={{ borderRadius: 3 }}
+							/>
+						</Grid>
+					))}
+				</Grid>
 			</Container>
 		)
 	}
@@ -81,244 +125,299 @@ function PurchaseHistoryView() {
 	if (error) {
 		return (
 			<Container sx={{ py: 5 }}>
-				<Alert
-					severity="error"
-					icon={<Info fontSize="large" />}
-					sx={{
-						borderRadius: 2,
-						alignItems: 'center',
-						fontSize: '1.1rem',
-					}}>
-					{error}
-				</Alert>
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}>
+					<Alert
+						severity="error"
+						icon={<Info fontSize="large" />}
+						sx={{
+							borderRadius: 3,
+							alignItems: 'center',
+							fontSize: '1.1rem',
+							boxShadow: theme.shadows[2],
+						}}
+						action={
+							<Button
+								color="inherit"
+								size="small"
+								onClick={() => window.location.reload()}>
+								RETRY
+							</Button>
+						}>
+						{error}
+					</Alert>
+				</motion.div>
 			</Container>
 		)
 	}
 
 	return (
-		<Container sx={{ py: 5, maxWidth: { xl: 1400 } }}>
-			<Box
-				sx={{
-					mb: 6,
-					textAlign: 'center',
-					'& h3': {
-						fontWeight: 700,
-						letterSpacing: '-0.5px',
-						position: 'relative',
-						display: 'inline-block',
-						'&:after': {
-							content: '""',
-							position: 'absolute',
-							bottom: -8,
-							left: '50%',
-							transform: 'translateX(-50%)',
-							width: 60,
-							height: 4,
-							backgroundColor: theme.palette.primary.main,
-							borderRadius: 2,
-						},
-					},
-				}}>
-				<Typography
-					variant="h3"
-					gutterBottom>
-					<ShoppingBag
+		<Container sx={{ py: 8, maxWidth: { xl: 1400 } }}>
+			<motion.div
+				initial={{ y: 20 }}
+				animate={{ y: 0 }}>
+				<Box sx={{ textAlign: 'center', mb: 8 }}>
+					<Typography
+						variant="h2"
 						sx={{
-							fontSize: 40,
-							verticalAlign: 'middle',
-							mr: 2,
-							color: theme.palette.primary.main,
-						}}
-					/>
-					Purchase History
-				</Typography>
-			</Box>
-
-			{billingHistory.length === 0 ? (
-				<Box
-					sx={{
-						textAlign: 'center',
-						p: 8,
-						backgroundColor: theme.palette.background.paper,
-						borderRadius: 3,
-						boxShadow: 1,
-					}}>
+							fontWeight: 800,
+							letterSpacing: '-1px',
+							mb: 2,
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							gap: 2,
+						}}>
+						<ShoppingBag
+							sx={{
+								fontSize: 48,
+								color: theme.palette.primary.main,
+							}}
+						/>
+						Purchase History
+					</Typography>
 					<Typography
 						variant="h6"
-						color="text.secondary">
-						No purchases found
+						color="text.secondary"
+						sx={{ maxWidth: 600, mx: 'auto' }}>
+						Review your past transactions and download receipts
 					</Typography>
 				</Box>
-			) : (
-				billingHistory.map((purchase) => (
-					<Card
-						key={purchase._id}
+			</motion.div>
+
+			{billingHistory.length === 0 ? (
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}>
+					<Box
 						sx={{
-							mb: 3,
-							boxShadow: 3,
+							textAlign: 'center',
+							p: 8,
+							backgroundColor: theme.palette.background.paper,
 							borderRadius: 3,
-							transition: 'transform 0.2s',
-							'&:hover': {
-								transform: 'translateY(-2px)',
-							},
+							boxShadow: theme.shadows[2],
 						}}>
-						<CardContent sx={{ p: 3 }}>
-							<Grid
-								container
-								spacing={3}>
+						<Receipt
+							sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }}
+						/>
+						<Typography
+							variant="h6"
+							color="text.secondary"
+							gutterBottom>
+							No purchases found
+						</Typography>
+						<Typography
+							variant="body1"
+							color="text.secondary"
+							sx={{ mb: 3 }}>
+							Your future purchases will appear here
+						</Typography>
+						<Button
+							variant="contained"
+							href="/products">
+							Browse Products
+						</Button>
+					</Box>
+				</motion.div>
+			) : (
+				billingHistory.map((purchase, index) => (
+					<motion.div
+						key={purchase._id}
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: index * 0.1 }}>
+						<StyledCard>
+							<CardContent sx={{ p: 4 }}>
 								<Grid
-									item
-									xs={12}
-									md={6}>
-									<Box
-										sx={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: 2,
-										}}>
-										<EventNote color="primary" />
-										<Box>
-											<Typography
-												variant="h6"
-												fontWeight={600}>
-												{formatDate(purchase.createdAt)}
-											</Typography>
-											<Typography
-												variant="body2"
-												color="textSecondary">
+									container
+									spacing={3}
+									alignItems="center">
+									<Grid
+										item
+										xs={12}
+										md={6}>
+										<Box
+											sx={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: 3,
+											}}>
+											<Box
+												sx={{
+													width: 56,
+													height: 56,
+													borderRadius: 2,
+													bgcolor:
+														theme.palette.primary
+															.light,
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+												}}>
 												<Payments
-													fontSize="small"
 													sx={{
-														verticalAlign: 'middle',
-														mr: 1,
+														fontSize: 32,
+														color: theme.palette
+															.primary.main,
 													}}
 												/>
-												{`${purchase.payment_method
-													.charAt(0)
-													.toUpperCase()}${purchase.payment_method.slice(
-													1
-												)}`}
-											</Typography>
+											</Box>
+											<Box>
+												<Typography
+													variant="h6"
+													fontWeight={700}
+													gutterBottom>
+													{formatDate(
+														purchase.createdAt
+													)}
+												</Typography>
+												<Typography
+													variant="body2"
+													color="text.secondary">
+													Payment Method:{' '}
+													{purchase.payment_method}
+												</Typography>
+											</Box>
 										</Box>
-									</Box>
+									</Grid>
+
+									<Grid
+										item
+										xs={6}
+										md={3}>
+										<Typography
+											variant="h6"
+											fontWeight={700}
+											color="primary">
+											Rs.{' '}
+											{purchase.amount?.toLocaleString()}
+										</Typography>
+										<Typography
+											variant="caption"
+											color="textSecondary">
+											Ref: {purchase.payment_reference_id}
+										</Typography>
+									</Grid>
+
+									<Grid
+										item
+										xs={6}
+										md={3}
+										sx={{ textAlign: 'right' }}>
+										<Box
+											sx={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: 2,
+												justifyContent: 'flex-end',
+											}}>
+											<StatusChip
+												label={purchase.status}
+												status={purchase.status}
+											/>
+											<IconButton
+												onClick={() =>
+													handleDownloadReceipt(
+														purchase._id
+													)
+												}
+												sx={{
+													color: 'text.secondary',
+												}}>
+												<Download />
+											</IconButton>
+										</Box>
+									</Grid>
 								</Grid>
 
-								<Grid
-									item
-									xs={6}
-									md={3}>
+								<Divider
+									sx={{ my: 3, borderStyle: 'dashed' }}
+								/>
+
+								<Box
+									sx={{
+										bgcolor: 'background.default',
+										borderRadius: 2,
+										p: 2,
+									}}>
 									<Typography
 										variant="subtitle1"
-										fontWeight={600}>
-										Total: Rs. {purchase.amount?.toFixed(2)}
+										fontWeight={600}
+										sx={{ mb: 2 }}>
+										Purchased Items
 									</Typography>
-									<Typography
-										variant="caption"
-										color="textSecondary">
-										Ref: {purchase.payment_reference_id}
-									</Typography>
-								</Grid>
-
-								<Grid
-									item
-									xs={6}
-									md={3}
-									sx={{ textAlign: 'right' }}>
-									<Chip
-										label={`${purchase.status
-											.charAt(0)
-											.toUpperCase()}${purchase.status.slice(
-											1
-										)}`}
-										sx={{
-											px: 2,
-											py: 1,
-											fontSize: '0.9rem',
-											fontWeight: 600,
-											backgroundColor:
-												purchase.status === 'completed'
-													? theme.palette.success
-															.light
-													: purchase.status ===
-													  'failed'
-													? theme.palette.error.light
-													: theme.palette.warning
-															.light,
-											color:
-												purchase.status === 'completed'
-													? theme.palette.success
-															.contrastText
-													: purchase.status ===
-													  'failed'
-													? theme.palette.error
-															.contrastText
-													: theme.palette.warning
-															.contrastText,
-										}}
-									/>
-								</Grid>
-							</Grid>
-
-							<Divider sx={{ my: 3, borderStyle: 'dashed' }} />
-
-							<Box
-								sx={{
-									border: '1px solid grey',
-									borderRadius: 2,
-									p: 2,
-									mb: 2,
-								}}>
-								<Typography
-									variant="subtitle1"
-									fontWeight={600}
-									sx={{
-										borderBottom: '1px solid grey',
-										mb: 2,
-									}}>
-									Purchased Items
-								</Typography>
-
-								{purchase.items.map((item, index) => (
-									<Box
-										key={index}
-										sx={{
-											display: 'flex',
-											justifyContent: 'space-between',
-											alignItems: 'center',
-											py: 1,
-											px: 2,
-											backgroundColor:
-												theme.palette.background.paper,
-											borderRadius: 1,
-											mb: 1,
-											'&:last-child': { mb: 0 },
-										}}>
-										<Typography
-											variant="body2"
-											fontWeight={500}>
-											{item.product_id.name}
-										</Typography>
-										<Box sx={{ display: 'flex', gap: 3 }}>
-											<Typography
-												variant="body2"
-												color="textSecondary">
-												Qty: {item.quantity}
-											</Typography>
-											<Typography
-												variant="body2"
-												fontWeight={600}>
-												Rs.{' '}
-												{(
-													item.price_per *
-													item.quantity
-												).toFixed(2)}
-											</Typography>
+									{purchase.items.map((item, index) => (
+										<Box
+											key={index}
+											sx={{
+												display: 'flex',
+												justifyContent: 'space-between',
+												alignItems: 'center',
+												p: 2,
+												borderRadius: 1,
+												bgcolor: 'background.paper',
+												mb: 1,
+												transition:
+													'background-color 0.2s',
+												'&:hover': {
+													bgcolor: 'action.hover',
+												},
+												'&:last-child': { mb: 0 },
+											}}>
+											<Box
+												sx={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: 2,
+												}}>
+												<Box
+													component="img"
+													src={item.product_id?.image}
+													alt={item.product_id?.name}
+													sx={{
+														width: 48,
+														height: 48,
+														borderRadius: 1,
+													}}
+												/>
+												<Box>
+													<Typography
+														variant="body1"
+														fontWeight={600}>
+														{item.product_id?.name}
+													</Typography>
+													<Typography
+														variant="body2"
+														color="textSecondary">
+														SKU:{' '}
+														{item.product_id?.sku}
+													</Typography>
+												</Box>
+											</Box>
+											<Box sx={{ textAlign: 'right' }}>
+												<Typography
+													variant="body2"
+													color="textSecondary"
+													sx={{ mb: 0.5 }}>
+													Qty: {item.quantity}
+												</Typography>
+												<Typography
+													variant="body1"
+													fontWeight={600}>
+													Rs.{' '}
+													{(
+														item.price_per *
+														item.quantity
+													).toLocaleString()}
+												</Typography>
+											</Box>
 										</Box>
-									</Box>
-								))}
-							</Box>
-						</CardContent>
-					</Card>
+									))}
+								</Box>
+							</CardContent>
+						</StyledCard>
+					</motion.div>
 				))
 			)}
 		</Container>

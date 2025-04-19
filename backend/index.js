@@ -8,7 +8,6 @@ const mongo_uri =
 	'mongodb+srv://np03cs4a220481:Thisis5%3A55@g-shop.jqnzz.mongodb.net/?retryWrites=true&w=majority&appName=G-Shop'
 
 app.use(cors())
-
 app.use(express.json())
 
 const middleware = require('./middleware/authMiddleware')
@@ -17,6 +16,7 @@ const authRoutes = require('./routes/authRoutes')
 const accountRoutes = require('./routes/accountRoutes')
 const productRoutes = require('./routes/productRoutes')
 const adminRoutes = require('./routes/adminRoutes')
+const billingRoutes = require('./routes/billingRoutes')
 
 const mongoose = require('mongoose')
 mongoose
@@ -33,6 +33,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/account', accountRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/billing', billingRoutes)
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 

@@ -31,7 +31,7 @@ import Skeleton from '@mui/material/Skeleton'
 
 const carouselItems = [
 	{
-		image: 'https://images.unsplash.com/photo-1550984358-5d9144528f21?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+		image: 'https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 		title: 'Premium Guitar Selection',
 		description: 'Explore our handpicked collection of finest guitars',
 	},
