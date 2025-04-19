@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, useStore } from 'react-redux'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -23,27 +23,31 @@ import RemoveIcon from '@mui/icons-material/Remove'
 import { useTheme } from '@mui/material/styles'
 
 import {
-	increaseQty,
-	decreaseQty,
 	removeFromCart,
 	clearCart,
 	addToCart,
+	selectCartDetails,
+	decreaseQty,
+	increaseQty,
+	selectCanAddToCart,
 } from '../../store/cartSlice'
-import axiosInstance from '../../utils/axios'
+import axios from '../../utils/axios'
 
 export default function CartPageView() {
 	const theme = useTheme()
 	const dispatch = useDispatch()
-	const cartItems = useSelector((state) => state.cart)
+	const navigate = useNavigate()
+	const store = useStore()
+
 	const [recommendedItems, setRecommendedItems] = useState([])
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState(null)
-	const total = cartItems.reduce(
-		(sum, item) => sum + item.qty * item.price_per,
-		0
-	)
-	const navigate = useNavigate()
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
+
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const { items, totalPrice } = useSelector((state) =>
+		selectCartDetails(state, user?._id)
+	)
 
 	useEffect(() => {
 		fetchRecommendedItems()
@@ -53,7 +57,7 @@ export default function CartPageView() {
 		try {
 			setError(null)
 			setIsLoading(true)
-			const response = await axiosInstance().get('api/recommendations')
+			const response = await axios.get('api/recommendations')
 			setRecommendedItems(response.data)
 		} catch (error) {
 			console.error('Error fetching recommended items:', error)
@@ -68,21 +72,53 @@ export default function CartPageView() {
 
 	const handleAddToCart = (item) => {
 		try {
-			if (item.stock <= 0) {
-				toast.error('This item is out of stock')
+			if (!isAuthenticated) {
+				navigate('/login')
 				return
 			}
 
-			const cartItem = {
-				_id: item._id,
-				name: item.name,
-				price_per: item.price,
-				thumbnail: item.image,
-				stock: item.stock,
-				quantity: 1
+			console.log(item)
+
+			if (!item?._id || !item?.price) {
+				toast.error('Invalid product information', {
+					position: 'bottom-right',
+				})
+				return
 			}
 
-			dispatch(addToCart(cartItem))
+			const currentState = store.getState()
+			const canAdd = selectCanAddToCart(
+				currentState,
+				user._id,
+				item._id,
+				1
+			)
+
+			if (!canAdd) {
+				toast.error('This item is out of stock', {
+					position: 'bottom-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: 'light',
+				})
+				return
+			}
+
+			dispatch(
+				addToCart({
+					userId: user._id,
+					product: {
+						_id: item._id,
+						name: item.name,
+						price: item.price,
+						image: item.image,
+						stock: item.stock,
+					},
+				})
+			)
 			toast.success('Item added to cart!')
 		} catch (error) {
 			toast.error('Failed to add item to cart')
@@ -91,28 +127,55 @@ export default function CartPageView() {
 	}
 
 	const handleIncreaseQty = (itemId) => {
-		const item = cartItems.find(i => i._id === itemId)
-		if (item && item.quantity < item.stock) {
-			dispatch(increaseQty(itemId))
-		} else {
-			toast.error('Cannot add more than available stock')
+		const item = items.find((item) => item._id === itemId)
+		if (!item) return
+
+		// Get fresh stock information
+		const currentState = store.getState()
+		const canAdd = selectCanAddToCart(currentState, user._id, item._id, 1)
+
+		if (!canAdd) {
+			toast.error('Cannot add more items than available stock')
+			return
 		}
+
+		dispatch(
+			increaseQty({
+				userId: user._id,
+				productId: itemId,
+			})
+		)
 	}
 
 	const handleDecreaseQty = (itemId) => {
-		const item = cartItems.find(i => i._id === itemId)
-		if (item && item.quantity > 1) {
-			dispatch(decreaseQty(itemId))
+		const item = items.find((item) => item._id === itemId)
+		if (!item) return
+
+		if (item.qty <= 1) {
+			toast.error('Quantity cannot be less than 1')
+			return
 		}
+
+		dispatch(
+			decreaseQty({
+				userId: user._id,
+				productId: itemId,
+			})
+		)
 	}
 
 	const handleRemoveItem = (itemId) => {
-		dispatch(removeFromCart(itemId))
+		dispatch(
+			removeFromCart({
+				userId: user._id,
+				productId: itemId,
+			})
+		)
 		toast.success('Item removed from cart')
 	}
 
 	const handleCheckout = () => {
-		if (cartItems.length === 0) {
+		if (items.length === 0) {
 			toast.error('Your cart is empty')
 			return
 		}
@@ -124,7 +187,7 @@ export default function CartPageView() {
 	}
 
 	const handleConfirmClearCart = () => {
-		dispatch(clearCart())
+		dispatch(clearCart({ userId: user?._id }))
 		setOpenConfirmDialog(false)
 		toast.success('Cart cleared successfully!')
 	}
@@ -159,12 +222,12 @@ export default function CartPageView() {
 						<Typography
 							variant="body1"
 							color="text.secondary">
-							{cartItems.length} item
-							{cartItems.length !== 1 && 's'} in cart
+							{items.length} item{items.length !== 1 && 's'} in
+							cart
 						</Typography>
 					</Stack>
 
-					{cartItems.length === 0 ? (
+					{items.length === 0 ? (
 						<Box sx={{ textAlign: 'center', py: 10 }}>
 							<Typography
 								variant="h6"
@@ -174,9 +237,9 @@ export default function CartPageView() {
 						</Box>
 					) : (
 						<>
-							{cartItems.map((item) => (
+							{items.map((item) => (
 								<Card
-									key={item.id}
+									key={item._id}
 									sx={{
 										mb: 2,
 										p: 3,
@@ -197,7 +260,7 @@ export default function CartPageView() {
 											sm={3}>
 											<CardMedia
 												component="img"
-												image={item.thumbnail}
+												image={item.image}
 												alt={item.name}
 												sx={{
 													height: 150,
@@ -223,8 +286,8 @@ export default function CartPageView() {
 											<Typography
 												variant="body1"
 												color="text.secondary">
-												Unit Price: $
-												{item.price_per.toLocaleString(
+												Unit Price: Rs.
+												{item.price.toLocaleString(
 													undefined,
 													{
 														maximumFractionDigits: 2,
@@ -248,7 +311,9 @@ export default function CartPageView() {
 												}}>
 												<IconButton
 													onClick={() =>
-														handleDecreaseQty(item.id)
+														handleDecreaseQty(
+															item._id
+														)
 													}
 													disabled={item.qty === 1}
 													size="small">
@@ -265,7 +330,9 @@ export default function CartPageView() {
 												</Typography>
 												<IconButton
 													onClick={() =>
-														handleIncreaseQty(item.id)
+														handleIncreaseQty(
+															item._id
+														)
 													}
 													size="small">
 													<AddIcon fontSize="small" />
@@ -281,9 +348,9 @@ export default function CartPageView() {
 													mt: 1,
 													textAlign: 'center',
 												}}>
-												$
+												Rs.
 												{(
-													item.qty * item.price_per
+													item.qty * item.price
 												).toLocaleString(undefined, {
 													maximumFractionDigits: 2,
 												})}
@@ -298,7 +365,9 @@ export default function CartPageView() {
 												justifyContent="flex-end">
 												<IconButton
 													onClick={() =>
-														handleRemoveItem(item.id)
+														handleRemoveItem(
+															item._id
+														)
 													}
 													sx={{
 														color: theme.palette
@@ -343,8 +412,8 @@ export default function CartPageView() {
 									fontFamily={theme.typography.fontFamily}
 									color={theme.palette.primary.main}
 									fontWeight={700}>
-									Total: $
-									{total.toLocaleString(undefined, {
+									Total: Rs.
+									{totalPrice.toLocaleString(undefined, {
 										maximumFractionDigits: 2,
 									})}
 								</Typography>
@@ -375,11 +444,11 @@ export default function CartPageView() {
 							) : (
 								recommendedItems.map((item) => (
 									<Card
-										key={item.equipment_id}
+										key={item._id}
 										sx={{ p: 2, borderRadius: 2 }}>
 										<CardMedia
 											component="img"
-											image={item.thumbnail}
+											image={item.image}
 											alt={item.name}
 											sx={{
 												height: 120,
@@ -398,8 +467,8 @@ export default function CartPageView() {
 												variant="body1"
 												color="text.secondary"
 												mt={1}>
-												$
-												{item.price_per.toLocaleString()}
+												Rs.{' '}
+												{item.price.toLocaleString()}
 											</Typography>
 											<Button
 												fullWidth

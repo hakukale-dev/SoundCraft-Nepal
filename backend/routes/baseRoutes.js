@@ -99,11 +99,11 @@ router.get('/recommendations', async (req, res) => {
 			{ $sample: { size: 3 } },
 			{
 				$project: {
-					equipment_id: '$_id',
+					_id: '$_id',
 					name: 1,
-					thumbnail: '$image',
-					price_per: '$price',
-					_id: 0,
+					image: '$image',
+					price: '$price',
+					stock: '$stock',
 				},
 			},
 		])
@@ -134,7 +134,7 @@ router.post('/pay-esewa', async (req, res) => {
 		const { items } = req.body
 		const uuid = uuidv4()
 		const total_amount = items
-			.reduce((sum, item) => sum + item.qty * item.price_per, 0)
+			.reduce((sum, item) => sum + item.qty * item.price, 0)
 			.toFixed(2)
 		const product_code = 'EPAYTEST'
 		const field_names = 'total_amount,transaction_uuid,product_code'
@@ -146,9 +146,9 @@ router.post('/pay-esewa', async (req, res) => {
 			amount: total_amount,
 			status: 'pending',
 			items: items.map((item) => ({
-				product_id: item.id,
+				product_id: item._id,
 				quantity: item.qty,
-				price_per: item.price_per,
+				price_per: item.price,
 			})),
 			payment_reference_id: uuid,
 		})
@@ -210,7 +210,11 @@ router.get('/verify-esewa', async (req, res) => {
 		await billingHistoryEntry.save()
 
 		res.redirect(
-			`http://localhost:5173/payment-success?transaction_code=${json_data.transaction_code}&total_amount=${json_data.total_amount}&transaction_uuid=${json_data.transaction_uuid}`
+			`http://localhost:5173/payment-success?transaction_code=${
+				json_data.transaction_code
+			}&total_amount=${parseFloat(
+				json_data.total_amount
+			).toLocaleString()}&transaction_uuid=${json_data.transaction_uuid}`
 		)
 	} catch (error) {
 		if (error instanceof SyntaxError) {
@@ -231,7 +235,7 @@ router.post('/pay-khalti', async (req, res) => {
 		const { items } = req.body
 		const uuid = uuidv4()
 		const total_amount = items
-			.reduce((sum, item) => sum + item.qty * item.price_per, 0)
+			.reduce((sum, item) => sum + item.qty * item.price, 0)
 			.toFixed(2)
 
 		// Create billing history entry
@@ -241,9 +245,9 @@ router.post('/pay-khalti', async (req, res) => {
 			amount: total_amount,
 			status: 'pending',
 			items: items.map((item) => ({
-				product_id: item.id,
+				product_id: item._id,
 				quantity: item.qty,
-				price_per: item.price_per,
+				price_per: item.price,
 			})),
 			payment_reference_id: uuid,
 		})
@@ -262,11 +266,11 @@ router.post('/pay-khalti', async (req, res) => {
 			},
 			product_details: await Promise.all(
 				items.map(async (item) => ({
-					identity: item.id,
-					name: (await Product.findById(item.id)).name,
-					total_price: item.qty * item.price_per * 100,
+					identity: item._id,
+					name: item.name,
+					total_price: item.qty * item.price * 100,
 					quantity: item.qty,
-					unit_price: item.price_per * 100,
+					unit_price: item.price * 100,
 				}))
 			),
 		}

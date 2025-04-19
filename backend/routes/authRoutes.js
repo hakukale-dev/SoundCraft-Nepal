@@ -16,6 +16,13 @@ router.post('/login', async (req, res) => {
 			return res.status(401).json({ error: 'Invalid credentials' })
 		}
 
+		// Check if account is disabled
+		if (user.is_disabled) {
+			return res
+				.status(403)
+				.json({ error: 'Account is disabled. Please contact support.' })
+		}
+
 		// Validate password
 		const isPasswordValid = await bcrypt.compare(password, user.password)
 		if (!isPasswordValid) {

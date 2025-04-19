@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import axiosInstance from '../utils/axios'
+import axios from '../utils/axios'
 
 const initialState = {
 	isAuthenticated: false,
@@ -70,7 +70,7 @@ export const checkForToken = createAsyncThunk(
 				return null
 			}
 
-			const response = await axiosInstance(token).get('api/account/user')
+			const response = await axios.get('api/account/user')
 			return response.data
 		} catch (error) {
 			if (error.response?.status === 401) {

@@ -148,16 +148,28 @@ export default function UserView() {
 		setIsAdd(false)
 	}
 
-	const handleDelete = (event, id) => {
+	const handleDisable = (event, id) => {
 		axios
-			.delete(`api/account/user/${id}`, {
+			.put(`api/account/user/${id}/disable/`, {
 				headers: { Authorization: `Bearer ${user.token}` },
 			})
 			.then(() => {
 				fetchData()
-				toast.success('Delete Success')
+				toast.success('User Disabled')
 			})
-			.catch(() => toast.error('Failed to delete user'))
+			.catch(() => toast.error('Failed to disable user'))
+	}
+
+	const handleEnable = (event, id) => {
+		axios
+			.put(`api/account/user/${id}/enable/`, {
+				headers: { Authorization: `Bearer ${user.token}` },
+			})
+			.then(() => {
+				fetchData()
+				toast.success('User Enabled')
+			})
+			.catch(() => toast.error('Failed to enable user'))
 	}
 
 	const dataFiltered = applyFilter({
@@ -232,6 +244,7 @@ export default function UserView() {
 									{ id: 'username', label: 'Username' },
 									{ id: 'email', label: 'Email' },
 									{ id: 'phone_number', label: 'Phone' },
+									{ id: 'is_disabled', label: 'Is Disabled' },
 									{ id: '' },
 								]}
 							/>
@@ -248,6 +261,7 @@ export default function UserView() {
 											username={row.username}
 											email={row.email}
 											phone_number={row.phone_number}
+											is_disabled={row.is_disabled}
 											selected={
 												selected.indexOf(row._id) !== -1
 											}
@@ -257,8 +271,11 @@ export default function UserView() {
 											handleEdit={(event) =>
 												handleEdit(event, row._id)
 											}
-											handleDelete={(event) =>
-												handleDelete(event, row._id)
+											handleDisable={(event) =>
+												handleDisable(event, row._id)
+											}
+											handleEnable={(event) =>
+												handleEnable(event, row._id)
 											}
 										/>
 									))}

@@ -200,4 +200,56 @@ router.put('/user/:id/change-password', async (req, res) => {
 	}
 })
 
+// Disable Account
+router.put('/user/:id/disable', async (req, res) => {
+	try {
+		const user = await User.findById(req.params.id)
+		if (!user) {
+			return res.status(404).json({ error: 'User not found' })
+		}
+
+		// Check if user is already disabled
+		if (user.is_disabled) {
+			return res
+				.status(400)
+				.json({ error: 'Account is already disabled' })
+		}
+
+		// Disable the account
+		user.is_disabled = true
+		user.updatedAt = new Date()
+		await user.save()
+
+		res.json({ message: 'Account disabled successfully' })
+	} catch (err) {
+		console.error('Disable account error:', err)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+})
+
+// Enable Account
+router.put('/user/:id/enable', async (req, res) => {
+	try {
+		const user = await User.findById(req.params.id)
+		if (!user) {
+			return res.status(404).json({ error: 'User not found' })
+		}
+
+		// Check if user is already enabled
+		if (!user.is_disabled) {
+			return res.status(400).json({ error: 'Account is already enabled' })
+		}
+
+		// Enable the account
+		user.is_disabled = false
+		user.updatedAt = new Date()
+		await user.save()
+
+		res.json({ message: 'Account enabled successfully' })
+	} catch (err) {
+		console.error('Enable account error:', err)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+})
+
 module.exports = router

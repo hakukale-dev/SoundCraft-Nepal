@@ -22,8 +22,12 @@ import { styled } from '@mui/material/styles'
 import Iconify from '../../components/iconify'
 import { ProductDetailsCarousel } from '../../components/carousel'
 import axios from 'src/utils/axios'
-import { useDispatch } from 'react-redux'
-import { addToCart } from '../../store/cartSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+	addToCart,
+	selectCanAddToCart,
+	selectCartDetails,
+} from '../../store/cartSlice'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -49,23 +53,29 @@ const PriceBox = styled('div')(({ theme }) => ({
 }))
 
 export default function ProductDetailsPage() {
+	const dispatch = useDispatch()
 	const theme = useTheme()
 	const navigate = useNavigate()
 	const { id } = useParams()
+	const [rawProductData, setRawProductData] = useState(null)
 	const [product, setProduct] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [currentTab, setCurrentTab] = useState('description')
-	const dispatch = useDispatch()
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const { items } = useSelector((state) =>
+		selectCartDetails(state, user?._id)
+	)
+	const canAdd = useSelector((state) =>
+		selectCanAddToCart(state, user?._id, rawProductData?._id, 1)
+	)
 
 	useEffect(() => {
 		const fetchProduct = async () => {
 			try {
 				const response = await axios.get(`/api/products/${id}`)
 				const data = response.data
-				console.log('Product data:', data)
 
-				// Transform product data for UI
 				const transformedProduct = {
 					...data,
 					images: [data.image, ...(data.additionalImages || [])],
@@ -80,6 +90,7 @@ export default function ProductDetailsPage() {
 					hasDiscount: (data.price || 0) < 100,
 				}
 
+				setRawProductData(data)
 				setProduct(transformedProduct)
 			} catch (err) {
 				console.error('Error fetching product:', err)
@@ -106,28 +117,65 @@ export default function ProductDetailsPage() {
 	}
 
 	const handleAddToCart = () => {
-		if (!product) return
+		if (!isAuthenticated) {
+			navigate('/login')
+			return
+		}
 
-		dispatch(
-			addToCart({
-				_id: product._id,
-				name: product.name,
-				price: product.price,
-				image: product.image,
-				stock: product.stock,
+		if (!product || !product._id || !product.price) {
+			toast.error('Invalid product information', {
+				position: 'bottom-right',
 			})
-		)
+			return
+		}
 
-		toast.success('Product added to cart!', {
-			position: 'bottom-right',
-			autoClose: 3000,
-			hideProgressBar: false,
-			closeOnClick: true,
-			pauseOnHover: true,
-			draggable: true,
-			progress: undefined,
-			theme: 'light',
-		})
+		if (!canAdd) {
+			toast.error('This item is out of stock', {
+				position: 'bottom-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: 'light',
+			})
+			return
+		}
+
+		try {
+			dispatch(
+				addToCart({
+					userId: user?._id,
+					product: {
+						_id: rawProductData._id,
+						name: rawProductData.name,
+						price: rawProductData.price,
+						image: rawProductData.image,
+						stock: rawProductData.stock,
+					},
+				})
+			)
+
+			// Optional: Check current quantity for more specific feedback
+			const currentItem = items?.find((item) => item._id === product._id)
+			const verb = currentItem?.qty ? 'updated in' : 'added to'
+
+			toast.success(`Product ${verb} cart!`, {
+				position: 'bottom-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: 'light',
+			})
+		} catch (error) {
+			toast.error('Failed to update cart', {
+				position: 'bottom-right',
+				autoClose: 3000,
+				theme: 'colored',
+			})
+		}
 	}
 
 	if (error)

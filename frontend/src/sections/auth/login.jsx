@@ -42,7 +42,8 @@ export default function LoginView() {
 		setError(null)
 	}
 
-	const handleLogin = async () => {
+	const handleLogin = async (e) => {
+		e.preventDefault()
 		if (!formData.username || !formData.password) {
 			toast.warning('Please fill in all fields')
 			return
@@ -60,10 +61,7 @@ export default function LoginView() {
 			navigate('/')
 		} catch (error) {
 			const errorMessage =
-				error.response?.data?.error ||
-				error.response?.data?.message ||
-				'Login failed. Please try again.'
-
+				error.message || 'Login failed. Please try again.'
 			setError(errorMessage)
 			toast.error(errorMessage)
 		} finally {
@@ -126,7 +124,6 @@ export default function LoginView() {
 					}}
 				/>
 			</Stack>
-
 			{error && (
 				<Typography
 					color="error"
@@ -135,7 +132,6 @@ export default function LoginView() {
 					{error}
 				</Typography>
 			)}
-
 			<Stack
 				direction="row"
 				alignItems="center"
@@ -151,13 +147,11 @@ export default function LoginView() {
 					Forgot password?
 				</Link>
 			</Stack>
-
 			<LoadingButton
 				fullWidth
 				size="large"
-				type="submit"
-				variant="contained"
 				onClick={handleLogin}
+				variant="contained"
 				loading={isLoading}
 				sx={{
 					bgcolor: theme.palette.primary.main,
@@ -168,7 +162,6 @@ export default function LoginView() {
 				}}>
 				Login
 			</LoadingButton>
-
 			<Typography
 				marginTop={2}
 				textAlign="center"
@@ -183,7 +176,6 @@ export default function LoginView() {
 				}}>
 				New User? Register here
 			</Typography>
-
 			<Typography
 				marginTop={2}
 				textAlign="center"

@@ -10,7 +10,7 @@ import {
 	Box,
 } from '@mui/material'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { clearCart } from '../../store/cartSlice'
 
@@ -25,11 +25,12 @@ function PaymentSuccessView() {
 	const totalAmount = searchParams.get('total_amount')
 	const transactionUUID = searchParams.get('transaction_uuid')
 	const products = JSON.parse(sessionStorage.getItem('products')) || []
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
 
 	useEffect(() => {
-		dispatch(clearCart())
+		dispatch(clearCart(user?._id))
 	})
-    
+
 	return (
 		<Container sx={{ py: 5 }}>
 			<Card
@@ -113,7 +114,7 @@ function PaymentSuccessView() {
 								<Typography variant="body2">
 									Rs.{' '}
 									{(
-										product.qty * product.price_per
+										product.qty * product.price
 									).toLocaleString()}
 								</Typography>
 							</Stack>

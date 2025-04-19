@@ -1,48 +1,71 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSelector, createSlice } from '@reduxjs/toolkit'
 
-const initialState = JSON.parse(localStorage.getItem('reduxState'))?.cart || []
+const initialState = {
+	itemsByUser:
+		JSON.parse(localStorage.getItem('reduxState'))?.cart?.itemsByUser || {},
+}
+
 const cartSlice = createSlice({
 	name: 'cart',
 	initialState,
 	reducers: {
-		setCartFromLocalStorage: (state, action) => console.log(action),
-		addToCart: (state, action) => {
-			const existingItem = state.find(
-				(item) => item.id === action.payload.equipment_id
-			)
-			if (existingItem) {
-				return state.map((item) =>
-					item.id === action.payload.equipment_id
-						? { ...item, qty: item.qty + 1 }
-						: item
-				)
-			}
-			return [
-				...state,
-				{
-					id: action.payload.equipment_id,
-					name: action.payload.name,
-					thumbnail: action.payload.thumbnail,
-					qty: 1,
-					price_per: action.payload.price_per,
-				},
-			]
+		setCartFromLocalStorage: (state, action) => {
+			state.itemsByUser = action.payload
 		},
-		removeFromCart: (state, action) =>
-			state.filter((equipment) => action.payload !== equipment.id),
-		increaseQty: (state, action) =>
-			state.map((equipment) =>
-				equipment.id === action.payload
-					? { ...equipment, qty: equipment.qty + 1 }
-					: equipment
-			),
-		decreaseQty: (state, action) =>
-			state.map((equipment) =>
-				equipment.id === action.payload
-					? { ...equipment, qty: equipment.qty - 1 }
-					: equipment
-			),
-		clearCart: () => [],
+		addToCart: (state, action) => {
+			const { userId, product } = action.payload
+			if (!userId) return
+
+			if (!state.itemsByUser[userId]) {
+				state.itemsByUser[userId] = []
+			}
+
+			const userCart = state.itemsByUser[userId]
+			const existingItem = userCart.find(
+				(item) => item._id === product._id
+			)
+
+			if (existingItem) {
+				existingItem.qty += 1
+			} else {
+				userCart.push({ ...product, qty: 1 })
+			}
+		},
+		removeFromCart: (state, action) => {
+			const { userId, productId } = action.payload
+			if (!userId) return
+
+			state.itemsByUser[userId] =
+				state.itemsByUser[userId]?.filter(
+					(item) => item._id !== productId
+				) || []
+		},
+		increaseQty: (state, action) => {
+			const { userId, productId } = action.payload
+			if (!userId) return
+
+			const item = state.itemsByUser[userId]?.find(
+				(item) => item._id === productId
+			)
+			if (item) item.qty += 1
+		},
+		decreaseQty: (state, action) => {
+			const { userId, productId } = action.payload
+			if (!userId) return
+
+			const item = state.itemsByUser[userId]?.find(
+				(item) => item._id === productId
+			)
+			if (item && item.qty > 1) item.qty -= 1
+		},
+		clearCart: (state, action) => {
+			const { userId } = action.payload
+			if (!userId) return
+
+			console.log(userId)
+
+			state.itemsByUser[userId] = []
+		},
 	},
 })
 
@@ -54,5 +77,33 @@ export const {
 	decreaseQty,
 	clearCart,
 } = cartSlice.actions
+
+// Selectors
+const selectItemsByUser = (state, userId) => {
+	return state.cart.itemsByUser[userId] || []
+}
+
+export const selectCartDetails = createSelector(
+	[selectItemsByUser],
+	(items) => {
+		const totalPrice = items.reduce(
+			(sum, item) => sum + item.price * item.qty,
+			0
+		)
+		return { items, totalPrice }
+	}
+)
+
+export const selectCanAddToCart = createSelector(
+	[
+		selectItemsByUser,
+		(_, userId, productId, quantity) => ({ userId, productId, quantity }),
+	],
+	(items, { productId, quantity }) => {
+		const item = items.find((item) => item._id === productId)
+		if (!item) return true
+		return item.qty + quantity <= item.stock
+	}
+)
 
 export default cartSlice.reducer

@@ -13,7 +13,7 @@ import {
 	Chip,
 	useTheme,
 } from '@mui/material'
-import axiosInstance from '../../utils/axios'
+import axios from '../../utils/axios'
 import { EventNote, Payments, ShoppingBag, Info } from '@mui/icons-material'
 
 function PurchaseHistoryView() {
@@ -26,7 +26,7 @@ function PurchaseHistoryView() {
 	useEffect(() => {
 		const fetchPurchaseHistory = async () => {
 			try {
-				const { data } = await axiosInstance().get(
+				const { data } = await axios.get(
 					'/api/billing-history'
 				)
 				setBillingHistory(data)

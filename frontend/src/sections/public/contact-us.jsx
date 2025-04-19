@@ -14,7 +14,7 @@ import {
 	Typography,
 } from '@mui/material'
 
-import axiosInstance from 'src/utils/axios'
+import axios from 'src/utils/axios'
 
 export default function ContactView() {
 	const theme = useTheme()
@@ -30,7 +30,7 @@ export default function ContactView() {
 	const onSubmit = async (data) => {
 		setIsLoading(true)
 		try {
-			// await axiosInstance().post('/feedback/', data);
+			// await axios.post('/feedback/', data);
 			toast.success('Message Sent Successfully')
 			reset()
 		} catch (err) {

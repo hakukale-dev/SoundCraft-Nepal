@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useTheme, alpha } from '@mui/material/styles'
 import { Box, IconButton, Badge } from '@mui/material'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import { selectCartDetails } from '../store/cartSlice'
 
 export function FloatingCartButton() {
 	const theme = useTheme()
 	const navigation = useNavigate()
-	const cartItems = useSelector((state) => state.cart?.items || [])
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const { items } = useSelector((state) =>
+		selectCartDetails(state, user?._id)
+	)
 
 	return (
 		<Box
@@ -37,7 +41,7 @@ export function FloatingCartButton() {
 					},
 				}}>
 				<Badge
-					badgeContent={cartItems.length}
+					badgeContent={items.length}
 					color="error"
 					anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
 					<ShoppingCartIcon sx={{ fontSize: 32 }} />

@@ -12,26 +12,25 @@ import {
 } from '@mui/material'
 import PaymentIcon from '@mui/icons-material/Payment'
 
-import axiosInstance from '../../utils/axios'
-import axios from 'axios'
+import axios from '../../utils/axios'
+import { selectCartDetails } from '../../store/cartSlice'
 
 export default function CheckoutPageView() {
-	const cartItems = useSelector((state) => state.cart)
-	const total = cartItems.reduce(
-		(sum, item) => sum + item.qty * item.price_per,
-		0
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const { items, totalPrice } = useSelector((state) =>
+		selectCartDetails(state, user?._id)
 	)
 
 	const handleEsewaPayment = async () => {
 		try {
-			const { data } = await axiosInstance().post('/api/pay-esewa', {
-				items: cartItems,
+			const { data } = await axios.post('/api/pay-esewa', {
+				items: items,
 			})
 
-			const productsData = cartItems.map((item) => ({
+			const productsData = items.map((item) => ({
 				name: item.name,
 				qty: item.qty,
-				price_per: item.price_per,
+				price: item.price,
 			}))
 			sessionStorage.setItem('products', JSON.stringify(productsData))
 
@@ -59,16 +58,16 @@ export default function CheckoutPageView() {
 
 	const handleKhaltiPayment = async () => {
 		try {
-			const { data } = await axiosInstance().post('/api/pay-khalti', {
-				items: cartItems,
+			const { data } = await axios.post('/api/pay-khalti', {
+				items: items,
 			})
 
 			console.log(data)
 
-			const productsData = cartItems.map((item) => ({
+			const productsData = items.map((item) => ({
 				name: item.name,
 				qty: item.qty,
-				price_per: item.price_per,
+				price: item.price,
 			}))
 			sessionStorage.setItem('products', JSON.stringify(productsData))
 
@@ -101,7 +100,7 @@ export default function CheckoutPageView() {
 						gutterBottom>
 						Order Details
 					</Typography>
-					{cartItems.map((item) => (
+					{items.map((item) => (
 						<Card
 							key={item.id}
 							sx={{ mb: 2 }}>
@@ -136,14 +135,14 @@ export default function CheckoutPageView() {
 										<Typography
 											variant="body2"
 											color="text.secondary">
-											Price: ${item.price_per.toFixed(2)}
+											Price: Rs. {item.price.toFixed(2)}
 										</Typography>
 										<Typography
 											variant="body2"
 											sx={{ mt: 1 }}>
-											Total: $
+											Total: Rs. 
 											{(
-												item.qty * item.price_per
+												item.qty * item.price
 											).toFixed(2)}
 										</Typography>
 									</Grid>
@@ -168,7 +167,7 @@ export default function CheckoutPageView() {
 							<Typography
 								variant="h6"
 								sx={{ fontWeight: 'bold' }}>
-								Total: ${total.toFixed(2)}
+								Total: Rs. {totalPrice.toFixed(2)}
 							</Typography>
 
 							<Button
