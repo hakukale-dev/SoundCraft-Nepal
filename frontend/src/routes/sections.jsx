@@ -8,6 +8,7 @@ import DashboardLayout from 'src/layouts/dashboard'
 import DashboardPage from 'src/pages/admin/dashboard'
 import UserPage from 'src/pages/admin/users'
 import AdminProductsPage from 'src/pages/admin/products'
+import AdminLearningHubPage from 'src/pages/admin/learning-hub'
 import BillingHistoryPage from '../pages/admin/billing-history'
 
 import LoginPage from 'src/pages/auth/login'
@@ -20,6 +21,7 @@ import ProfilePage from 'src/pages/public/profile'
 import ProductsPage from 'src/pages/public/products'
 import ProductDetailsPage from 'src/sections/public/product-details'
 import LearningZonePage from 'src/sections/public/learning-zone'
+import LessonPage from 'src/pages/public/lesson-page'
 
 import NotFoundPage from 'src/pages/404'
 
@@ -160,16 +162,12 @@ export default function Router() {
 					}
 				/>
 				<Route
-					path="purchase-history"
-					element={
-						<ProtectedRoute>
-							<PurchaseHistoryPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
 					path="learning-zone"
 					element={<LearningZonePage />}
+				/>
+				<Route
+					path="lessons/:id"
+					element={<LessonPage />}
 				/>
 				<Route
 					path="404"
@@ -201,6 +199,10 @@ export default function Router() {
 				<Route
 					path="admin/products"
 					element={<AdminProductsPage />}
+				/>
+				<Route
+					path="admin/learning-hub"
+					element={<AdminLearningHubPage />}
 				/>
 				<Route
 					path="admin/profile"

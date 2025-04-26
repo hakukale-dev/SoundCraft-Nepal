@@ -24,6 +24,7 @@ import TableNoData from '../../common/table-no-data'
 import TableToolbar from '../../common/table-toolbar'
 import TableEmptyRows from '../../common/table-empty-rows'
 import { emptyRows, applyFilter, getComparator } from '../../../utils/utils'
+import ProductInfoPopup from './product-info'
 
 // ----------------------------------------------------------------------
 export default function ProductsView() {
@@ -38,9 +39,11 @@ export default function ProductsView() {
 
 	const [products, setProducts] = useState([])
 	const [editingProduct, setEditingProduct] = useState({})
+	const [infoProduct, setInfoProduct] = useState(null)
 
 	const [isAdd, setisAdd] = useState(true)
 	const [open, setOpen] = useState(false)
+	const [infoOpen, setInfoOpen] = useState(false)
 
 	const handleOpen = () => {
 		setOpen(true)
@@ -50,6 +53,16 @@ export default function ProductsView() {
 		setEditingProduct({})
 		setOpen(false)
 		setisAdd(true)
+	}
+
+	const handleInfoOpen = (product) => {
+		setInfoProduct(product)
+		setInfoOpen(true)
+	}
+
+	const handleInfoClose = () => {
+		setInfoProduct(null)
+		setInfoOpen(false)
 	}
 
 	const handleSort = (event, id) => {
@@ -168,6 +181,11 @@ export default function ProductsView() {
 			})
 	}
 
+	const handleInfoPopup = (event, id) => {
+		const productData = products.filter((data) => data._id === id)[0]
+		handleInfoOpen(productData)
+	}
+
 	const dataFiltered = applyFilter({
 		inputData: products,
 		comparator: getComparator(order, orderBy),
@@ -203,6 +221,14 @@ export default function ProductsView() {
 					onClose={handleClose}
 					onSubmit={handleSubmit}
 					formData={editingProduct}
+				/>
+			)}
+
+			{infoProduct && (
+				<ProductInfoPopup
+					product={infoProduct}
+					open={infoOpen}
+					onClose={handleInfoClose}
 				/>
 			)}
 
@@ -251,7 +277,6 @@ export default function ProductsView() {
 										align: 'center',
 									},
 									{ id: 'model', label: 'Model' },
-									{ id: 'description', label: 'Description' },
 									{ id: 'price', label: 'Price' },
 									{ id: 'category', label: 'Category' },
 									{ id: 'stock', label: 'Stock' },
@@ -269,7 +294,6 @@ export default function ProductsView() {
 											key={row._id}
 											name={row.name}
 											model={row.model}
-											description={row.description}
 											category={row.category}
 											price={row.price}
 											image={row.image}
@@ -285,6 +309,9 @@ export default function ProductsView() {
 											}
 											handleDelete={(event) =>
 												handleDelete(event, row._id)
+											}
+											handleInfoPopup={(event) =>
+												handleInfoPopup(event, row._id)
 											}
 											showPopover
 										/>

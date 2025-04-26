@@ -17,13 +17,13 @@ export default function ProductTableRow({
 	selected,
 	name,
 	model,
-	description,
 	price,
 	category,
 	stock,
 	image,
 	handleEdit,
 	handleDelete,
+	handleInfoPopup,
 }) {
 	const [open, setOpen] = useState(null)
 
@@ -73,8 +73,6 @@ export default function ProductTableRow({
 				</TableCell>
 				<TableCell>{model}</TableCell>
 
-				<TableCell>{description}</TableCell>
-
 				<TableCell>${price}</TableCell>
 
 				<TableCell>{category}</TableCell>
@@ -97,6 +95,13 @@ export default function ProductTableRow({
 				PaperProps={{
 					sx: { width: 140 },
 				}}>
+				<MenuItem onClick={handleInfoPopup}>
+					<Iconify
+						icon="eva:info-outline"
+						sx={{ mr: 2 }}
+					/>
+					Info
+				</MenuItem>
 				<MenuItem onClick={handleEdit}>
 					<Iconify
 						icon="eva:edit-fill"
@@ -123,7 +128,6 @@ ProductTableRow.propTypes = {
 	id: PropTypes.string,
 	name: PropTypes.string.isRequired,
 	model: PropTypes.string.isRequired,
-	description: PropTypes.string.isRequired,
 	price: PropTypes.number.isRequired,
 	category: PropTypes.string.isRequired,
 	stock: PropTypes.number.isRequired,
@@ -133,4 +137,5 @@ ProductTableRow.propTypes = {
 	handleClick: PropTypes.func,
 	handleEdit: PropTypes.func,
 	handleDelete: PropTypes.func,
+	handleInfoPopup: PropTypes.func,
 }

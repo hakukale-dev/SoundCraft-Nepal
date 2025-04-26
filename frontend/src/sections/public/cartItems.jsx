@@ -51,7 +51,7 @@ export default function CartPageView() {
 
 	useEffect(() => {
 		fetchRecommendedItems()
-	}, [])
+	}, [items])
 
 	const fetchRecommendedItems = async () => {
 		try {

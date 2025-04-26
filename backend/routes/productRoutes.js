@@ -172,12 +172,13 @@ router.delete('/:id', async (req, res) => {
 				const publicId = product.image.split('/').pop().split('.')[0]
 				await cloudinary.uploader.destroy(publicId)
 			}
-			await product.remove()
+			await Product.findByIdAndDelete(req.params.id)
 			res.json({ message: 'Product removed' })
 		} else {
 			res.status(404).json({ message: 'Product not found' })
 		}
 	} catch (error) {
+		console.error(error)
 		res.status(500).json({ message: 'Server Error' })
 	}
 })

@@ -1,4 +1,4 @@
-import { BarChart, Person, Inventory, Receipt } from '@mui/icons-material'
+import { BarChart, Person, Inventory, Receipt, Hub } from '@mui/icons-material'
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +22,11 @@ const navConfig = [
 		title: 'billing history',
 		path: '/admin/billing-history',
 		icon: <Receipt />,
+	},
+	{
+		title: 'learning articles',
+		path: '/admin/learning-hub',
+		icon: <Hub />,
 	},
 ]
 

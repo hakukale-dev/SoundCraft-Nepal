@@ -29,7 +29,7 @@ function PaymentSuccessView() {
 
 	useEffect(() => {
 		dispatch(clearCart(user?._id))
-	})
+	}, [user])
 
 	return (
 		<Container sx={{ py: 5 }}>

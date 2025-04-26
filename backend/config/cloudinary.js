@@ -11,10 +11,20 @@ cloudinary.config({
 // Create storage engine for Multer
 const storage = new CloudinaryStorage({
 	cloudinary: cloudinary,
-	params: {
-		folder: 'guitar-shop',
-		allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-		transformation: [{ width: 1000, height: 1000, crop: 'limit' }],
+	params: (req, file) => {
+		const isVideo = ['mp4', 'mov', 'avi'].includes(
+			file.mimetype.split('/')[1]
+		)
+		const folder = isVideo ? 'guitar-shop/videos' : 'guitar-shop/images'
+
+		return {
+			folder: folder,
+			allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi'],
+			transformation: isVideo
+				? []
+				: [{ width: 1000, height: 1000, crop: 'limit' }],
+			resource_type: 'auto',
+		}
 	},
 })
 

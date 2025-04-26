@@ -17,6 +17,7 @@ const accountRoutes = require('./routes/accountRoutes')
 const productRoutes = require('./routes/productRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const billingRoutes = require('./routes/billingRoutes')
+const lessonsRoutes = require('./routes/lessonRoutes')
 
 const mongoose = require('mongoose')
 mongoose
@@ -34,6 +35,7 @@ app.use('/api/account', accountRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/billing', billingRoutes)
+app.use('/api/lessons', lessonsRoutes)
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
