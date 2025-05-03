@@ -19,11 +19,6 @@ const navConfig = [
 		icon: <Inventory />,
 	},
 	{
-		title: 'billing history',
-		path: '/admin/billing-history',
-		icon: <Receipt />,
-	},
-	{
 		title: 'learning articles',
 		path: '/admin/learning-hub',
 		icon: <Hub />,

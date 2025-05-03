@@ -9,18 +9,18 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import PeopleIcon from '@mui/icons-material/People'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import InventoryIcon from '@mui/icons-material/Inventory'
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'
+import SchoolIcon from '@mui/icons-material/School'
+import StarIcon from '@mui/icons-material/Star'
 
 import axios from 'src/utils/axios'
 
 import AppTasks from './app-tasks'
-// import AppNewsUpdate from './app-news-update';
-// import AppOrderTimeline from './app-order-timeline';
+import AppNewsUpdate from './app-news-update'
+import AppOrderTimeline from './app-order-timeline'
 import AppCurrentVisits from './app-current-visits'
 import AppWebsiteVisits from './app-website-visits'
 import AppWidgetSummary from './app-widget-summary'
-// import AppTrafficBySite from './app-traffic-by-site';
-// import AppCurrentSubject from './app-current-subject';
-// import AppConversionRates from './app-conversion-rates';
 
 // ----------------------------------------------------------------------
 
@@ -31,10 +31,16 @@ export default function DashboardView() {
 		totalUsers: 0,
 		totalProducts: 0,
 		totalOrders: 0,
+		totalRevenue: 0,
+		totalLessons: 0,
+		averageRating: 0,
 		lowStockProducts: 0,
 		stockLabels: [],
 		stockData: [],
-		categories: [],
+		categoriesWithCount: [],
+		recentOrders: [],
+		recentReviews: [],
+		recentLessons: [],
 	})
 
 	const fetchData = useCallback(async () => {
@@ -106,6 +112,45 @@ export default function DashboardView() {
 					sm={6}
 					md={3}>
 					<AppWidgetSummary
+						title="Total Revenue"
+						total={`$${details.totalRevenue || 0}`}
+						color="primary"
+						icon={<MonetizationOnIcon />}
+					/>
+				</Grid>
+
+				<Grid
+					item
+					xs={12}
+					sm={6}
+					md={3}>
+					<AppWidgetSummary
+						title="Total Lessons"
+						total={details.totalLessons || 0}
+						color="secondary"
+						icon={<SchoolIcon />}
+					/>
+				</Grid>
+
+				<Grid
+					item
+					xs={12}
+					sm={6}
+					md={3}>
+					<AppWidgetSummary
+						title="Average Rating"
+						total={details.averageRating || 0}
+						color="info"
+						icon={<StarIcon />}
+					/>
+				</Grid>
+
+				<Grid
+					item
+					xs={12}
+					sm={6}
+					md={3}>
+					<AppWidgetSummary
 						title="Low Stock Products"
 						total={details.lowStockProducts || 0}
 						color="error"
@@ -145,44 +190,6 @@ export default function DashboardView() {
 						chart={{
 							series: details.categoriesWithCount || [],
 						}}
-					/>
-				</Grid>
-
-				{/* <Grid item xs={12} md={6} lg={8}>
-                    <AppNewsUpdate
-                        title="Recent Products"
-                        list={details.recentProducts || []}
-                    />
-                </Grid>
-
-                <Grid item xs={12} md={6} lg={4}>
-                    <AppOrderTimeline
-                        title="Recent Users"
-                        list={details.recentUsers || []}
-                    />
-                </Grid> */}
-
-				{/* <Grid item xs={12} md={6} lg={4}>
-                    <AppTrafficBySite
-                        title="Product Categories"
-                        list={details.categories || []}
-                    />
-                </Grid> */}
-
-				<Grid
-					item
-					xs={12}
-					md={6}
-					lg={8}>
-					<AppTasks
-						title="Tasks"
-						list={[
-							{ id: '1', name: 'Update Product Inventory' },
-							{ id: '2', name: 'Review New User Registrations' },
-							{ id: '3', name: 'Check Low Stock Alerts' },
-							{ id: '4', name: 'Update Product Descriptions' },
-							{ id: '5', name: 'Backup Database' },
-						]}
 					/>
 				</Grid>
 			</Grid>
