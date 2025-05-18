@@ -10,9 +10,14 @@ import UserPage from 'src/pages/admin/users'
 import AdminProductsPage from 'src/pages/admin/products'
 import AdminLearningHubPage from 'src/pages/admin/learning-hub'
 import BillingHistoryPage from '../pages/admin/billing-history'
+import QueriesView from '../sections/admin/queries'
+import AdminChatView from '../sections/admin/chat'
+import OrdersView from '../sections/admin/orders'
 
 import LoginPage from 'src/pages/auth/login'
 import SignUpPage from 'src/pages/auth/signup'
+import ForgotPasswordPage from '../pages/auth/forgot-password'
+import ResetPasswordPage from '../pages/auth/reset-password'
 
 import HomePage from 'src/pages/public/homepage'
 import AboutUsPage from 'src/pages/public/about'
@@ -22,6 +27,7 @@ import ProductsPage from 'src/pages/public/products'
 import ProductDetailsPage from 'src/sections/public/product-details'
 import LearningZonePage from 'src/sections/public/learning-zone'
 import LessonPage from 'src/pages/public/lesson-page'
+import WishlistPage from 'src/pages/public/wishlist'
 
 import NotFoundPage from 'src/pages/404'
 
@@ -82,6 +88,26 @@ export default function Router() {
 				path="signup"
 				element={
 					!isAuthenticated ? <SignUpPage /> : <Navigate to="/" />
+				}
+			/>
+			<Route
+				path="forgot-password"
+				element={
+					!isAuthenticated ? (
+						<ForgotPasswordPage />
+					) : (
+						<Navigate to="/" />
+					)
+				}
+			/>
+			<Route
+				path="reset-password"
+				element={
+					!isAuthenticated ? (
+						<ResetPasswordPage />
+					) : (
+						<Navigate to="/" />
+					)
 				}
 			/>
 
@@ -162,6 +188,14 @@ export default function Router() {
 					}
 				/>
 				<Route
+					path="wishlist"
+					element={
+						<ProtectedRoute>
+							<WishlistPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
 					path="learning-zone"
 					element={<LearningZonePage />}
 				/>
@@ -211,6 +245,18 @@ export default function Router() {
 				<Route
 					path="admin/billing-history"
 					element={<BillingHistoryPage />}
+				/>
+				<Route
+					path="admin/queries"
+					element={<QueriesView />}
+				/>
+				<Route
+					path="admin/chat"
+					element={<AdminChatView />}
+				/>
+				<Route
+					path="admin/orders"
+					element={<OrdersView />}
 				/>
 			</Route>
 		</Routes>

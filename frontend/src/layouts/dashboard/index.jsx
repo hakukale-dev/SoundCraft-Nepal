@@ -1,43 +1,45 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Outlet, Navigate } from 'react-router-dom';
+import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { Outlet, Navigate } from 'react-router-dom'
 
-import Box from '@mui/material/Box';
+import Box from '@mui/material/Box'
 
-import Nav from './nav';
-import Main from './main';
-import Header from './header';
+import Nav from './nav'
+import Main from './main'
+import Header from './header'
 
-import { AdminThemeProvider } from 'src/theme';
+import { AdminThemeProvider } from 'src/theme'
 
 // ----------------------------------------------------------------------
 
 export default function DashboardLayout({ user }) {
-    const [openNav, setOpenNav] = useState(false);
+	const [openNav, setOpenNav] = useState(false)
 
-    return user && user.is_admin ? (
-        <AdminThemeProvider>
-            <Header onOpenNav={() => setOpenNav(true)} />
+	return user && user.is_admin ? (
+		<AdminThemeProvider>
+			<Header onOpenNav={() => setOpenNav(true)} />
 
-            <Box
-                sx={{
-                    minHeight: 1,
-                    display: 'flex',
-                    flexDirection: { xs: 'column', lg: 'row' },
-                }}
-            >
-                <Nav openNav={openNav} onCloseNav={() => setOpenNav(false)} />
+			<Box
+				sx={{
+					minHeight: 1,
+					display: 'flex',
+					flexDirection: { xs: 'column', lg: 'row' },
+				}}>
+				<Nav
+					openNav={openNav}
+					onCloseNav={() => setOpenNav(false)}
+				/>
 
-                <Main>
-                    <Outlet />
-                </Main>
-            </Box>
-        </AdminThemeProvider>
-    ) : (
-        <Navigate to="404" />
-    );
+				<Main>
+					<Outlet />
+				</Main>
+			</Box>
+		</AdminThemeProvider>
+	) : (
+		<Navigate to="404" />
+	)
 }
 
 DashboardLayout.propTypes = {
-    user: PropTypes.object,
-};
+	user: PropTypes.object,
+}

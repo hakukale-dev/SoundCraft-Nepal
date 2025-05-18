@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -16,10 +16,17 @@ import {
 	Typography,
 	Avatar,
 	IconButton,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogContentText,
+	DialogActions,
+	Button,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 import axios from 'src/utils/axios'
+import { logout } from '../../store/authSlice'
 
 export default function ProfileView() {
 	const theme = useTheme()
@@ -29,17 +36,20 @@ export default function ProfileView() {
 		setValue,
 		formState: { errors },
 	} = useForm()
+	const dispatch = useDispatch()
 
 	const { user, isAuthenticated } = useSelector((state) => state.auth)
 	const [isLoading, setIsLoading] = useState(false)
 	const [profileImage, setProfileImage] = useState(user?.photo || null)
 	const [userData, setUserData] = useState(null)
+	const [showDeleteAccountPrompt, setShowDeleteAccountPrompt] =
+		useState(false)
 
 	useEffect(() => {
 		const fetchUserData = async () => {
 			try {
 				const response = await axios.get('api/account/user')
-				const fetchedUserData = response.data
+				const fetchedUserData = response.data.data
 				setUserData(fetchedUserData)
 				setProfileImage(fetchedUserData.photo || null)
 
@@ -61,6 +71,8 @@ export default function ProfileView() {
 							.split('T')[0]
 					)
 				}
+
+				console.log(fetchedUserData)
 			} catch (err) {
 				toast.error('Failed to fetch user data')
 				console.error('Fetch user error:', err)
@@ -77,7 +89,7 @@ export default function ProfileView() {
 		const file = event.target.files[0]
 		if (!file) return
 
-		if (!user || !user.id) {
+		if (!user || !user._id) {
 			toast.error('User ID not found. Please try logging in again.')
 			return
 		}
@@ -87,7 +99,7 @@ export default function ProfileView() {
 
 		try {
 			const response = await axios.patch(
-				`api/account/user/${user.id}/photo`,
+				`api/account/user/${user._id}/photo`,
 				formData,
 				{
 					headers: {
@@ -108,9 +120,32 @@ export default function ProfileView() {
 		}
 	}
 
+	const hideDeleteAccountPrompt = () => {
+		setShowDeleteAccountPrompt(false)
+	}
+
+	const handleDeleteAccount = async () => {
+		if (!user || !user._id) {
+			toast.error('User ID not found. Please try logging in again.')
+			return
+		}
+
+		try {
+			await axios.delete(`api/account/user/${user._id}/`)
+			toast.success('Account deleted successfully')
+			dispatch(logout())
+		} catch (err) {
+			toast.error('Failed to delete account')
+			console.error('Delete account error:', err)
+		} finally {
+			hideDeleteAccountPrompt()
+		}
+	}
+
 	const formSubmit = async (data) => {
 		setIsLoading(true)
 		try {
+			console.log(user)
 			await axios.patch(`api/account/user/${user._id}/`, data)
 			toast.success('Profile Updated Successfully')
 		} catch (err) {
@@ -204,6 +239,7 @@ export default function ProfileView() {
 				error={!!errors.username}
 				helperText={errors.username?.message}
 				InputLabelProps={{ shrink: true }}
+				disabled
 				sx={{
 					'& .MuiOutlinedInput-root': {
 						'&:hover fieldset': {
@@ -222,6 +258,7 @@ export default function ProfileView() {
 				error={!!errors.email}
 				helperText={errors.email?.message}
 				InputLabelProps={{ shrink: true }}
+				disabled
 				sx={{
 					'& .MuiOutlinedInput-root': {
 						'&:hover fieldset': {
@@ -363,6 +400,34 @@ export default function ProfileView() {
 
 	return isAuthenticated ? (
 		<Container>
+			<Dialog
+				open={showDeleteAccountPrompt}
+				onClose={hideDeleteAccountPrompt}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description">
+				<DialogTitle id="alert-dialog-title">
+					Confirm Account Deletion
+				</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description">
+						Are you sure you want to delete your account? This
+						action cannot be undone.
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button
+						onClick={hideDeleteAccountPrompt}
+						color="primary">
+						Cancel
+					</Button>
+					<Button
+						onClick={handleDeleteAccount}
+						color="error"
+						autoFocus>
+						Delete
+					</Button>
+				</DialogActions>
+			</Dialog>
 			<Stack
 				alignItems="center"
 				justifyContent="center"
@@ -405,6 +470,23 @@ export default function ProfileView() {
 					<Divider sx={{ mb: 5 }} />
 
 					{renderForm}
+
+					<Stack sx={{ mt: 3 }}>
+						<LoadingButton
+							fullWidth
+							size="large"
+							variant="outlined"
+							color="error"
+							onClick={() => setShowDeleteAccountPrompt(true)}
+							sx={{
+								'&:hover': {
+									bgcolor: theme.palette.error.main,
+									color: theme.palette.background.paper,
+								},
+							}}>
+							Delete Account
+						</LoadingButton>
+					</Stack>
 				</Card>
 			</Stack>
 		</Container>

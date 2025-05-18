@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid')
 const generateSignature = require('../utils/utils')
 const BillingHistory = require('../models/billing_history')
 const axios = require('axios')
+const { protect } = require('../middleware/authMiddleware')
 
 const router = express.Router()
 
@@ -115,13 +116,13 @@ router.get('/recommendations', async (req, res) => {
 })
 
 // Updated billing history route with completed filter
-router.get('/billing-history', async (req, res) => {
+router.get('/billing-history', protect, async (req, res) => {
 	try {
 		const billingHistory = await BillingHistory.find({
 			user_id: req.user._id,
 			status: 'completed', // Added status filter
 		})
-			.populate('items.product_id', 'name price')
+			.populate('items.product_id', 'name price sku image')
 			.sort({ created_at: -1 })
 		res.json(billingHistory)
 	} catch (error) {
@@ -129,7 +130,7 @@ router.get('/billing-history', async (req, res) => {
 	}
 })
 
-router.post('/pay-esewa', async (req, res) => {
+router.post('/pay-esewa', protect, async (req, res) => {
 	try {
 		const { items } = req.body
 		const uuid = uuidv4()
@@ -209,6 +210,22 @@ router.get('/verify-esewa', async (req, res) => {
 		billingHistoryEntry.status = 'completed'
 		await billingHistoryEntry.save()
 
+		// Send email confirmation
+		const user = await User.findById(billingHistoryEntry.user_id)
+		if (user) {
+			await sendEmail({
+				email: user.email,
+				subject: 'Payment Confirmation',
+				html: `
+					<h1>Thank you for your purchase!</h1>
+					<p>Your payment of ${parseFloat(
+						json_data.total_amount
+					).toLocaleString()} has been successfully processed.</p>
+					<p>Transaction ID: ${json_data.transaction_uuid}</p>
+				`,
+			})
+		}
+
 		res.redirect(
 			`http://localhost:5173/payment-success?transaction_code=${
 				json_data.transaction_code
@@ -230,7 +247,7 @@ router.get('/verify-esewa', async (req, res) => {
 	}
 })
 
-router.post('/pay-khalti', async (req, res) => {
+router.post('/pay-khalti', protect, async (req, res) => {
 	try {
 		const { items } = req.body
 		const uuid = uuidv4()
@@ -351,12 +368,24 @@ router.get('/verify-khalti', async (req, res) => {
 		billingHistoryEntry.status = 'completed'
 		await billingHistoryEntry.save()
 
+		// Send email confirmation
+		const emailOptions = {
+			email: billingHistoryEntry.user_email,
+			subject: 'Payment Confirmation',
+			html: `<p>Your payment of Rs. ${total_amount} has been successfully processed. Transaction ID: ${transaction_id}</p>`,
+		}
+		await sendEmail(emailOptions)
+
 		// Redirect to frontend success page
 		res.redirect(
 			`http://localhost:5173/payment-success?transaction_code=${transaction_id}&total_amount=${total_amount}&transaction_uuid=${tidx}`
 		)
 	} catch (error) {
 		console.log(error)
+		res.status(500).json({
+			message: 'Payment verification failed',
+			error: error.message,
+		})
 	}
 })
 

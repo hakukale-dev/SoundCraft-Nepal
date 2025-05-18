@@ -23,7 +23,18 @@ import {
 	NewReleases,
 	Whatshot,
 	Star,
+	Piano,
 } from '@mui/icons-material'
+import {
+	GiDrumKit,
+	GiFlute,
+	GiGuitar,
+	GiHarp,
+	GiHeadphones,
+	GiKeyboard,
+	GiPianoKeys,
+	GiTrumpet,
+} from 'react-icons/gi'
 import { motion } from 'framer-motion'
 import ProductScrollSection from '../../components/ProductScrollSection'
 import { useNavigate } from 'react-router-dom'
@@ -199,42 +210,75 @@ function HomepageView() {
 							/>
 						) : (
 							Object.entries(homepageData.categories).map(
-								([category, count]) => (
-									<Grid
-										item
-										key={category}
-										xs={6}
-										sm={4}
-										md={3}
-										lg={2}>
-										<MotionChip
-											whileHover={{ scale: 1.05 }}
-											clickable
-											variant="outlined"
-											avatar={<Avatar>{count}</Avatar>}
-											label={category}
-											onClick={() =>
-												navigate(
-													`/products?category=${category}`
-												)
-											}
-											sx={{
-												width: '100%',
-												py: 2,
-												fontSize: '1.1rem',
-												borderRadius: 2,
-												borderWidth: 2,
-												borderColor: 'primary.main',
-												color: 'primary.main',
-												'&:hover': {
-													bgcolor: 'primary.light',
-													color: 'primary.secondary',
-												},
-												transition: 'all 0.3s ease',
-											}}
-										/>
-									</Grid>
-								)
+								([category, count]) => {
+									const getCategoryIcon = () => {
+										switch (category) {
+											case 'String Instruments':
+												return <GiGuitar />
+											case 'Woodwind Instruments':
+												return <GiFlute />
+											case 'Brass Instruments':
+												return <GiTrumpet />
+											case 'Percussion Instruments':
+												return <GiDrumKit />
+											case 'Keyboard Instruments':
+												return <GiKeyboard />
+											case 'Electronic Instruments':
+												return <GiDrumKit />
+											case 'Traditional Instruments':
+												return <GiHarp />
+											case 'Accessories':
+												return <GiHeadphones />
+											default:
+												return <MusicNote />
+										}
+									}
+
+									return (
+										<Grid
+											item
+											key={category}
+											xs={6}
+											sm={4}
+											md={3}
+											lg={2}>
+											<MotionChip
+												whileHover={{ scale: 1.05 }}
+												clickable
+												variant="outlined"
+												label={
+													<Stack
+														direction="row"
+														alignItems="center"
+														gap={2}>
+														{getCategoryIcon()}
+														{category}
+													</Stack>
+												}
+												onClick={() =>
+													navigate(
+														`/products?category=${category}`
+													)
+												}
+												sx={{
+													width: '100%',
+													py: 2,
+													fontSize: '1.1rem',
+													borderRadius: 2,
+													borderWidth: 2,
+													borderColor: 'primary.main',
+													color: 'primary.main',
+													'&:hover': {
+														bgcolor:
+															'primary.light',
+														color: 'primary.secondary',
+													},
+													transition: 'all 0.3s ease',
+												}}
+											/>
+										</Grid>
+									)
+								}
 							)
 						)}
 					</Grid>

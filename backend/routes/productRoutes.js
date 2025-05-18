@@ -3,6 +3,7 @@ const router = express.Router()
 const Product = require('../models/product')
 const upload = require('../middleware/uploadMiddleware')
 const { cloudinary } = require('../config/cloudinary')
+const { admin } = require('../middleware/authMiddleware')
 
 router.get('/', async (req, res) => {
 	try {
@@ -97,7 +98,7 @@ router.get('/:id/recommendation', async (req, res) => {
 	}
 })
 
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', admin, upload.single('image'), async (req, res) => {
 	try {
 		const { name, model, description, price, category, stock } = req.body
 		let imageUrl
@@ -126,7 +127,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 	}
 })
 
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', admin, upload.single('image'), async (req, res) => {
 	try {
 		const product = await Product.findById(req.params.id)
 
@@ -163,7 +164,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 	}
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', admin, async (req, res) => {
 	try {
 		const product = await Product.findById(req.params.id)
 

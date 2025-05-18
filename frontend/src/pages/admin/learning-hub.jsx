@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet'
 
 import AdminLearningHub from 'src/sections/admin/learning-hub'
 

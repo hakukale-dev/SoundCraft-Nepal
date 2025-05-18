@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet'
 
 import BillingView from 'src/sections/admin/billing-history'
 

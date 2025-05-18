@@ -128,77 +128,73 @@ export default function BillingView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<Scrollbar>
-					<TableContainer sx={{ overflow: 'unset' }}>
-						<Table sx={{ minWidth: 800 }}>
-							<TableHeader
-								order={order}
-								orderBy={orderBy}
-								rowCount={billingHistories.length}
-								numSelected={selected.length}
-								onRequestSort={handleSort}
-								onSelectAllClick={handleSelectAllClick}
-								headLabel={[
-									{
-										id: 'payment_reference_id',
-										label: 'Reference ID',
-									},
-									{ id: 'user_id', label: 'User' },
-									{
-										id: 'payment_method',
-										label: 'Payment Method',
-									},
-									{ id: 'amount', label: 'Amount' },
-									{ id: 'status', label: 'Status' },
-									{ id: 'createdAt', label: 'Date' },
-									{ id: '' },
-								]}
+				<TableContainer sx={{ overflow: 'unset' }}>
+					<Table sx={{ minWidth: 800 }}>
+						<TableHeader
+							order={order}
+							orderBy={orderBy}
+							rowCount={billingHistories.length}
+							numSelected={selected.length}
+							onRequestSort={handleSort}
+							onSelectAllClick={handleSelectAllClick}
+							headLabel={[
+								{
+									id: 'payment_reference_id',
+									label: 'Reference ID',
+								},
+								{ id: 'user_id', label: 'User' },
+								{
+									id: 'payment_method',
+									label: 'Payment Method',
+								},
+								{ id: 'amount', label: 'Amount' },
+								{ id: 'status', label: 'Status' },
+								{ id: 'createdAt', label: 'Date' },
+								{ id: '' },
+							]}
+						/>
+						<TableBody>
+							{dataFiltered
+								.slice(
+									page * rowsPerPage,
+									page * rowsPerPage + rowsPerPage
+								)
+								.map((row) => (
+									<BillingTableRow
+										id={row._id}
+										key={row._id}
+										payment_reference_id={
+											row.payment_reference_id
+										}
+										user_id={row.user_id?.username || 'N/A'}
+										payment_method={row.payment_method}
+										amount={row.amount}
+										status={row.status}
+										createdAt={new Date(
+											row.createdAt
+										).toLocaleDateString()}
+										selected={
+											selected.indexOf(row._id) !== -1
+										}
+										handleClick={(event) =>
+											handleClick(event, row._id)
+										}
+									/>
+								))}
+
+							<TableEmptyRows
+								height={77}
+								emptyRows={emptyRows(
+									page,
+									rowsPerPage,
+									billingHistories.length
+								)}
 							/>
-							<TableBody>
-								{dataFiltered
-									.slice(
-										page * rowsPerPage,
-										page * rowsPerPage + rowsPerPage
-									)
-									.map((row) => (
-										<BillingTableRow
-											id={row._id}
-											key={row._id}
-											payment_reference_id={
-												row.payment_reference_id
-											}
-											user_id={
-												row.user_id?.username || 'N/A'
-											}
-											payment_method={row.payment_method}
-											amount={row.amount}
-											status={row.status}
-											createdAt={new Date(
-												row.createdAt
-											).toLocaleDateString()}
-											selected={
-												selected.indexOf(row._id) !== -1
-											}
-											handleClick={(event) =>
-												handleClick(event, row._id)
-											}
-										/>
-									))}
 
-								<TableEmptyRows
-									height={77}
-									emptyRows={emptyRows(
-										page,
-										rowsPerPage,
-										billingHistories.length
-									)}
-								/>
-
-								{notFound && <TableNoData query={filterName} />}
-							</TableBody>
-						</Table>
-					</TableContainer>
-				</Scrollbar>
+							{notFound && <TableNoData query={filterName} />}
+						</TableBody>
+					</Table>
+				</TableContainer>
 
 				<TablePagination
 					page={page}

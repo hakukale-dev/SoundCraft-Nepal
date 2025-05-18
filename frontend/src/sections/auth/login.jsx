@@ -19,6 +19,7 @@ import { bgGradient } from 'src/theme/css'
 import { useNavigate } from 'react-router-dom'
 import { login } from 'src/store/authSlice'
 import Iconify from 'src/components/iconify'
+import Button from '@mui/lab/LoadingButton'
 
 export default function LoginView() {
 	const dispatch = useDispatch()
@@ -137,15 +138,15 @@ export default function LoginView() {
 				alignItems="center"
 				justifyContent="flex-end"
 				sx={{ my: 3 }}>
-				<Link
-					variant="subtitle2"
-					underline="hover"
+				<Button
+					onClick={() => navigate('/forgot-password')}
+					variant="text"
 					sx={{
 						color: theme.palette.primary.main,
 						'&:hover': { color: theme.palette.primary.dark },
 					}}>
 					Forgot password?
-				</Link>
+				</Button>
 			</Stack>
 			<LoadingButton
 				fullWidth

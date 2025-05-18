@@ -5,10 +5,12 @@ import Box from '@mui/material/Box'
 import Main from './main'
 import BasicHeader from './header'
 import BasicFooter from './footer'
-import { FloatingCartButton } from '../../components/FloatingCart'
+import ChatWidget from '../../components/chat/ChatWidget'
+import { useSelector } from 'react-redux'
 // ----------------------------------------------------------------------
 
 export default function BasicLayout() {
+	const { user } = useSelector((state) => state.auth)
 	return (
 		<>
 			<BasicHeader />
@@ -21,8 +23,8 @@ export default function BasicLayout() {
 				}}>
 				<Main>
 					<Outlet />
+					{!user?.is_admin && <ChatWidget />}
 				</Main>
-				<FloatingCartButton />
 			</Box>
 
 			<BasicFooter />

@@ -41,8 +41,7 @@ export default function ProductTableRow({
 				hover
 				tabIndex={-1}
 				role="checkbox"
-				selected={selected}
-				sx={{ height: '180px' }}>
+				selected={selected}>
 				<TableCell
 					component="th"
 					scope="row"

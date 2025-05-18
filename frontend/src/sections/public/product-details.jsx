@@ -17,6 +17,8 @@ import {
 	Tab,
 	useMediaQuery,
 	useTheme,
+	TextField,
+	Avatar,
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import Iconify from '../../components/iconify'
@@ -52,6 +54,125 @@ const PriceBox = styled('div')(({ theme }) => ({
 	border: `1px solid ${theme.palette.divider}`,
 }))
 
+const ReviewSection = ({ productId, reviews, handleSubmit }) => {
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const [rating, setRating] = useState(0)
+	const [comment, setComment] = useState('')
+
+	const handleRatingChange = (event, newValue) => {
+		setRating(newValue)
+	}
+
+	const handleCommentChange = (event) => {
+		setComment(event.target.value)
+	}
+
+	const handleSubmitReview = () => {
+		if (rating > 0 && comment.trim()) {
+			handleSubmit({ productId, rating, comment })
+			setRating(0)
+			setComment('')
+		}
+	}
+
+	return (
+		<Box sx={{ maxHeight: 400, overflowY: 'auto', pr: 2 }}>
+			<Stack spacing={4}>
+				{isAuthenticated && (
+					<Box>
+						<Typography
+							variant="h6"
+							gutterBottom>
+							Write a Review
+						</Typography>
+						<TextField
+							fullWidth
+							multiline
+							rows={4}
+							value={comment}
+							onChange={handleCommentChange}
+							placeholder="Share your experience with this product..."
+							variant="outlined"
+							sx={{ mb: 2 }}
+						/>
+						<Stack
+							direction="row"
+							alignItems="center"
+							justifyContent="space-between">
+							<Rating
+								name="product-rating"
+								value={rating}
+								onChange={handleRatingChange}
+								precision={0.5}
+								size="large"
+								sx={{ mb: 2 }}
+							/>
+							<Button
+								onClick={handleSubmitReview}
+								variant="contained"
+								color="primary"
+								disabled={!rating || !comment.trim()}>
+								Submit Review
+							</Button>
+						</Stack>
+					</Box>
+				)}
+
+				{reviews?.length > 0 ? (
+					<Stack spacing={3}>
+						<Typography variant="h6">
+							Customer Reviews ({reviews.length})
+						</Typography>
+						{reviews.map((review) => (
+							<Box
+								key={review._id}
+								sx={{
+									p: 2,
+									border: '1px solid',
+									borderColor: 'divider',
+									borderRadius: 1,
+								}}>
+								<Stack
+									direction="row"
+									spacing={2}
+									alignItems="center"
+									sx={{ mb: 1 }}>
+									<Avatar src={review.user?.photo} />
+									<Typography variant="subtitle1">
+										{review.user?.first_name}{' '}
+										{review.user?.last_name}
+									</Typography>
+									<Rating
+										value={review.rating}
+										precision={0.5}
+										readOnly
+									/>
+									<Typography
+										variant="caption"
+										color="text.secondary">
+										{new Date(
+											review.createdAt
+										).toLocaleDateString()}
+									</Typography>
+								</Stack>
+								<Typography variant="body1">
+									{review.comment}
+								</Typography>
+							</Box>
+						))}
+					</Stack>
+				) : (
+					<Typography
+						variant="body1"
+						color="text.secondary">
+						No reviews yet. Be the first to review!
+					</Typography>
+				)}
+			</Stack>
+		</Box>
+	)
+}
+
 export default function ProductDetailsPage() {
 	const dispatch = useDispatch()
 	const theme = useTheme()
@@ -59,6 +180,8 @@ export default function ProductDetailsPage() {
 	const { id } = useParams()
 	const [rawProductData, setRawProductData] = useState(null)
 	const [product, setProduct] = useState(null)
+	const [reviews, setReviews] = useState(null)
+	const [isInWishlist, setIsInWishlist] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [currentTab, setCurrentTab] = useState('description')
@@ -103,9 +226,35 @@ export default function ProductDetailsPage() {
 			}
 		}
 
+		const fetchReviews = async () => {
+			try {
+				const response = await axios.get(`/api/reviews/product/${id}`)
+				setReviews(response.data.data)
+			} catch (err) {
+				console.error('Error fetching reviews:', err)
+				setError(
+					err.response?.data?.message ||
+						'Failed to fetch product reviews'
+				)
+			}
+		}
+
+		const fetchWishlist = async () => {
+			try {
+				const response = await axios.get('/api/wishlist')
+				setIsInWishlist(
+					response.data.products.some((p) => p._id === id)
+				)
+			} catch (err) {
+				console.error('Error fetching wishlist:', err)
+			}
+		}
+
 		// Only fetch if id exists
 		if (id) {
 			fetchProduct()
+			fetchReviews()
+			fetchWishlist()
 		} else {
 			setError('Invalid product ID')
 			setLoading(false)
@@ -175,6 +324,90 @@ export default function ProductDetailsPage() {
 				autoClose: 3000,
 				theme: 'colored',
 			})
+		}
+	}
+
+	const handleReviewSubmission = async (data) => {
+		try {
+			const response = await axios.post('/api/reviews', data)
+
+			if (response.data.success) {
+				toast.success('Review submitted successfully!', {
+					position: 'bottom-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: 'light',
+				})
+
+				// Update product state to include new review
+				setProduct((prev) => ({
+					...prev,
+					reviews: [
+						{
+							user: user,
+							rating: data.rating,
+							comment: data.comment,
+							createdAt: new Date(),
+						},
+						...prev.reviews,
+					],
+				}))
+			}
+		} catch (error) {
+			console.error('Error submitting review:', error)
+			toast.error(
+				error.response?.data?.message || 'Failed to submit review',
+				{
+					position: 'bottom-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: 'light',
+				}
+			)
+		}
+	}
+
+	const handleAddToWishlist = async () => {
+		try {
+			if (!isAuthenticated) {
+				navigate('/login')
+				return
+			}
+
+			const response = await axios.post(`/api/wishlist/${product._id}`)
+
+			if (response.data.success) {
+				toast.success('Added to wishlist!', {
+					position: 'bottom-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: 'light',
+				})
+				setIsInWishlist(true)
+			}
+		} catch (error) {
+			console.error('Error adding to wishlist:', error)
+			toast.error(
+				error.response?.data?.message || 'Failed to add to wishlist',
+				{
+					position: 'bottom-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: 'light',
+				}
+			)
 		}
 	}
 
@@ -364,25 +597,32 @@ export default function ProductDetailsPage() {
 									</Tabs>
 
 									{currentTab === 'description' && (
-										<Stack spacing={2}>
-											{product.details?.map(
-												(detail, index) => (
-													<Stack
-														key={index}
-														direction="row"
-														spacing={2}>
-														<Iconify
-															icon="mdi:check-circle-outline"
-															width={24}
-															color="primary.main"
-														/>
-														<Typography variant="body1">
-															{detail}
-														</Typography>
-													</Stack>
-												)
-											)}
-										</Stack>
+										<Box
+											sx={{
+												maxHeight: 400,
+												overflowY: 'auto',
+												pr: 2,
+											}}>
+											<Stack spacing={2}>
+												{product.details?.map(
+													(detail, index) => (
+														<Stack
+															key={index}
+															direction="row"
+															spacing={2}>
+															<Iconify
+																icon="mdi:check-circle-outline"
+																width={24}
+																color="primary.main"
+															/>
+															<Typography variant="body1">
+																{detail}
+															</Typography>
+														</Stack>
+													)
+												)}
+											</Stack>
+										</Box>
 									)}
 
 									{currentTab === 'specifications' && (
@@ -409,6 +649,16 @@ export default function ProductDetailsPage() {
 										</Grid>
 									)}
 
+									{currentTab === 'reviews' && (
+										<ReviewSection
+											productId={product._id}
+											reviews={reviews}
+											handleSubmit={
+												handleReviewSubmission
+											}
+										/>
+									)}
+
 									<Stack
 										direction="row"
 										spacing={2}
@@ -425,12 +675,19 @@ export default function ProductDetailsPage() {
 											Add to Cart
 										</Button>
 										<IconButton
+											onClick={handleAddToWishlist}
 											color="primary"
 											sx={{
 												border: `1px solid ${theme.palette.divider}`,
 												borderRadius: 2,
 											}}>
-											<Iconify icon="mdi:heart-outline" />
+											<Iconify
+												icon={
+													isInWishlist
+														? 'mdi:heart'
+														: 'mdi:heart-outline'
+												}
+											/>
 										</IconButton>
 									</Stack>
 

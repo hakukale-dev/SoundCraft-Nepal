@@ -21,7 +21,8 @@ import { bgGradient } from 'src/theme/css'
 
 export default function SignUpView() {
 	const theme = useTheme()
-	const navigation = useNavigate()
+	const navigate = useNavigate()
+	const [currentStep, setCurrentStep] = useState(0)
 
 	const [formData, setFormData] = useState({
 		first_name: '',
@@ -41,337 +42,213 @@ export default function SignUpView() {
 	})
 
 	const [showPassword, setShowPassword] = useState(false)
-	const [errors, setErrors] = useState([])
+	const [errors, setErrors] = useState({})
 	const [isLoading, setIsLoading] = useState(false)
 
 	const handleChange = (e) => {
 		const { name, value } = e.target
 		if (name.includes('.')) {
-			// Handle nested address fields
 			const [parent, child] = name.split('.')
 			setFormData((prev) => ({
 				...prev,
-				[parent]: {
-					...prev[parent],
-					[child]: value,
-				},
+				[parent]: { ...prev[parent], [child]: value },
 			}))
 		} else {
-			setFormData((prev) => ({
-				...prev,
-				[name]: value,
-			}))
+			setFormData((prev) => ({ ...prev, [name]: value }))
 		}
 	}
 
 	const handleSubmit = async () => {
 		setIsLoading(true)
 		try {
-			await axios.post('api/auth/register/', formData)
+			await axios.post('/api/auth/register/', formData)
 			toast.success('Registration successful! Please login.')
-			navigation('/login')
+			navigate('/login')
 		} catch (err) {
-			setErrors(err.response.data)
-			toast.error(err.response.data.error)
+			setErrors(err.response?.data || {})
+			toast.error(err.response?.data?.error || 'Registration failed')
 		} finally {
 			setIsLoading(false)
 		}
 	}
 
-	const renderForm = (
-		<>
-			<Stack spacing={3}>
-				<Stack
-					direction="row"
-					spacing={2}>
-					<TextField
-						fullWidth
-						label="First Name"
-						name="first_name"
-						error={!!errors.first_name}
-						helperText={errors.first_name}
-						onChange={handleChange}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
-					/>
-					<TextField
-						fullWidth
-						label="Last Name"
-						name="last_name"
-						error={!!errors.last_name}
-						helperText={errors.last_name}
-						onChange={handleChange}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
-					/>
-				</Stack>
+	const renderStepContent = (step) => {
+		switch (step) {
+			case 0:
+				return (
+					<Stack spacing={3}>
+						<Stack
+							direction="row"
+							spacing={2}>
+							<TextField
+								fullWidth
+								label="First Name"
+								name="first_name"
+								error={!!errors.first_name}
+								helperText={errors.first_name}
+								onChange={handleChange}
+							/>
+							<TextField
+								fullWidth
+								label="Last Name"
+								name="last_name"
+								error={!!errors.last_name}
+								helperText={errors.last_name}
+								onChange={handleChange}
+							/>
+						</Stack>
 
-				<Stack
-					direction="row"
-					spacing={2}>
-					<TextField
-						fullWidth
-						label="Username"
-						name="username"
-						error={!!errors.username}
-						onChange={handleChange}
-						helperText={errors.username}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
-					/>
-					<TextField
-						fullWidth
-						label="Email"
-						type="email"
-						name="email"
-						onChange={handleChange}
-						error={!!errors.email}
-						helperText={errors.email}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
-					/>
-				</Stack>
-
-				<TextField
-					fullWidth
-					label="Phone Number"
-					name="phone_number"
-					inputProps={{ maxLength: 10 }}
-					onChange={handleChange}
-					error={!!errors.phone_number}
-					helperText={errors.phone_number}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
-				/>
-
-				<TextField
-					fullWidth
-					label="Date of Birth"
-					type="date"
-					InputLabelProps={{ shrink: true }}
-					onChange={handleChange}
-					name="dob"
-					error={!!errors.dob}
-					helperText={errors.dob}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
-				/>
-
-				<Stack spacing={2}>
-					<TextField
-						fullWidth
-						label="Street Address"
-						name="address.street"
-						error={!!errors.address?.street}
-						onChange={handleChange}
-						helperText={errors.address?.street}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
-					/>
-					<Stack
-						direction="row"
-						spacing={2}>
+						<Stack
+							direction="row"
+							spacing={2}>
+							<TextField
+								fullWidth
+								label="Username"
+								name="username"
+								error={!!errors.username}
+								helperText={errors.username}
+								onChange={handleChange}
+							/>
+							<TextField
+								fullWidth
+								label="Email"
+								type="email"
+								name="email"
+								error={!!errors.email}
+								helperText={errors.email}
+								onChange={handleChange}
+							/>
+						</Stack>
+					</Stack>
+				)
+			case 1:
+				return (
+					<Stack spacing={3}>
 						<TextField
 							fullWidth
-							label="City"
-							name="address.city"
-							error={!!errors.address?.city}
+							label="Phone Number"
+							name="phone_number"
+							inputProps={{ maxLength: 10 }}
+							error={!!errors.phone_number}
+							helperText={errors.phone_number}
 							onChange={handleChange}
-							helperText={errors.address?.city}
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'&:hover fieldset': {
-										borderColor: theme.palette.primary.main,
-									},
-								},
+						/>
+
+						<TextField
+							fullWidth
+							label="Date of Birth"
+							type="date"
+							InputLabelProps={{ shrink: true }}
+							name="dob"
+							error={!!errors.dob}
+							helperText={errors.dob}
+							onChange={handleChange}
+						/>
+					</Stack>
+				)
+			case 2:
+				return (
+					<Stack spacing={3}>
+						<TextField
+							fullWidth
+							label="Street Address"
+							name="address.street"
+							error={!!errors.address?.street}
+							helperText={errors.address?.street}
+							onChange={handleChange}
+						/>
+						<Stack
+							direction="row"
+							spacing={2}>
+							<TextField
+								fullWidth
+								label="City"
+								name="address.city"
+								error={!!errors.address?.city}
+								helperText={errors.address?.city}
+								onChange={handleChange}
+							/>
+							<TextField
+								fullWidth
+								label="State"
+								name="address.state"
+								error={!!errors.address?.state}
+								helperText={errors.address?.state}
+								onChange={handleChange}
+							/>
+							<TextField
+								fullWidth
+								label="ZIP Code"
+								name="address.zip_code"
+								error={!!errors.address?.zip_code}
+								helperText={errors.address?.zip_code}
+								onChange={handleChange}
+							/>
+						</Stack>
+					</Stack>
+				)
+			case 3:
+				return (
+					<Stack spacing={3}>
+						<TextField
+							fullWidth
+							label="Password"
+							type={showPassword ? 'text' : 'password'}
+							name="password"
+							error={!!errors.password}
+							helperText={errors.password}
+							onChange={handleChange}
+							InputProps={{
+								endAdornment: (
+									<InputAdornment position="end">
+										<IconButton
+											onClick={() =>
+												setShowPassword(!showPassword)
+											}
+											edge="end">
+											{showPassword ? (
+												<VisibilityOff />
+											) : (
+												<Visibility />
+											)}
+										</IconButton>
+									</InputAdornment>
+								),
 							}}
 						/>
+
 						<TextField
 							fullWidth
-							label="State"
-							name="address.state"
-							error={!!errors.address?.state}
+							label="Confirm Password"
+							type={showPassword ? 'text' : 'password'}
+							name="password2"
+							error={!!errors.password2}
+							helperText={errors.password2}
 							onChange={handleChange}
-							helperText={errors.address?.state}
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'&:hover fieldset': {
-										borderColor: theme.palette.primary.main,
-									},
-								},
-							}}
-						/>
-						<TextField
-							fullWidth
-							label="ZIP Code"
-							name="address.zip_code"
-							error={!!errors.address?.zip_code}
-							onChange={handleChange}
-							helperText={errors.address?.zip_code}
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'&:hover fieldset': {
-										borderColor: theme.palette.primary.main,
-									},
-								},
+							InputProps={{
+								endAdornment: (
+									<InputAdornment position="end">
+										<IconButton
+											onClick={() =>
+												setShowPassword(!showPassword)
+											}
+											edge="end">
+											{showPassword ? (
+												<VisibilityOff />
+											) : (
+												<Visibility />
+											)}
+										</IconButton>
+									</InputAdornment>
+								),
 							}}
 						/>
 					</Stack>
-				</Stack>
-
-				<TextField
-					fullWidth
-					label="Password"
-					type={showPassword ? 'text' : 'password'}
-					name="password"
-					onChange={handleChange}
-					error={!!errors.password}
-					helperText={errors.password}
-					InputProps={{
-						endAdornment: (
-							<InputAdornment position="end">
-								<IconButton
-									onClick={() =>
-										setShowPassword(!showPassword)
-									}
-									edge="end">
-									{showPassword ? (
-										<VisibilityOff />
-									) : (
-										<Visibility />
-									)}
-								</IconButton>
-							</InputAdornment>
-						),
-					}}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
-				/>
-
-				<TextField
-					fullWidth
-					label="Confirm Password"
-					type={showPassword ? 'text' : 'password'}
-					name="password2"
-					onChange={handleChange}
-					error={!!errors.password2}
-					helperText={errors.password2}
-					InputProps={{
-						endAdornment: (
-							<InputAdornment position="end">
-								<IconButton
-									onClick={() =>
-										setShowPassword(!showPassword)
-									}
-									edge="end">
-									{showPassword ? (
-										<VisibilityOff />
-									) : (
-										<Visibility />
-									)}
-								</IconButton>
-							</InputAdornment>
-						),
-					}}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
-				/>
-			</Stack>
-
-			<LoadingButton
-				fullWidth
-				size="large"
-				type="submit"
-				variant="contained"
-				onClick={handleSubmit}
-				loading={isLoading}
-				sx={{
-					mt: 3,
-					bgcolor: theme.palette.primary.main,
-					color: theme.palette.primary.contrastText,
-					'&:hover': {
-						bgcolor: theme.palette.primary.dark,
-					},
-				}}>
-				Sign Up
-			</LoadingButton>
-
-			<Typography
-				marginTop={2}
-				textAlign="center"
-				onClick={() => navigation('/login')}
-				sx={{
-					color: theme.palette.primary.main,
-					cursor: 'pointer',
-					'&:hover': {
-						color: theme.palette.primary.dark,
-						textDecoration: 'underline',
-					},
-				}}>
-				Already have an account? Login here
-			</Typography>
-
-			<Typography
-				marginTop={2}
-				textAlign="center"
-				onClick={() => navigation('/')}
-				sx={{
-					color: theme.palette.primary.main,
-					cursor: 'pointer',
-					'&:hover': {
-						color: theme.palette.primary.dark,
-						textDecoration: 'underline',
-					},
-				}}>
-				Back to Homepage
-			</Typography>
-		</>
-	)
+				)
+			default:
+				return null
+		}
+	}
 
 	return (
 		<Box
@@ -392,13 +269,8 @@ export default function SignUpView() {
 						width: 1,
 						maxWidth: 560,
 						backgroundColor: theme.palette.background.paper,
-						boxShadow: `0 4px 12px ${alpha(
-							theme.palette.primary.main,
-							0.15
-						)}`,
 					}}>
 					<Stack
-						direction="row"
 						alignItems="center"
 						spacing={1}
 						sx={{ mb: 5 }}>
@@ -410,10 +282,7 @@ export default function SignUpView() {
 						/>
 						<Typography
 							variant="h4"
-							sx={{
-								color: theme.palette.primary.main,
-								fontFamily: theme.typography.fontFamily,
-							}}>
+							sx={{ color: theme.palette.primary.main }}>
 							Create Account
 						</Typography>
 						<MusicNote
@@ -424,7 +293,68 @@ export default function SignUpView() {
 						/>
 					</Stack>
 
-					{renderForm}
+					{renderStepContent(currentStep)}
+
+					<Stack
+						direction="row"
+						spacing={2}
+						sx={{ mt: 3 }}>
+						{currentStep > 0 && (
+							<LoadingButton
+								fullWidth
+								size="large"
+								variant="outlined"
+								onClick={() =>
+									setCurrentStep((prev) => prev - 1)
+								}>
+								Previous
+							</LoadingButton>
+						)}
+						{currentStep < 3 ? (
+							<LoadingButton
+								fullWidth
+								size="large"
+								variant="contained"
+								onClick={() =>
+									setCurrentStep((prev) => prev + 1)
+								}>
+								Next
+							</LoadingButton>
+						) : (
+							<LoadingButton
+								fullWidth
+								size="large"
+								variant="contained"
+								onClick={handleSubmit}
+								loading={isLoading}>
+								Sign Up
+							</LoadingButton>
+						)}
+					</Stack>
+
+					<Typography
+						sx={{
+							mt: 2,
+							textAlign: 'center',
+							color: 'primary.main',
+							cursor: 'pointer',
+							'&:hover': { textDecoration: 'underline' },
+						}}
+						onClick={() => navigate('/login')}>
+						Already have an account? Login here
+					</Typography>
+
+					<Typography
+						sx={{
+							mt: 2,
+							textAlign: 'center',
+							color: 'primary.main',
+							cursor: 'pointer',
+							'&:hover': { textDecoration: 'underline' },
+						}}
+						onClick={() => navigate('/')}>
+						Back to Homepage
+					</Typography>
 				</Card>
 			</Stack>
 		</Box>

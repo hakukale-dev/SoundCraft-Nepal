@@ -59,7 +59,7 @@ const cartSlice = createSlice({
 			if (item && item.qty > 1) item.qty -= 1
 		},
 		clearCart: (state, action) => {
-			const userId = action.payload
+			const userId = action.payload.userId
 			if (!userId) return
 
 			state.itemsByUser[userId] = []

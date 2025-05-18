@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import {
@@ -9,8 +10,13 @@ import {
 	Divider,
 	Container,
 	CardMedia,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
 } from '@mui/material'
 import PaymentIcon from '@mui/icons-material/Payment'
+import { CiMoneyBill } from 'react-icons/ci'
 
 import axios from '../../utils/axios'
 import { selectCartDetails } from '../../store/cartSlice'
@@ -20,6 +26,7 @@ export default function CheckoutPageView() {
 	const { items, totalPrice } = useSelector((state) =>
 		selectCartDetails(state, user?._id)
 	)
+	const [openDialog, setOpenDialog] = useState(false)
 
 	const handleEsewaPayment = async () => {
 		try {
@@ -80,9 +87,17 @@ export default function CheckoutPageView() {
 		}
 	}
 
-	const handlePlaceOrder = () => {
-		console.log('Placing order...')
-		alert('Order placed successfully!')
+	const handleOpenDialog = () => {
+		setOpenDialog(true)
+	}
+
+	const handleCloseDialog = () => {
+		setOpenDialog(false)
+	}
+
+	const handleCashOnDelivery = () => {
+		toast.success('Order placed successfully with Cash on Delivery!')
+		setOpenDialog(false)
 	}
 
 	return (
@@ -140,10 +155,8 @@ export default function CheckoutPageView() {
 										<Typography
 											variant="body2"
 											sx={{ mt: 1 }}>
-											Total: Rs. 
-											{(
-												item.qty * item.price
-											).toFixed(2)}
+											Total: Rs.
+											{(item.qty * item.price).toFixed(2)}
 										</Typography>
 									</Grid>
 								</Grid>
@@ -214,13 +227,38 @@ export default function CheckoutPageView() {
 								size="large"
 								startIcon={<PaymentIcon />}
 								sx={{ mt: 2 }}
-								onClick={handlePlaceOrder}>
+								onClick={handleOpenDialog}>
 								Other Payment Method
 							</Button>
 						</CardContent>
 					</Card>
 				</Grid>
 			</Grid>
+
+			<Dialog
+				open={openDialog}
+				onClose={handleCloseDialog}>
+				<DialogTitle>Select Payment Method</DialogTitle>
+				<DialogContent>
+					<Typography
+						variant="body1"
+						sx={{ mb: 2 }}>
+						Please choose your preferred payment method
+					</Typography>
+					<Button
+						fullWidth
+						variant="contained"
+						color="primary"
+						startIcon={<CiMoneyBill />}
+						onClick={handleCashOnDelivery}
+						sx={{ mt: 2 }}>
+						Cash on Delivery
+					</Button>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleCloseDialog}>Cancel</Button>
+				</DialogActions>
+			</Dialog>
 		</Container>
 	)
 }

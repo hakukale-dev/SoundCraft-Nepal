@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import {
 	Box,
 	Typography,
@@ -11,10 +11,21 @@ import {
 	Card,
 	Button,
 	useTheme,
+	IconButton,
 } from '@mui/material'
 import { motion } from 'framer-motion'
-import { KeyboardArrowRight, Star } from '@mui/icons-material'
+import {
+	KeyboardArrowRight,
+	Star,
+	ShoppingCart,
+	Add,
+	ShoppingCartSharp,
+} from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector, useStore } from 'react-redux'
+import { addToCart } from 'src/store/cartSlice'
+import { selectCanAddToCart } from '../store/cartSlice'
+import { toast } from 'react-toastify'
 
 const MotionCard = motion(Card)
 const MotionButton = motion(Button)
@@ -22,6 +33,53 @@ const MotionButton = motion(Button)
 const ProductScrollSection = ({ title, icon, items }) => {
 	const theme = useTheme()
 	const navigate = useNavigate()
+	const dispatch = useDispatch()
+	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const store = useStore()
+
+	const handleAddToCart = useCallback(
+		(product) => {
+			if (!isAuthenticated) {
+				navigate('/login')
+				return
+			}
+
+			if (!product?._id || !product?.price) {
+				toast.error('Invalid product information')
+				return
+			}
+
+			// Get fresh state from store
+			const currentState = store.getState()
+			const canAdd = selectCanAddToCart(
+				currentState,
+				user._id,
+				product._id,
+				1
+			)
+
+			if (!canAdd) {
+				toast.error('Cannot add more than available stock')
+				return
+			}
+
+			dispatch(
+				addToCart({
+					userId: user._id,
+					product: {
+						_id: product._id,
+						name: product.name,
+						price: product.price,
+						image: product.image,
+						stock: product.stock,
+					},
+				})
+			)
+
+			toast.success(`${product.name} added to cart!`)
+		},
+		[dispatch, user, isAuthenticated, navigate, store]
+	)
 
 	return (
 		<Box sx={{ mb: 10, position: 'relative' }}>
@@ -33,7 +91,11 @@ const ProductScrollSection = ({ title, icon, items }) => {
 					px: 2,
 				}}>
 				{React.cloneElement(icon, {
-					sx: { fontSize: '2.5rem', color: 'primary.main' },
+					sx: {
+						fontSize: '2.5rem',
+						color: 'primary.main',
+						filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+					},
 				})}
 				<Typography
 					variant="h3"
@@ -41,6 +103,7 @@ const ProductScrollSection = ({ title, icon, items }) => {
 						fontWeight: 800,
 						ml: 2,
 						fontSize: { xs: '1.8rem', md: '2.4rem' },
+						textShadow: '0 2px 4px rgba(0,0,0,0.1)',
 					}}>
 					{title}
 				</Typography>
@@ -56,15 +119,15 @@ const ProductScrollSection = ({ title, icon, items }) => {
 					py: 4,
 					px: 2,
 					'&::-webkit-scrollbar': {
-						height: '8px',
+						height: '6px',
 						backgroundColor: 'transparent',
 					},
 					'&::-webkit-scrollbar-thumb': {
 						borderRadius: '4px',
 						backgroundColor: theme.palette.action.hover,
-					},
-					'&:hover::-webkit-scrollbar-thumb': {
-						backgroundColor: theme.palette.action.selected,
+						'&:hover': {
+							backgroundColor: theme.palette.action.selected,
+						},
 					},
 				}}>
 				{items.map((product) => (
@@ -72,7 +135,7 @@ const ProductScrollSection = ({ title, icon, items }) => {
 						item
 						key={product._id}
 						sx={{
-							minWidth: { xs: '85vw', sm: '400px', md: '420px' },
+							minWidth: { xs: '75vw', sm: '380px', md: '400px' },
 							pr: 3,
 						}}>
 						<MotionCard
@@ -81,24 +144,31 @@ const ProductScrollSection = ({ title, icon, items }) => {
 							whileHover={{ scale: 1.02 }}
 							sx={{
 								height: '100%',
-								borderRadius: 4,
+								borderRadius: 3,
 								overflow: 'hidden',
-								boxShadow: theme.shadows[4],
+								boxShadow: theme.shadows[2],
 								transition:
 									'all 0.3s cubic-bezier(.25,.8,.25,1)',
 								'&:hover': {
-									boxShadow: theme.shadows[8],
+									boxShadow: theme.shadows[6],
 								},
 							}}>
-							<Box sx={{ position: 'relative' }}>
+							<Box
+								sx={{
+									position: 'relative',
+									overflow: 'hidden',
+								}}>
 								<CardMedia
 									component="img"
 									image={product.image}
-									alt={`${product.name} product image`}
+									alt={product.name}
 									sx={{
-										height: 320,
+										height: 280,
 										objectFit: 'cover',
-										transition: 'transform 0.3s',
+										transition: 'transform 0.3s ease',
+										'&:hover': {
+											transform: 'scale(1.05)',
+										},
 									}}
 								/>
 								<Box
@@ -109,76 +179,78 @@ const ProductScrollSection = ({ title, icon, items }) => {
 										right: 0,
 										bottom: 0,
 										background:
-											'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.3))',
+											'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4))',
 									}}
 								/>
 								<Box
 									sx={{
 										position: 'absolute',
-										top: 16,
-										left: 16,
+										top: 12,
+										left: 12,
 										display: 'flex',
 										gap: 1,
 										flexWrap: 'wrap',
 									}}>
 									{product.isNew && (
 										<Chip
-											label="New Arrival"
+											label="New"
 											color="primary"
 											size="small"
 											sx={{
 												fontWeight: 700,
-												borderRadius: 2,
+												borderRadius: 1.5,
 												px: 1,
-												textShadow:
-													'0 1px 2px rgba(0,0,0,0.1)',
+												height: 28,
+												'& .MuiChip-label': { px: 0.5 },
 											}}
 										/>
 									)}
 									{product.discount > 0 && (
 										<Chip
-											label={`${product.discount}% OFF`}
+											label={`-${product.discount}%`}
 											color="error"
 											size="small"
 											sx={{
 												fontWeight: 700,
-												borderRadius: 2,
+												borderRadius: 1.5,
 												px: 1,
+												height: 28,
+												'& .MuiChip-label': { px: 0.5 },
 											}}
 										/>
 									)}
 								</Box>
 							</Box>
-							<CardContent sx={{ p: 3 }}>
-								<Stack spacing={2}>
+							<CardContent sx={{ p: 2.5 }}>
+								<Stack spacing={1.5}>
 									<Typography
 										variant="h6"
 										sx={{
-											fontWeight: 700,
-											overflow: 'hidden',
-											textOverflow: 'ellipsis',
+											fontWeight: 800,
+											color: 'text.primary',
+											lineHeight: 1.3,
+											minHeight: '3.2em',
 											display: '-webkit-box',
 											WebkitLineClamp: 2,
 											WebkitBoxOrient: 'vertical',
+											overflow: 'hidden',
 										}}>
 										{product.name}
 									</Typography>
 									<Typography
-										variant="p"
+										variant="body2"
 										sx={{
-											fontWeight: 300,
-											overflow: 'hidden',
-											textOverflow: 'ellipsis',
-											display: '-webkit-box',
-											WebkitLineClamp: 2,
-											WebkitBoxOrient: 'vertical',
+											color: 'text.secondary',
+											fontWeight: 500,
+											textTransform: 'uppercase',
+											letterSpacing: 0.5,
 										}}>
-										{product.category} | {product.model}
+										{product.category}
 									</Typography>
 
 									<Stack
 										direction="row"
-										spacing={2}
+										spacing={1}
 										alignItems="center">
 										<Rating
 											value={product.rating}
@@ -189,38 +261,40 @@ const ProductScrollSection = ({ title, icon, items }) => {
 												<Star
 													sx={{
 														color: 'text.disabled',
-														opacity: 0.5,
+														opacity: 0.4,
 													}}
 												/>
 											}
 											sx={{
 												color: 'warning.main',
+												'& .MuiRating-iconFilled': {
+													textShadow:
+														'0 2px 4px rgba(0,0,0,0.1)',
+												},
 											}}
 										/>
 										<Typography
-											variant="body1"
-											sx={{ fontWeight: 500 }}>
-											{product.rating}
-											<Typography
-												component="span"
-												variant="body2"
-												color="text.secondary"
-												sx={{ ml: 0.5 }}>
-												({product.reviews} reviews)
-											</Typography>
+											variant="body2"
+											sx={{
+												fontWeight: 600,
+												color: 'text.secondary',
+											}}>
+											({product.reviews})
 										</Typography>
 									</Stack>
 
 									<Stack
 										direction="row"
 										justifyContent="space-between"
-										alignItems="flex-end">
-										<Stack spacing={0.5}>
+										alignItems="center"
+										sx={{ mt: 1 }}>
+										<Stack spacing={0.25}>
 											<Typography
 												variant="h5"
 												sx={{
 													fontWeight: 800,
 													color: 'primary.main',
+													lineHeight: 1,
 												}}>
 												Rs. {product.price}
 											</Typography>
@@ -236,42 +310,59 @@ const ProductScrollSection = ({ title, icon, items }) => {
 												</Typography>
 											)}
 										</Stack>
-										<MotionButton
-											whileHover={{
-												scale: 1.05,
-												backgroundColor:
-													theme.palette.primary.dark,
+										<Stack
+											direction={{
+												xs: 'column',
+												sm: 'row',
 											}}
-											whileTap={{ scale: 0.95 }}
-											variant="contained"
-											color="primary"
-											size="medium"
-											onClick={() =>
-												navigate(
-													`/products/${product._id}`
-												)
-											}
-											endIcon={
-												<motion.div
-													animate={{ x: 0 }}
-													transition={{
-														repeatType: 'mirror',
-														repeat: Infinity,
-														duration: 1.5,
-													}}>
-													<KeyboardArrowRight />
-												</motion.div>
-											}
+											spacing={1}
 											sx={{
-												px: 4,
-												py: 1,
-												fontWeight: 700,
-												borderRadius: 3,
-												textTransform: 'none',
-												fontSize: '1rem',
+												width: {
+													xs: '100%',
+													sm: 'auto',
+												},
 											}}>
-											View Details
-										</MotionButton>
+											<MotionButton
+												whileHover={{ scale: 1.05 }}
+												whileTap={{ scale: 0.95 }}
+												variant="outlined"
+												color="primary"
+												size="medium"
+												onClick={() =>
+													navigate(
+														`/products/${product._id}`
+													)
+												}
+												endIcon={
+													<motion.div
+														animate={{
+															x: [0, 4, 0],
+														}}
+														transition={{
+															repeat: Infinity,
+															duration: 1.5,
+														}}>
+														<KeyboardArrowRight />
+													</motion.div>
+												}
+												sx={{
+													fontWeight: 700,
+													borderRadius: 2,
+													textTransform: 'none',
+													fontSize: '0.875rem',
+													whiteSpace: 'nowrap',
+												}}>
+												Details
+											</MotionButton>
+
+											<IconButton
+												color="primary"
+												onClick={() =>
+													handleAddToCart(product)
+												}>
+												<ShoppingCartSharp />
+											</IconButton>
+										</Stack>
 									</Stack>
 								</Stack>
 							</CardContent>

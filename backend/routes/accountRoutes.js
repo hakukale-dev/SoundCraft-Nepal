@@ -4,46 +4,113 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const upload = require('../middleware/uploadMiddleware')
 const { cloudinary } = require('../config/cloudinary')
+const { protect, admin } = require('../middleware/authMiddleware')
 
 const router = express.Router()
 
-// Get User Details Route
-router.get('/user', async (req, res) => {
+// Create User (Admin only)
+router.post('/user', admin, async (req, res) => {
 	try {
-		const authHeader = req.headers.authorization
-		if (!authHeader?.startsWith('Bearer ')) {
-			return res
-				.status(401)
-				.json({ error: 'Access denied. Invalid token format.' })
+		const {
+			first_name,
+			last_name,
+			username,
+			email,
+			password,
+			phone_number,
+			address,
+			dob,
+			is_admin,
+		} = req.body
+
+		// Check if user already exists
+		const existingUser = await User.findOne({
+			$or: [{ email }, { username }],
+		})
+		if (existingUser) {
+			return res.status(400).json({ error: 'User already exists' })
 		}
 
-		const token = authHeader.split(' ')[1]
-		const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretKey')
-
-		const user = await User.findById(decoded.id)
-			.select('-password -__v')
-			.lean()
-
-		if (!user) {
-			return res.status(404).json({ error: 'User not found' })
+		// Validate phone number format and check if already exists
+		if (phone_number) {
+			const existingPhone = await User.findOne({ phone_number })
+			if (existingPhone) {
+				return res.status(400).json({
+					error: 'Phone number already in use',
+				})
+			}
 		}
 
-		res.json(user)
+		// Validate password
+		if (password.length < 8) {
+			return res.status(400).json({
+				error: 'Password must be at least 8 characters long',
+			})
+		}
+
+		// Hash password
+		const hashedPassword = await bcrypt.hash(password, 12)
+
+		// Create new user
+		const newUser = new User({
+			first_name,
+			last_name,
+			username,
+			email,
+			password: hashedPassword,
+			phone_number,
+			address,
+			dob,
+			is_admin,
+		})
+
+		await newUser.save()
+
+		// Return user without password
+		const user = await User.findById(newUser._id).select('-password -__v')
+		res.status(201).json(user)
 	} catch (err) {
-		if (err.name === 'JsonWebTokenError') {
-			return res.status(401).json({ error: 'Invalid token' })
-		}
-		if (err.name === 'TokenExpiredError') {
-			return res.status(401).json({ error: 'Token expired' })
-		}
-
-		console.error('User details error:', err)
+		console.error('Create user error:', err)
 		res.status(500).json({ error: 'Internal server error' })
 	}
 })
 
+// Get User Details Route
+router.get('/user', protect, async (req, res) => {
+	try {
+		// Get user ID from request (added by protect middleware)
+		const userId = req.user._id
+
+		// Find user and exclude sensitive fields
+		const user = await User.findById(userId)
+			.select('-password -__v -is_admin -is_disabled')
+			.lean()
+
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			})
+		}
+
+		res.json({
+			success: true,
+			data: user,
+		})
+	} catch (err) {
+		console.error('User details error:', err)
+		res.status(500).json({
+			success: false,
+			error: 'Internal server error',
+			...(process.env.NODE_ENV === 'development' && {
+				details: err.message,
+			}),
+		})
+	}
+})
+
 // Get All Users (Admin only)
-router.get('/users', async (req, res) => {
+router.get('/users', admin, async (req, res) => {
 	try {
 		const users = await User.find().select('-password -__v').lean()
 		res.json(users)
@@ -54,31 +121,9 @@ router.get('/users', async (req, res) => {
 })
 
 // Update User
-router.patch('/user/:id', async (req, res) => {
+router.patch('/user/:id', protect, async (req, res) => {
 	try {
-		const { first_name, last_name, email, phone_number, address, dob } =
-			req.body
-
-		console.log(req.body)
-
-		// Validate email format if provided
-		if (email) {
-			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-			if (!emailRegex.test(email)) {
-				return res.status(400).json({ error: 'Invalid email format' })
-			}
-
-			// Check if email is already taken by another user
-			const existingUser = await User.findOne({
-				email,
-				_id: { $ne: req.params.id },
-			})
-			if (existingUser) {
-				return res
-					.status(400)
-					.json({ error: 'Email is already registered' })
-			}
-		}
+		const { first_name, last_name, phone_number, address, dob } = req.body
 
 		const userId = req.params.id
 
@@ -93,7 +138,6 @@ router.patch('/user/:id', async (req, res) => {
 
 		user.first_name = first_name || user.first_name
 		user.last_name = last_name || user.last_name
-		user.email = email || user.email
 		user.phone_number = phone_number || user.phone_number
 		user.address = address || user.address
 		user.dob = dob || user.dob
@@ -109,50 +153,81 @@ router.patch('/user/:id', async (req, res) => {
 })
 
 // Update User Photo
-router.patch('/user/:id/photo', upload.single('photo'), async (req, res) => {
+router.patch(
+	'/user/:id/photo',
+	protect,
+	upload.single('photo'),
+	async (req, res) => {
+		try {
+			const userId = req.params.id
+
+			if (!userId) {
+				return res.status(400).json({ error: 'User ID is required' })
+			}
+
+			if (!req.file) {
+				return res.status(400).json({ error: 'No photo uploaded' })
+			}
+
+			const result = await cloudinary.uploader.upload(req.file.path)
+			const imageUrl = result.secure_url
+
+			const user = await User.findById(userId)
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' })
+			}
+
+			user.photo = imageUrl
+			user.updatedAt = new Date()
+			const updatedUser = await user.save()
+
+			res.json({
+				message: 'Photo updated successfully',
+				photo: updatedUser.photo,
+			})
+		} catch (err) {
+			console.error('Update photo error:', err)
+			res.status(500).json({ error: 'Internal server error' })
+		}
+	}
+)
+
+// Delete User
+router.delete('/user/:id', protect, async (req, res) => {
 	try {
 		const userId = req.params.id
+		const requestingUser = req.user
 
-		if (!userId) {
-			return res.status(400).json({ error: 'User ID is required' })
+		// Check if requesting user is admin or owns the account
+		if (
+			!requestingUser.is_admin &&
+			requestingUser._id.toString() !== userId
+		) {
+			return res
+				.status(403)
+				.json({ error: 'Not authorized to delete this account' })
 		}
-
-		if (!req.file) {
-			return res.status(400).json({ error: 'No photo uploaded' })
-		}
-
-		const result = await cloudinary.uploader.upload(req.file.path)
-		const imageUrl = result.secure_url
 
 		const user = await User.findById(userId)
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' })
 		}
 
-		user.photo = imageUrl
-		user.updatedAt = new Date()
-		const updatedUser = await user.save()
+		// Remove all user references
+		user.first_name = '[deleted]'
+		user.last_name = '[deleted]'
+		user.username = `deleted_${Date.now()}`
+		user.email = `deleted_${Date.now()}@example.com`
+		user.password = ''
+		user.address = {}
+		user.phone_number = ''
+		user.dob = null
+		user.photo = null
+		user.is_disabled = true
 
-		res.json({
-			message: 'Photo updated successfully',
-			photo: updatedUser.photo,
-		})
-	} catch (err) {
-		console.error('Update photo error:', err)
-		res.status(500).json({ error: 'Internal server error' })
-	}
-})
+		await user.save()
 
-// Delete User
-router.delete('/user/:id', async (req, res) => {
-	try {
-		const deletedUser = await User.findByIdAndDelete(req.params.id)
-
-		if (!deletedUser) {
-			return res.status(404).json({ error: 'User not found' })
-		}
-
-		res.json({ message: 'User deleted successfully' })
+		res.json({ message: 'User data removed successfully' })
 	} catch (err) {
 		console.error('Delete user error:', err)
 		res.status(500).json({ error: 'Internal server error' })
@@ -160,7 +235,7 @@ router.delete('/user/:id', async (req, res) => {
 })
 
 // Change Password
-router.put('/user/:id/change-password', async (req, res) => {
+router.put('/user/:id/change-password', protect, async (req, res) => {
 	try {
 		const { currentPassword, newPassword } = req.body
 
@@ -201,7 +276,7 @@ router.put('/user/:id/change-password', async (req, res) => {
 })
 
 // Disable Account
-router.put('/user/:id/disable', async (req, res) => {
+router.put('/user/:id/disable', admin, async (req, res) => {
 	try {
 		const user = await User.findById(req.params.id)
 		if (!user) {
@@ -228,7 +303,7 @@ router.put('/user/:id/disable', async (req, res) => {
 })
 
 // Enable Account
-router.put('/user/:id/enable', async (req, res) => {
+router.put('/user/:id/enable', admin, async (req, res) => {
 	try {
 		const user = await User.findById(req.params.id)
 		if (!user) {

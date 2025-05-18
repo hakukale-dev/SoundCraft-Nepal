@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet';
 
 import ContactView from 'src/sections/public/contact-us';
 

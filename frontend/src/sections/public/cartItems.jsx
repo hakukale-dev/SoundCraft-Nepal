@@ -50,25 +50,24 @@ export default function CartPageView() {
 	)
 
 	useEffect(() => {
-		fetchRecommendedItems()
-	}, [items])
-
-	const fetchRecommendedItems = async () => {
-		try {
-			setError(null)
-			setIsLoading(true)
-			const response = await axios.get('api/recommendations')
-			setRecommendedItems(response.data)
-		} catch (error) {
-			console.error('Error fetching recommended items:', error)
-			setError(
-				error.response?.data?.message ||
-					'Failed to load recommendations'
-			)
-		} finally {
-			setIsLoading(false)
+		const fetchRecommendedItems = async () => {
+			try {
+				setError(null)
+				setIsLoading(true)
+				const response = await axios.get('api/recommendations')
+				setRecommendedItems(response.data)
+			} catch (error) {
+				console.error('Error fetching recommended items:', error)
+				setError(
+					error.response?.data?.message ||
+						'Failed to load recommendations'
+				)
+			} finally {
+				setIsLoading(false)
+			}
 		}
-	}
+		fetchRecommendedItems()
+	}, [])
 
 	const handleAddToCart = (item) => {
 		try {

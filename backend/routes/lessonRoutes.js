@@ -1,6 +1,6 @@
 const express = require('express')
 const LearningHub = require('../models/lesson')
-const authMiddleware = require('../middleware/authMiddleware')
+const { admin, protect } = require('../middleware/authMiddleware')
 const { cloudinary } = require('../config/cloudinary')
 const router = express.Router()
 const multer = require('multer')
@@ -14,7 +14,7 @@ const uploadFields = upload.fields([
 ])
 
 // Create a new lesson
-router.post('/', authMiddleware, uploadFields, async (req, res) => {
+router.post('/', admin, uploadFields, async (req, res) => {
 	try {
 		if (!req.user || !req.user.is_admin) {
 			return res.status(403).json({ message: 'Unauthorized' })
@@ -90,7 +90,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Update a lesson
-router.patch('/:id', authMiddleware, uploadFields, async (req, res) => {
+router.patch('/:id', admin, uploadFields, async (req, res) => {
 	const updates = Object.keys(req.body)
 	const allowedUpdates = [
 		'title',
@@ -156,7 +156,7 @@ router.patch('/:id', authMiddleware, uploadFields, async (req, res) => {
 })
 
 // Delete a lesson
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', admin, async (req, res) => {
 	try {
 		if (!req.user || !req.user.is_admin) {
 			return res.status(403).json({ message: 'Unauthorized' })
@@ -195,7 +195,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 })
 
 // Add a comment to a lesson
-router.post('/:id/comments', authMiddleware, async (req, res) => {
+router.post('/:id/comments', protect, async (req, res) => {
 	try {
 		const lesson = await LearningHub.findById(req.params.id)
 
@@ -217,7 +217,7 @@ router.post('/:id/comments', authMiddleware, async (req, res) => {
 })
 
 // Like a lesson
-router.post('/:id/like', authMiddleware, async (req, res) => {
+router.post('/:id/like', protect, async (req, res) => {
 	try {
 		const lesson = await LearningHub.findById(req.params.id)
 

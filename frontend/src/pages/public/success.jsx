@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet';
 
 import ProfileView from 'src/sections/public/profile';
 

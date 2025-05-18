@@ -70,7 +70,7 @@ export const checkForToken = createAsyncThunk(
 				return null
 			}
 
-			const response = await axios.get('api/account/user')
+			const response = await axios.get('api/auth/verify-token')
 			return response.data
 		} catch (error) {
 			if (error.response?.status === 401) {

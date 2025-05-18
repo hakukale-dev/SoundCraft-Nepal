@@ -1,12 +1,11 @@
 const express = require('express')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
 
 const Product = require('../models/product')
 const User = require('../models/account')
 const BillingHistory = require('../models/billing_history')
 const LearningHub = require('../models/lesson')
 const Review = require('../models/reviews')
+const { admin } = require('../middleware/authMiddleware')
 
 const router = express.Router()
 
@@ -88,11 +87,11 @@ async function getAverageRating() {
 	}
 }
 
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', admin, async (req, res) => {
 	try {
 		const dashboardData = {
 			totalProducts: await Product.countDocuments(),
-			totalUsers: await User.find({ is_admin: false }).countDocuments(),
+			totalUsers: await User.countDocuments(),
 			totalOrders: await BillingHistory.countDocuments(),
 			totalRevenue: await getTotalRevenue(),
 			totalLessons: await getTotalLessons(),

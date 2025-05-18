@@ -134,11 +134,13 @@ export default function UserView() {
 				toast.success(isAdd ? 'User Added' : 'Edit Success')
 				handleClose()
 			})
-			.catch(() =>
+			.catch((error) => {
+				console.error('Error:', error)
 				toast.error(
-					isAdd ? 'Failed to add user' : 'Failed to update user'
+					error.message ||
+						(isAdd ? 'Failed to add user' : 'Failed to update user')
 				)
-			)
+			})
 	}
 
 	const handleEdit = (event, id) => {
@@ -230,70 +232,68 @@ export default function UserView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<Scrollbar>
-					<TableContainer sx={{ overflow: 'unset' }}>
-						<Table sx={{ minWidth: 800 }}>
-							<TableHeader
-								order={order}
-								orderBy={orderBy}
-								rowCount={users.length}
-								numSelected={selected.length}
-								onRequestSort={handleSort}
-								onSelectAllClick={handleSelectAllClick}
-								headLabel={[
-									{ id: 'username', label: 'Username' },
-									{ id: 'email', label: 'Email' },
-									{ id: 'phone_number', label: 'Phone' },
-									{ id: 'is_disabled', label: 'Is Disabled' },
-									{ id: '' },
-								]}
+				<TableContainer sx={{ overflow: 'unset' }}>
+					<Table sx={{ minWidth: 800 }}>
+						<TableHeader
+							order={order}
+							orderBy={orderBy}
+							rowCount={users.length}
+							numSelected={selected.length}
+							onRequestSort={handleSort}
+							onSelectAllClick={handleSelectAllClick}
+							headLabel={[
+								{ id: 'username', label: 'Username' },
+								{ id: 'email', label: 'Email' },
+								{ id: 'phone_number', label: 'Phone' },
+								{ id: 'is_disabled', label: 'Is Disabled' },
+								{ id: '' },
+							]}
+						/>
+						<TableBody>
+							{dataFiltered
+								.slice(
+									page * rowsPerPage,
+									page * rowsPerPage + rowsPerPage
+								)
+								.map((row) => (
+									<UserTableRow
+										id={row._id}
+										key={row._id}
+										username={row.username}
+										email={row.email}
+										phone_number={row.phone_number}
+										is_disabled={row.is_disabled}
+										selected={
+											selected.indexOf(row._id) !== -1
+										}
+										handleClick={(event) =>
+											handleClick(event, row._id)
+										}
+										handleEdit={(event) =>
+											handleEdit(event, row._id)
+										}
+										handleDisable={(event) =>
+											handleDisable(event, row._id)
+										}
+										handleEnable={(event) =>
+											handleEnable(event, row._id)
+										}
+									/>
+								))}
+
+							<TableEmptyRows
+								height={77}
+								emptyRows={emptyRows(
+									page,
+									rowsPerPage,
+									users.length
+								)}
 							/>
-							<TableBody>
-								{dataFiltered
-									.slice(
-										page * rowsPerPage,
-										page * rowsPerPage + rowsPerPage
-									)
-									.map((row) => (
-										<UserTableRow
-											id={row._id}
-											key={row._id}
-											username={row.username}
-											email={row.email}
-											phone_number={row.phone_number}
-											is_disabled={row.is_disabled}
-											selected={
-												selected.indexOf(row._id) !== -1
-											}
-											handleClick={(event) =>
-												handleClick(event, row._id)
-											}
-											handleEdit={(event) =>
-												handleEdit(event, row._id)
-											}
-											handleDisable={(event) =>
-												handleDisable(event, row._id)
-											}
-											handleEnable={(event) =>
-												handleEnable(event, row._id)
-											}
-										/>
-									))}
 
-								<TableEmptyRows
-									height={77}
-									emptyRows={emptyRows(
-										page,
-										rowsPerPage,
-										users.length
-									)}
-								/>
-
-								{notFound && <TableNoData query={filterName} />}
-							</TableBody>
-						</Table>
-					</TableContainer>
-				</Scrollbar>
+							{notFound && <TableNoData query={filterName} />}
+						</TableBody>
+					</Table>
+				</TableContainer>
 
 				<TablePagination
 					page={page}

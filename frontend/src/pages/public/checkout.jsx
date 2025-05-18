@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet'
 import CheckoutPageView from '../../sections/public/checkout'
 
 // ----------------------------------------------------------------------
@@ -9,7 +9,7 @@ function CheckoutPage() {
 			<Helmet>
 				<title> Checkout </title>
 			</Helmet>
-            
+
 			<CheckoutPageView />
 		</>
 	)

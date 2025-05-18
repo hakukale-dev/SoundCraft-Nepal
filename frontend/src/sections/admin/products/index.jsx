@@ -255,82 +255,80 @@ export default function ProductsView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<Scrollbar>
-					<TableContainer sx={{ overflow: 'unset' }}>
-						<Table sx={{ minWidth: 800 }}>
-							<TableHeader
-								showCheckBox={false}
-								order={order}
-								orderBy={orderBy}
-								rowCount={products.length}
-								numSelected={selected.length}
-								onRequestSort={handleSort}
-								onSelectAllClick={handleSelectAllClick}
-								headLabel={[
-									{
-										id: 'image',
-										label: 'Product Image',
-									},
-									{
-										id: 'name',
-										label: 'Product Name',
-										align: 'center',
-									},
-									{ id: 'model', label: 'Model' },
-									{ id: 'price', label: 'Price' },
-									{ id: 'category', label: 'Category' },
-									{ id: 'stock', label: 'Stock' },
-									{ id: '', label: '' },
-								]}
+				<TableContainer sx={{ overflow: 'unset' }}>
+					<Table sx={{ minWidth: 800 }}>
+						<TableHeader
+							showCheckBox={false}
+							order={order}
+							orderBy={orderBy}
+							rowCount={products.length}
+							numSelected={selected.length}
+							onRequestSort={handleSort}
+							onSelectAllClick={handleSelectAllClick}
+							headLabel={[
+								{
+									id: 'image',
+									label: 'Product Image',
+								},
+								{
+									id: 'name',
+									label: 'Product Name',
+									align: 'center',
+								},
+								{ id: 'model', label: 'Model' },
+								{ id: 'price', label: 'Price' },
+								{ id: 'category', label: 'Category' },
+								{ id: 'stock', label: 'Stock' },
+								{ id: '', label: '' },
+							]}
+						/>
+						<TableBody>
+							{dataFiltered
+								.slice(
+									page * rowsPerPage,
+									page * rowsPerPage + rowsPerPage
+								)
+								.map((row) => (
+									<CustomTableRow
+										key={row._id}
+										name={row.name}
+										model={row.model}
+										category={row.category}
+										price={row.price}
+										image={row.image}
+										stock={row.stock}
+										selected={
+											selected.indexOf(row._id) !== -1
+										}
+										handleClick={(event) =>
+											handleClick(event, row._id)
+										}
+										handleEdit={(event) =>
+											handleEdit(event, row._id)
+										}
+										handleDelete={(event) =>
+											handleDelete(event, row._id)
+										}
+										handleInfoPopup={(event) =>
+											handleInfoPopup(event, row._id)
+										}
+										showPopover
+									/>
+								))}
+
+							<TableEmptyRows
+								height={77}
+								emptyRows={emptyRows(
+									page,
+									rowsPerPage,
+									products.length
+								)}
 							/>
-							<TableBody>
-								{dataFiltered
-									.slice(
-										page * rowsPerPage,
-										page * rowsPerPage + rowsPerPage
-									)
-									.map((row) => (
-										<CustomTableRow
-											key={row._id}
-											name={row.name}
-											model={row.model}
-											category={row.category}
-											price={row.price}
-											image={row.image}
-											stock={row.stock}
-											selected={
-												selected.indexOf(row._id) !== -1
-											}
-											handleClick={(event) =>
-												handleClick(event, row._id)
-											}
-											handleEdit={(event) =>
-												handleEdit(event, row._id)
-											}
-											handleDelete={(event) =>
-												handleDelete(event, row._id)
-											}
-											handleInfoPopup={(event) =>
-												handleInfoPopup(event, row._id)
-											}
-											showPopover
-										/>
-									))}
 
-								<TableEmptyRows
-									height={77}
-									emptyRows={emptyRows(
-										page,
-										rowsPerPage,
-										products.length
-									)}
-								/>
-
-								{notFound && <TableNoData query={filterName} />}
-							</TableBody>
-						</Table>
-					</TableContainer>
-				</Scrollbar>
+							{notFound && <TableNoData query={filterName} />}
+						</TableBody>
+					</Table>
+				</TableContainer>
 
 				<TablePagination
 					page={page}

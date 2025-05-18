@@ -70,6 +70,7 @@ function PurchaseHistoryView() {
 			try {
 				const { data } = await axios.get('/api/billing-history')
 				setBillingHistory(data)
+				console.log(data)
 				setError(null)
 			} catch (err) {
 				setError(
@@ -94,9 +95,144 @@ function PurchaseHistoryView() {
 		return new Date(dateString).toLocaleDateString(undefined, options)
 	}
 
-	const handleDownloadReceipt = (purchaseId) => {
-		// Implement receipt download logic
-		console.log('Downloading receipt for:', purchaseId)
+	const handleDownloadReceipt = async (purchaseId) => {
+		try {
+			const purchase = billingHistory.find(
+				(item) => item._id === purchaseId
+			)
+			if (!purchase) {
+				throw new Error('Purchase not found in history')
+			}
+
+			// Create PDF receipt using jsPDF
+			const { jsPDF } = await import('jspdf')
+			const doc = new jsPDF()
+
+			// Add company logo and header
+			doc.setFontSize(20)
+			doc.setTextColor(40, 40, 40)
+			doc.setFont('helvetica', 'bold')
+			doc.text('SoundCraft', 105, 20, { align: 'center' })
+
+			doc.setFontSize(12)
+			doc.setTextColor(100, 100, 100)
+			doc.text('123 Shop Street, Kathmandu, Nepal', 105, 28, {
+				align: 'center',
+			})
+			doc.text(
+				'Phone: +977 1234567890 | Email: info@gshop.com',
+				105,
+				35,
+				{ align: 'center' }
+			)
+
+			// Add invoice title and details
+			doc.setDrawColor(200, 200, 200)
+			doc.line(15, 45, 195, 45)
+
+			doc.setFontSize(18)
+			doc.setTextColor(40, 40, 40)
+			doc.text(`INVOICE #${purchaseId}`, 15, 55)
+
+			doc.setFontSize(12)
+			doc.text(
+				`Date: ${new Date(purchase.createdAt).toLocaleString()}`,
+				15,
+				65
+			)
+			doc.text(`Customer: ${user?.first_name} ${user?.last_name}`, 15, 75)
+
+			// Add table headers
+			const headers = ['Item', 'Qty', 'Unit Price', 'Total']
+			const data = purchase.items.map((item) => [
+				item.product_id.name,
+				item.quantity,
+				`$${item.price_per.toFixed(2)}`,
+				`$${(item.quantity * item.price_per).toFixed(2)}`,
+			])
+
+			// Add total row
+			data.push(['', '', 'Subtotal:', `$${purchase.amount.toFixed(2)}`])
+			data.push([
+				'',
+				'',
+				'Tax (13%):',
+				`$${(purchase.amount * 0.13).toFixed(2)}`,
+			])
+			data.push([
+				'',
+				'',
+				'Grand Total:',
+				`$${(purchase.amount * 1.13).toFixed(2)}`,
+			])
+
+			// Create table
+			let yPos = 90
+			const colWidths = [90, 20, 30, 30]
+			const rowHeight = 10
+
+			// Draw headers with background
+			doc.setFillColor(240, 240, 240)
+			doc.rect(15, yPos - 5, 170, rowHeight, 'F')
+			doc.setFont('helvetica', 'bold')
+			headers.forEach((header, i) => {
+				doc.text(
+					header,
+					15 +
+						colWidths.slice(0, i).reduce((a, b) => a + b, 0) +
+						(i > 0 ? 5 : 0),
+					yPos
+				)
+			})
+			yPos += rowHeight + 5
+
+			// Draw data rows
+			doc.setFont('helvetica', 'normal')
+			data.forEach((row, rowIndex) => {
+				row.forEach((cell, colIndex) => {
+					const xPos =
+						15 +
+						colWidths
+							.slice(0, colIndex)
+							.reduce((a, b) => a + b, 0) +
+						(colIndex > 0 ? 5 : 0)
+
+					// Style total rows
+					if (rowIndex >= data.length - 3) {
+						doc.setFont('helvetica', 'bold')
+						if (rowIndex === data.length - 1) {
+							doc.setTextColor(0, 100, 0)
+						}
+					}
+
+					doc.text(cell.toString(), xPos, yPos)
+					doc.setFont('helvetica', 'normal')
+					doc.setTextColor(0, 0, 0)
+				})
+				yPos += rowHeight
+			})
+
+			// Add footer
+			doc.setFontSize(10)
+			doc.setTextColor(100, 100, 100)
+			doc.text('Thank you for shopping with us!', 105, yPos + 20, {
+				align: 'center',
+			})
+			doc.text(
+				'Terms & Conditions: All sales are final. No returns or exchanges.',
+				105,
+				yPos + 30,
+				{ align: 'center' }
+			)
+
+			// Save the PDF
+			doc.save(`GShop_Invoice_${purchaseId}.pdf`)
+		} catch (error) {
+			console.error('Error downloading receipt:', error)
+			alert(
+				error.message || 'Failed to download receipt. Please try again.'
+			)
+		}
 	}
 
 	if (loading) {

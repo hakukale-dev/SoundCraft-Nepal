@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import { useTheme, alpha } from '@mui/material/styles'
-import { Box, Stack, Button, IconButton } from '@mui/material'
+import { Box, Stack, Button, IconButton, Badge } from '@mui/material'
+import Iconify from 'src/components/iconify'
 
 import { bgBlur } from 'src/theme/css'
-
+import { selectCartDetails } from 'src/store/cartSlice'
 import Logo from 'src/components/logo'
 
 import navConfig from './config-navigation'
@@ -16,6 +17,9 @@ import AccountPopover from '../common/account-popover'
 
 function BasicHeader() {
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
+	const { items } = useSelector((state) =>
+		selectCartDetails(state, user?._id)
+	)
 	const theme = useTheme()
 	const navigation = useNavigate()
 
@@ -122,6 +126,36 @@ function BasicHeader() {
 								Dashboard
 							</Button>
 						)}
+						<IconButton
+							onClick={() => navigation('/cart')}
+							sx={{
+								color: theme.palette.primary.main,
+								'&:hover': {
+									color: theme.palette.primary.dark,
+									transform: 'scale(1.1)',
+									transition: theme.transitions.create(
+										['transform', 'color'],
+										{
+											duration:
+												theme.transitions.duration
+													.shorter,
+										}
+									),
+								},
+							}}>
+							<Badge
+								badgeContent={items.length}
+								color="error"
+								anchorOrigin={{
+									vertical: 'top',
+									horizontal: 'right',
+								}}>
+								<Iconify
+									icon="eva:shopping-cart-fill"
+									width={24}
+								/>
+							</Badge>
+						</IconButton>
 						{/* <NotificationsPopover /> */}
 						<AccountPopover />
 					</Stack>
