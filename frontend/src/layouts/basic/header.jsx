@@ -10,6 +10,7 @@ import Iconify from 'src/components/iconify'
 import { bgBlur } from 'src/theme/css'
 import { selectCartDetails } from 'src/store/cartSlice'
 import Logo from 'src/components/logo'
+import ThemeModeToggle from 'src/components/color-utils/ThemeModeToggle'
 
 import navConfig from './config-navigation'
 import AccountPopover from '../common/account-popover'
@@ -126,6 +127,7 @@ function BasicHeader() {
 								Dashboard
 							</Button>
 						)}
+						<ThemeModeToggle />
 						<IconButton
 							onClick={() => navigation('/cart')}
 							sx={{
@@ -163,6 +165,7 @@ function BasicHeader() {
 					<Stack
 						direction="row"
 						spacing={2}>
+						<ThemeModeToggle />
 						<Button
 							variant="outlined"
 							onClick={() => navigation('signup')}
