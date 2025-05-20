@@ -38,4 +38,21 @@ router.get('/', async (req, res) => {
 	}
 })
 
+// Delete a contact form submission
+router.delete('/:id', async (req, res) => {
+	try {
+		const { id } = req.params
+		const deletedSubmission = await ReachUs.findByIdAndDelete(id)
+
+		if (!deletedSubmission) {
+			return res.status(404).json({ error: 'Submission not found' })
+		}
+
+		res.status(200).json({ message: 'Submission deleted successfully' })
+	} catch (err) {
+		console.error('Error deleting contact submission:', err)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+})
+
 module.exports = router

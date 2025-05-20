@@ -69,8 +69,10 @@ function PurchaseHistoryView() {
 		const fetchPurchaseHistory = async () => {
 			try {
 				const { data } = await axios.get('/api/billing-history')
-				setBillingHistory(data)
-				console.log(data)
+				const sortedData = data.sort(
+					(a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+				)
+				setBillingHistory(sortedData)
 				setError(null)
 			} catch (err) {
 				setError(
@@ -104,11 +106,9 @@ function PurchaseHistoryView() {
 				throw new Error('Purchase not found in history')
 			}
 
-			// Create PDF receipt using jsPDF
 			const { jsPDF } = await import('jspdf')
 			const doc = new jsPDF()
 
-			// Add company logo and header
 			doc.setFontSize(20)
 			doc.setTextColor(40, 40, 40)
 			doc.setFont('helvetica', 'bold')

@@ -5,6 +5,7 @@ const generateSignature = require('../utils/utils')
 const BillingHistory = require('../models/billing_history')
 const axios = require('axios')
 const { protect } = require('../middleware/authMiddleware')
+const { sendEmail } = require('../utils/emailUtils')
 
 const router = express.Router()
 
@@ -353,7 +354,7 @@ router.get('/verify-khalti', async (req, res) => {
 		// Get billing history entry by payment reference ID
 		const billingHistoryEntry = await BillingHistory.findOne({
 			payment_reference_id: purchase_order_id,
-		})
+		}).populate('user_id')
 
 		// Update product stock for each item in the order
 		for (const item of billingHistoryEntry.items) {
@@ -370,7 +371,7 @@ router.get('/verify-khalti', async (req, res) => {
 
 		// Send email confirmation
 		const emailOptions = {
-			email: billingHistoryEntry.user_email,
+			email: billingHistoryEntry.user_id.email,
 			subject: 'Payment Confirmation',
 			html: `<p>Your payment of Rs. ${total_amount} has been successfully processed. Transaction ID: ${transaction_id}</p>`,
 		}

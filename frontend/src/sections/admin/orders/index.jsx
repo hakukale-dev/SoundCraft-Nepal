@@ -95,8 +95,15 @@ export default function OrdersView() {
 	const dataFiltered = applyFilter({
 		inputData: orders,
 		comparator: getComparator(order, orderBy),
-		filterKey: 'user',
+		filterKey: 'user_id',
 		filterValue: filterName,
+		filterFn: (order, filterValue) => {
+			if (!order.user_id) return false
+			const fullName = `${order.user_id.first_name || ''} ${
+				order.user_id.last_name || ''
+			}`.toLowerCase()
+			return fullName.includes(filterValue.toLowerCase())
+		},
 	})
 
 	const notFound = !dataFiltered.length && !!filterName
@@ -105,7 +112,6 @@ export default function OrdersView() {
 		try {
 			const res = await axios.get('api/billing/admin')
 			setOrders(res.data)
-			console.log(res.data)
 		} catch (err) {
 			toast.error('Failed to fetch orders')
 			console.error(err)

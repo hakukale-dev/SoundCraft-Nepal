@@ -229,6 +229,10 @@ export default function ProductsView() {
 					product={infoProduct}
 					open={infoOpen}
 					onClose={handleInfoClose}
+					onEdit={(e) => {
+						handleInfoClose()
+						handleEdit(e, infoProduct._id)
+					}}
 				/>
 			)}
 

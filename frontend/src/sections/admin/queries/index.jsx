@@ -131,7 +131,10 @@ export default function QueriesView() {
 					query={infoQuery}
 					open={infoOpen}
 					onClose={handleInfoClose}
-					onDelete={handleDelete}
+					onDelete={(e) => {
+						handleInfoClose()
+						handleDelete(e, infoQuery._id)
+					}}
 				/>
 			)}
 

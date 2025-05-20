@@ -13,7 +13,7 @@ import {
 	Avatar,
 	Typography,
 } from '@mui/material'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const INSTRUMENT_CATEGORIES = [
 	'String Instruments',
@@ -49,6 +49,7 @@ export const SimpleDialogForm = ({
 			image: formData.image || '',
 		},
 	})
+	const [imageUploaded, setImageUploaded] = useState(false)
 
 	const imagePreview = watch('image') || formData.image
 
@@ -74,10 +75,10 @@ export const SimpleDialogForm = ({
 			},
 		},
 		image: {
+			required: isAdd ? 'Product image is required' : false,
 			validate: {
-				acceptedFormats: (files) => {
-					if (!files?.length) return true
-					for (const file of files) {
+				acceptedFormats: (file) => {
+					if (isAdd || imageUploaded) {
 						const acceptedTypes = [
 							'image/jpeg',
 							'image/png',
@@ -90,8 +91,8 @@ export const SimpleDialogForm = ({
 						if (file.size > 5 * 1024 * 1024) {
 							return 'File size must be less than 5MB'
 						}
+						return true
 					}
-					return true
 				},
 			},
 		},
@@ -118,10 +119,6 @@ export const SimpleDialogForm = ({
 		}
 		return ''
 	}
-
-	useEffect(() => {
-		console.log(formData)
-	})
 
 	return (
 		<Dialog
@@ -154,12 +151,36 @@ export const SimpleDialogForm = ({
 							<TextField
 								type="file"
 								fullWidth
-								label="Product Image"
+								required={isAdd}
+								label={`Product Image ${
+									isAdd ? '' : '(Optional)'
+								}`}
 								InputLabelProps={{ shrink: true }}
-								inputProps={{ accept: 'image/*' }}
-								{...register('image', validationRules.image)}
+								inputProps={{
+									accept: 'image/*',
+									multiple: false,
+								}}
+								{...register('image', {
+									...validationRules.image,
+									onChange: (e) => {
+										if (
+											e.target.files &&
+											e.target.files.length > 0
+										) {
+											setImageUploaded(true)
+										}
+									},
+								})}
 								error={!!errors.image}
 								helperText={errors.image?.message}
+								sx={{
+									'& .MuiOutlinedInput-root': {
+										'&:hover fieldset': {
+											borderColor:
+												theme.palette.primary.main,
+										},
+									},
+								}}
 							/>
 						</Grid>
 						<Grid

@@ -28,7 +28,7 @@ function PaymentSuccessView() {
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
 
 	useEffect(() => {
-		dispatch(clearCart(user?._id))
+		dispatch(clearCart({ userId: user?._id || null }))
 	}, [user])
 
 	return (

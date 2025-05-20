@@ -60,16 +60,25 @@ export default function SignUpView() {
 
 	const handleSubmit = async () => {
 		setIsLoading(true)
+		console.log(formData)
 		try {
 			await axios.post('/api/auth/register/', formData)
 			toast.success('Registration successful! Please login.')
 			navigate('/login')
 		} catch (err) {
 			setErrors(err.response?.data || {})
-			toast.error(err.response?.data?.error || 'Registration failed')
+			toast.error(err.message || 'Registration failed')
 		} finally {
 			setIsLoading(false)
 		}
+	}
+
+	const handleNext = () => {
+		setCurrentStep((prev) => prev + 1)
+	}
+
+	const handlePrevious = () => {
+		setCurrentStep((prev) => prev - 1)
 	}
 
 	const renderStepContent = (step) => {
@@ -84,6 +93,7 @@ export default function SignUpView() {
 								fullWidth
 								label="First Name"
 								name="first_name"
+								value={formData.first_name}
 								error={!!errors.first_name}
 								helperText={errors.first_name}
 								onChange={handleChange}
@@ -92,6 +102,7 @@ export default function SignUpView() {
 								fullWidth
 								label="Last Name"
 								name="last_name"
+								value={formData.last_name}
 								error={!!errors.last_name}
 								helperText={errors.last_name}
 								onChange={handleChange}
@@ -105,6 +116,7 @@ export default function SignUpView() {
 								fullWidth
 								label="Username"
 								name="username"
+								value={formData.username}
 								error={!!errors.username}
 								helperText={errors.username}
 								onChange={handleChange}
@@ -114,6 +126,7 @@ export default function SignUpView() {
 								label="Email"
 								type="email"
 								name="email"
+								value={formData.email}
 								error={!!errors.email}
 								helperText={errors.email}
 								onChange={handleChange}
@@ -128,6 +141,7 @@ export default function SignUpView() {
 							fullWidth
 							label="Phone Number"
 							name="phone_number"
+							value={formData.phone_number}
 							inputProps={{ maxLength: 10 }}
 							error={!!errors.phone_number}
 							helperText={errors.phone_number}
@@ -140,6 +154,7 @@ export default function SignUpView() {
 							type="date"
 							InputLabelProps={{ shrink: true }}
 							name="dob"
+							value={formData.dob}
 							error={!!errors.dob}
 							helperText={errors.dob}
 							onChange={handleChange}
@@ -153,6 +168,7 @@ export default function SignUpView() {
 							fullWidth
 							label="Street Address"
 							name="address.street"
+							value={formData.address.street}
 							error={!!errors.address?.street}
 							helperText={errors.address?.street}
 							onChange={handleChange}
@@ -164,6 +180,7 @@ export default function SignUpView() {
 								fullWidth
 								label="City"
 								name="address.city"
+								value={formData.address.city}
 								error={!!errors.address?.city}
 								helperText={errors.address?.city}
 								onChange={handleChange}
@@ -172,6 +189,7 @@ export default function SignUpView() {
 								fullWidth
 								label="State"
 								name="address.state"
+								value={formData.address.state}
 								error={!!errors.address?.state}
 								helperText={errors.address?.state}
 								onChange={handleChange}
@@ -180,6 +198,7 @@ export default function SignUpView() {
 								fullWidth
 								label="ZIP Code"
 								name="address.zip_code"
+								value={formData.address.zip_code}
 								error={!!errors.address?.zip_code}
 								helperText={errors.address?.zip_code}
 								onChange={handleChange}
@@ -195,6 +214,7 @@ export default function SignUpView() {
 							label="Password"
 							type={showPassword ? 'text' : 'password'}
 							name="password"
+							value={formData.password}
 							error={!!errors.password}
 							helperText={errors.password}
 							onChange={handleChange}
@@ -222,6 +242,7 @@ export default function SignUpView() {
 							label="Confirm Password"
 							type={showPassword ? 'text' : 'password'}
 							name="password2"
+							value={formData.password2}
 							error={!!errors.password2}
 							helperText={errors.password2}
 							onChange={handleChange}
