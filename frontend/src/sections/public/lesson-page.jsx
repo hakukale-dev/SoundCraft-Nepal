@@ -18,6 +18,7 @@ import {
 	LinearProgress,
 	Skeleton,
 	useTheme,
+	useMediaQuery,
 } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -37,6 +38,7 @@ const LessonPageView = () => {
 	const [currentTime, setCurrentTime] = useState(0)
 	const videoRef = useRef(null)
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	const isYoutubeUrl = (url) => {
 		return url.includes('youtube.com') || url.includes('youtu.be')
@@ -87,45 +89,47 @@ const LessonPageView = () => {
 
 	if (loading) {
 		return (
-			<Box sx={{ py: 8 }}>
+			<Box sx={{ py: isMobile ? 4 : 8 }}>
 				<Container maxWidth="xl">
 					<Grid
 						container
-						spacing={4}>
+						spacing={isMobile ? 2 : 4}>
 						<Grid
 							item
 							xs={12}
 							md={8}>
 							<Skeleton
 								variant="rectangular"
-								height={500}
+								height={isMobile ? 200 : 500}
 								sx={{ borderRadius: 2 }}
 							/>
 							<Box sx={{ mt: 2 }}>
 								<Skeleton
 									variant="text"
-									height={60}
+									height={isMobile ? 40 : 60}
 								/>
 								<Skeleton
 									variant="text"
-									width="40%"
+									width={isMobile ? '60%' : '40%'}
 								/>
 								<Skeleton
 									variant="text"
-									height={100}
+									height={isMobile ? 60 : 100}
 								/>
 							</Box>
 						</Grid>
-						<Grid
-							item
-							xs={12}
-							md={4}>
-							<Skeleton
-								variant="rectangular"
-								height={300}
-								sx={{ borderRadius: 2 }}
-							/>
-						</Grid>
+						{!isMobile && (
+							<Grid
+								item
+								xs={12}
+								md={4}>
+								<Skeleton
+									variant="rectangular"
+									height={300}
+									sx={{ borderRadius: 2 }}
+								/>
+							</Grid>
+						)}
 					</Grid>
 				</Container>
 			</Box>
@@ -136,7 +140,7 @@ const LessonPageView = () => {
 		return (
 			<Box
 				sx={{
-					py: 8,
+					py: isMobile ? 4 : 8,
 					textAlign: 'center',
 					minHeight: '60vh',
 					display: 'flex',
@@ -148,15 +152,19 @@ const LessonPageView = () => {
 					animate={{ scale: 1 }}
 					transition={{ type: 'spring', stiffness: 100 }}>
 					<ErrorOutline
-						sx={{ fontSize: 80, color: 'error.main', mb: 2 }}
+						sx={{
+							fontSize: isMobile ? 60 : 80,
+							color: 'error.main',
+							mb: 2,
+						}}
 					/>
 					<Typography
-						variant="h4"
+						variant={isMobile ? 'h5' : 'h4'}
 						color="text.secondary">
 						Lesson not found
 					</Typography>
 					<Typography
-						variant="body1"
+						variant={isMobile ? 'body2' : 'body1'}
 						sx={{ mt: 1 }}>
 						The requested lesson could not be loaded.
 					</Typography>
@@ -166,11 +174,11 @@ const LessonPageView = () => {
 	}
 
 	return (
-		<Box sx={{ py: 8, bgcolor: 'background.default' }}>
+		<Box sx={{ py: isMobile ? 3 : 8, bgcolor: 'background.default' }}>
 			<Container maxWidth="xl">
 				<Grid
 					container
-					spacing={4}>
+					spacing={isMobile ? 2 : 4}>
 					<Grid
 						item
 						xs={12}
@@ -181,8 +189,8 @@ const LessonPageView = () => {
 							transition={{ duration: 0.6 }}>
 							<Card
 								sx={{
-									borderRadius: 3,
-									boxShadow: theme.shadows[4],
+									borderRadius: 2,
+									boxShadow: theme.shadows[isMobile ? 1 : 4],
 									overflow: 'hidden',
 								}}>
 								<Box
@@ -193,7 +201,7 @@ const LessonPageView = () => {
 									{isYoutubeUrl(lesson.videoUrl) ? (
 										<iframe
 											width="100%"
-											height="500"
+											height={isMobile ? '250' : '500'}
 											src={getYoutubeEmbedUrl(
 												lesson.videoUrl
 											)}
@@ -228,18 +236,25 @@ const LessonPageView = () => {
 										size="small"
 										sx={{
 											position: 'absolute',
-											top: 16,
-											left: 16,
+											top: 8,
+											left: 8,
 											fontWeight: 600,
 											backdropFilter: 'blur(4px)',
 											bgcolor: 'rgba(0, 0, 0, 0.5)',
 											color: 'white',
+											fontSize: isMobile
+												? '0.7rem'
+												: '0.8125rem',
 										}}
 									/>
 								</Box>
-								<CardContent sx={{ px: 4, py: 3 }}>
+								<CardContent
+									sx={{
+										px: isMobile ? 2 : 4,
+										py: isMobile ? 2 : 3,
+									}}>
 									<Typography
-										variant="h4"
+										variant={isMobile ? 'h5' : 'h4'}
 										component="h1"
 										gutterBottom
 										sx={{
@@ -256,43 +271,67 @@ const LessonPageView = () => {
 													100 || 0
 											}
 											sx={{
-												height: 6,
-												borderRadius: 3,
-												mb: 3,
+												height: 4,
+												borderRadius: 2,
+												mb: 2,
 											}}
 										/>
 									)}
 									<Typography
-										variant="body1"
+										variant={isMobile ? 'body2' : 'body1'}
 										paragraph
 										sx={{
-											fontSize: '1.1rem',
-											lineHeight: 1.7,
+											lineHeight: 1.6,
 											color: 'text.secondary',
-											mb: 3,
+											mb: 2,
 										}}>
 										{lesson.description}
 									</Typography>
 									<Box
-										sx={{ display: 'flex', gap: 2, mt: 3 }}>
+										sx={{
+											display: 'flex',
+											gap: 1,
+											mt: 2,
+											flexWrap: 'wrap',
+										}}>
 										{!isYoutubeUrl(lesson.videoUrl) && (
 											<Chip
-												icon={<AccessTime />}
+												icon={
+													<AccessTime
+														fontSize={
+															isMobile
+																? 'small'
+																: 'medium'
+														}
+													/>
+												}
 												label={`${formatTime(
 													currentTime
 												)} / ${formatTime(
 													videoDuration
 												)}`}
 												variant="outlined"
-												sx={{ px: 2 }}
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 											/>
 										)}
 										<Chip
-											icon={<School />}
+											icon={
+												<School
+													fontSize={
+														isMobile
+															? 'small'
+															: 'medium'
+													}
+												/>
+											}
 											label={lesson.difficultyLevel}
 											color="secondary"
 											variant="outlined"
-											sx={{ px: 2 }}
+											size={isMobile ? 'small' : 'medium'}
 										/>
 									</Box>
 								</CardContent>
@@ -309,14 +348,17 @@ const LessonPageView = () => {
 								initial={{ opacity: 0, x: 20 }}
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ delay: 0.3 }}
-								style={{ position: 'sticky', top: 100 }}>
+								style={{
+									position: isMobile ? 'static' : 'sticky',
+									top: isMobile ? 0 : 100,
+								}}>
 								<Card
 									sx={{
 										borderRadius: 3,
 										boxShadow: theme.shadows[3],
 										mb: 3,
 									}}>
-									<CardContent sx={{ p: 3 }}>
+									<CardContent sx={{ p: isMobile ? 2 : 3 }}>
 										<List dense>
 											{!isYoutubeUrl(lesson.videoUrl) && (
 												<ListItem>
@@ -325,15 +367,37 @@ const LessonPageView = () => {
 															sx={{
 																bgcolor:
 																	'secondary.main',
+																width: isMobile
+																	? 28
+																	: 36,
+																height: isMobile
+																	? 28
+																	: 36,
 															}}>
-															<AccessTime />
+															<AccessTime
+																fontSize={
+																	isMobile
+																		? 'small'
+																		: 'medium'
+																}
+															/>
 														</Avatar>
 													</ListItemAvatar>
 													<ListItemText
 														primary="Total Duration"
+														primaryTypographyProps={{
+															variant: isMobile
+																? 'body2'
+																: 'body1',
+														}}
 														secondary={formatTime(
 															videoDuration
 														)}
+														secondaryTypographyProps={{
+															variant: isMobile
+																? 'caption'
+																: 'body2',
+														}}
 													/>
 												</ListItem>
 											)}
@@ -348,14 +412,28 @@ const LessonPageView = () => {
 											<Button
 												fullWidth
 												variant="contained"
-												size="large"
-												startIcon={<Download />}
+												size={
+													isMobile
+														? 'medium'
+														: 'large'
+												}
+												startIcon={
+													<Download
+														fontSize={
+															isMobile
+																? 'small'
+																: 'medium'
+														}
+													/>
+												}
 												sx={{
 													mt: 2,
-													py: 1.5,
+													py: isMobile ? 1 : 1.5,
 													borderRadius: 2,
 													textTransform: 'none',
-													fontSize: '1rem',
+													fontSize: isMobile
+														? '0.875rem'
+														: '1rem',
 													fontWeight: 600,
 													opacity: lesson.resourceUrl
 														? 1
@@ -377,9 +455,11 @@ const LessonPageView = () => {
 										borderRadius: 3,
 										boxShadow: theme.shadows[3],
 									}}>
-									<CardContent sx={{ p: 3 }}>
+									<CardContent sx={{ p: isMobile ? 2 : 3 }}>
 										<Typography
-											variant="h6"
+											variant={
+												isMobile ? 'subtitle1' : 'h6'
+											}
 											gutterBottom
 											sx={{ fontWeight: 600 }}>
 											What You'll Learn
@@ -391,16 +471,26 @@ const LessonPageView = () => {
 														key={index}
 														sx={{
 															alignItems: 'start',
+															py: isMobile
+																? 0.5
+																: 1,
 														}}>
 														<ListItemAvatar
 															sx={{
-																minWidth: 32,
+																minWidth:
+																	isMobile
+																		? 28
+																		: 32,
 																pt: 0.5,
 															}}>
 															<Avatar
 																sx={{
-																	width: 20,
-																	height: 20,
+																	width: isMobile
+																		? 16
+																		: 20,
+																	height: isMobile
+																		? 16
+																		: 20,
 																	bgcolor:
 																		'success.main',
 																}}>
@@ -409,6 +499,12 @@ const LessonPageView = () => {
 														</ListItemAvatar>
 														<ListItemText
 															primary={obj}
+															primaryTypographyProps={{
+																variant:
+																	isMobile
+																		? 'body2'
+																		: 'body1',
+															}}
 														/>
 													</ListItem>
 												)

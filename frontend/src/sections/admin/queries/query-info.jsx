@@ -7,11 +7,13 @@ import {
 	Button,
 	Typography,
 	Grid,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 const QueryInfoPopup = ({ query, open, onClose, onDelete }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	if (!query) return null
 
@@ -19,29 +21,31 @@ const QueryInfoPopup = ({ query, open, onClose, onDelete }) => {
 		<Dialog
 			open={open}
 			onClose={onClose}
-			maxWidth="md"
-			fullWidth>
+			maxWidth={isMobile ? 'xs' : 'md'}
+			fullWidth
+			fullScreen={isMobile}>
 			<DialogTitle>Query Details</DialogTitle>
 			<DialogContent dividers>
 				<Grid
 					container
-					spacing={3}>
+					spacing={isMobile ? 1 : 3}>
 					<Grid
 						item
 						xs={12}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							From: {query.name}
 						</Typography>
 						<Typography
-							variant="subtitle1"
+							variant={isMobile ? 'body2' : 'subtitle1'}
 							gutterBottom>
 							Email: {query.email}
 						</Typography>
 						<Typography
-							variant="body1"
-							gutterBottom>
+							variant={isMobile ? 'body2' : 'body1'}
+							gutterBottom
+							style={{ wordBreak: 'break-word' }}>
 							Message: {query.message}
 						</Typography>
 						<Typography
@@ -56,10 +60,15 @@ const QueryInfoPopup = ({ query, open, onClose, onDelete }) => {
 			<DialogActions>
 				<Button
 					onClick={onDelete}
-					color="error">
+					color="error"
+					size={isMobile ? 'small' : 'medium'}>
 					Delete
 				</Button>
-				<Button onClick={onClose}>Close</Button>
+				<Button
+					onClick={onClose}
+					size={isMobile ? 'small' : 'medium'}>
+					Close
+				</Button>
 			</DialogActions>
 		</Dialog>
 	)

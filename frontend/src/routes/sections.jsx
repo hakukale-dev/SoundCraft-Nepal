@@ -9,7 +9,6 @@ import DashboardPage from 'src/pages/admin/dashboard'
 import UserPage from 'src/pages/admin/users'
 import AdminProductsPage from 'src/pages/admin/products'
 import AdminLearningHubPage from 'src/pages/admin/learning-hub'
-import BillingHistoryPage from '../pages/admin/billing-history'
 import QueriesView from '../sections/admin/queries'
 import AdminChatView from '../sections/admin/chat'
 import OrdersView from '../sections/admin/orders'
@@ -241,10 +240,6 @@ export default function Router() {
 				<Route
 					path="admin/profile"
 					element={<ProfilePage />}
-				/>
-				<Route
-					path="admin/billing-history"
-					element={<BillingHistoryPage />}
 				/>
 				<Route
 					path="admin/queries"

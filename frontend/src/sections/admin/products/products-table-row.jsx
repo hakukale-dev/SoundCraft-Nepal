@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
-
+import { useTheme } from '@mui/material/styles'
 import Stack from '@mui/material/Stack'
 import Popover from '@mui/material/Popover'
 import TableRow from '@mui/material/TableRow'
@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem'
 import TableCell from '@mui/material/TableCell'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
-
+import useMediaQuery from '@mui/material/useMediaQuery'
 import Iconify from 'src/components/iconify'
 
 // ----------------------------------------------------------------------
@@ -25,6 +25,8 @@ export default function ProductTableRow({
 	handleDelete,
 	handleInfoPopup,
 }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [open, setOpen] = useState(null)
 
 	const handleOpenMenu = (event) => {
@@ -45,7 +47,10 @@ export default function ProductTableRow({
 				<TableCell
 					component="th"
 					scope="row"
-					sx={{ padding: 2, textAlign: 'center' }}>
+					sx={{
+						padding: isMobile ? 1 : 2,
+						textAlign: 'center',
+					}}>
 					<Stack
 						direction="row"
 						alignItems="center"
@@ -53,8 +58,8 @@ export default function ProductTableRow({
 						<img
 							alt={name}
 							src={image}
-							height={180}
-							width={180}
+							height={isMobile ? 80 : 180}
+							width={isMobile ? 80 : 180}
 							style={{
 								borderRadius: 5,
 								objectFit: 'contain',
@@ -65,21 +70,27 @@ export default function ProductTableRow({
 				</TableCell>
 				<TableCell>
 					<Typography
-						variant="subtitle2"
+						variant={isMobile ? 'body2' : 'subtitle2'}
 						noWrap>
 						{name}
 					</Typography>
 				</TableCell>
-				<TableCell>{model}</TableCell>
+				<TableCell sx={{ display: isMobile ? 'body2' : 'subtitle2' }}>
+					{model}
+				</TableCell>
 
 				<TableCell>${price}</TableCell>
 
-				<TableCell>{category}</TableCell>
+				<TableCell sx={{ display: isMobile ? 'body2' : 'subtitle2' }}>
+					{category}
+				</TableCell>
 
 				<TableCell>{stock}</TableCell>
 
 				<TableCell align="right">
-					<IconButton onClick={handleOpenMenu}>
+					<IconButton
+						onClick={handleOpenMenu}
+						size={isMobile ? 'small' : 'medium'}>
 						<Iconify icon="eva:more-vertical-fill" />
 					</IconButton>
 				</TableCell>
@@ -92,7 +103,7 @@ export default function ProductTableRow({
 				anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
 				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 				PaperProps={{
-					sx: { width: 140 },
+					sx: { width: isMobile ? 120 : 140 },
 				}}>
 				<MenuItem onClick={handleInfoPopup}>
 					<Iconify

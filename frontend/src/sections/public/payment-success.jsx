@@ -8,6 +8,7 @@ import {
 	Card,
 	Divider,
 	Box,
+	useMediaQuery,
 } from '@mui/material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,6 +17,7 @@ import { clearCart } from '../../store/cartSlice'
 
 function PaymentSuccessView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const navigate = useNavigate()
 	const location = useLocation()
 	const dispatch = useDispatch()
@@ -32,10 +34,10 @@ function PaymentSuccessView() {
 	}, [user])
 
 	return (
-		<Container sx={{ py: 5 }}>
+		<Container sx={{ py: isMobile ? 3 : 5 }}>
 			<Card
 				sx={{
-					p: 5,
+					p: isMobile ? 2 : 5,
 					maxWidth: 720,
 					mx: 'auto',
 					backgroundColor: theme.palette.background.paper,
@@ -43,16 +45,16 @@ function PaymentSuccessView() {
 				}}>
 				<Stack
 					alignItems="center"
-					spacing={3}>
+					spacing={isMobile ? 2 : 3}>
 					<CheckCircle
 						sx={{
 							color: theme.palette.success.main,
-							fontSize: 80,
+							fontSize: isMobile ? 60 : 80,
 						}}
 					/>
 
 					<Typography
-						variant="h4"
+						variant={isMobile ? 'h5' : 'h4'}
 						align="center"
 						sx={{
 							color: theme.palette.success.main,
@@ -62,7 +64,7 @@ function PaymentSuccessView() {
 					</Typography>
 
 					<Typography
-						variant="body1"
+						variant={isMobile ? 'body2' : 'body1'}
 						align="center">
 						Thank you for your purchase. Your order has been
 						processed successfully.
@@ -73,24 +75,30 @@ function PaymentSuccessView() {
 					<Stack
 						spacing={1}
 						sx={{ width: '100%' }}>
-						<Typography variant="h6">Order Details</Typography>
+						<Typography variant={isMobile ? 'subtitle1' : 'h6'}>
+							Order Details
+						</Typography>
 						<Stack
 							direction="row"
 							justifyContent="space-between">
-							<Typography variant="body2">
+							<Typography
+								variant={isMobile ? 'caption' : 'body2'}>
 								Order Number:
 							</Typography>
-							<Typography variant="body2">
+							<Typography
+								variant={isMobile ? 'caption' : 'body2'}>
 								#{transactionUUID}
 							</Typography>
 						</Stack>
 						<Stack
 							direction="row"
 							justifyContent="space-between">
-							<Typography variant="body2">
+							<Typography
+								variant={isMobile ? 'caption' : 'body2'}>
 								Total Amount:
 							</Typography>
-							<Typography variant="body2">
+							<Typography
+								variant={isMobile ? 'caption' : 'body2'}>
 								Rs. {parseFloat(totalAmount).toLocaleString()}
 							</Typography>
 						</Stack>
@@ -98,7 +106,7 @@ function PaymentSuccessView() {
 
 					<Box sx={{ width: '100%', mt: 3 }}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							Items Purchased
 						</Typography>
@@ -108,10 +116,12 @@ function PaymentSuccessView() {
 								direction="row"
 								justifyContent="space-between"
 								sx={{ mb: 1 }}>
-								<Typography variant="body2">
+								<Typography
+									variant={isMobile ? 'caption' : 'body2'}>
 									{product.name} (Qty: {product.qty})
 								</Typography>
-								<Typography variant="body2">
+								<Typography
+									variant={isMobile ? 'caption' : 'body2'}>
 									Rs.{' '}
 									{(
 										product.qty * product.price
@@ -124,7 +134,7 @@ function PaymentSuccessView() {
 					<Button
 						fullWidth
 						variant="contained"
-						size="large"
+						size={isMobile ? 'medium' : 'large'}
 						onClick={() => navigate('/')}
 						sx={{
 							mt: 3,

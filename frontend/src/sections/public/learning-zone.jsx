@@ -11,6 +11,8 @@ import {
 	Chip,
 	TextField,
 	InputAdornment,
+	useTheme,
+	useMediaQuery,
 } from '@mui/material'
 import { motion } from 'framer-motion'
 import { styled } from '@mui/material/styles'
@@ -50,6 +52,8 @@ const LearningZoneView = () => {
 	const [lessons, setLessons] = useState([])
 	const [loading, setLoading] = useState(true)
 	const navigate = useNavigate()
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	useEffect(() => {
 		const fetchLessons = async () => {
@@ -78,31 +82,37 @@ const LearningZoneView = () => {
 	}
 
 	return (
-		<Box sx={{ py: 8, bgcolor: 'background.default' }}>
+		<Box sx={{ py: isMobile ? 4 : 8, bgcolor: 'background.default' }}>
 			<Container maxWidth="xl">
 				<Box
 					textAlign="center"
-					mb={8}>
+					mb={isMobile ? 4 : 8}>
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6 }}>
 						<Typography
-							variant="h1"
+							variant={isMobile ? 'h3' : 'h1'}
 							component="h1"
 							gutterBottom
 							sx={{
 								fontWeight: 800,
 								letterSpacing: '-0.05em',
 								mb: 2,
+								fontSize: isMobile ? '2rem' : '3rem',
 							}}>
 							Music Learning Hub
 						</Typography>
 						<Typography
-							variant="h5"
+							variant={isMobile ? 'body1' : 'h5'}
 							component="p"
 							color="text.secondary"
-							sx={{ maxWidth: 800, mx: 'auto', mb: 4 }}>
+							sx={{
+								maxWidth: 800,
+								mx: 'auto',
+								mb: 4,
+								px: isMobile ? 2 : 0,
+							}}>
 							Explore tutorial to help you in your musical journey
 						</Typography>
 
@@ -135,7 +145,7 @@ const LearningZoneView = () => {
 						textAlign="center"
 						py={10}>
 						<Typography
-							variant="h5"
+							variant={isMobile ? 'body1' : 'h5'}
 							color="text.secondary">
 							Loading lessons...
 						</Typography>
@@ -143,7 +153,7 @@ const LearningZoneView = () => {
 				) : (
 					<Grid
 						container
-						spacing={4}>
+						spacing={isMobile ? 2 : 4}>
 						{filteredResources.map((lesson, index) => (
 							<Grid
 								item
@@ -159,11 +169,11 @@ const LearningZoneView = () => {
 										<Box
 											sx={{
 												position: 'relative',
-												height: 240,
+												height: isMobile ? 180 : 240,
 											}}>
 											<CardMedia
 												component="img"
-												height="240"
+												height={isMobile ? 180 : 240}
 												image={lesson.thumbnailUrl}
 												alt={lesson.title}
 												sx={{
@@ -175,9 +185,9 @@ const LearningZoneView = () => {
 											<Box
 												sx={{
 													position: 'absolute',
-													bottom: 16,
-													left: 16,
-													right: 16,
+													bottom: isMobile ? 8 : 16,
+													left: isMobile ? 8 : 16,
+													right: isMobile ? 8 : 16,
 													zIndex: 1,
 												}}>
 												<Chip
@@ -187,39 +197,70 @@ const LearningZoneView = () => {
 													sx={{
 														mb: 1,
 														fontWeight: 600,
+														fontSize: isMobile
+															? '0.6rem'
+															: '0.8125rem',
 													}}
 												/>
 												<Typography
-													variant="h5"
+													variant={
+														isMobile ? 'h6' : 'h5'
+													}
 													component="h3"
 													sx={{
 														color: 'common.white',
 														fontWeight: 700,
 														textShadow:
 															'0 2px 4px rgba(0,0,0,0.5)',
+														fontSize: isMobile
+															? '1.1rem'
+															: '1.5rem',
 													}}>
 													{lesson.title}
 												</Typography>
-												<Typography color="rgba(255,255,255,0.9)">
+												<Typography
+													variant={
+														isMobile
+															? 'caption'
+															: 'body2'
+													}
+													color="rgba(255,255,255,0.9)">
 													{lesson.difficultyLevel}
 												</Typography>
 											</Box>
 										</Box>
 
-										<CardContent sx={{ flexGrow: 1 }}>
+										<CardContent
+											sx={{
+												flexGrow: 1,
+												p: isMobile ? 1.5 : 2,
+											}}>
 											<Typography
 												paragraph
-												sx={{ minHeight: 80 }}>
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}
+												sx={{
+													minHeight: isMobile
+														? 60
+														: 80,
+													mb: isMobile ? 1 : 2,
+												}}>
 												{lesson.description}
 											</Typography>
 											<Box
 												sx={{
 													display: 'flex',
-													gap: 2,
+													gap: isMobile ? 1 : 2,
 												}}>
 												<Button
 													variant="contained"
 													color="primary"
+													size={
+														isMobile
+															? 'small'
+															: 'medium'
+													}
 													onClick={() =>
 														handleLessonClick(
 															lesson._id
@@ -242,12 +283,15 @@ const LearningZoneView = () => {
 						textAlign="center"
 						py={10}>
 						<Typography
-							variant="h5"
+							variant={isMobile ? 'h6' : 'h5'}
 							color="text.secondary"
 							gutterBottom>
 							No courses found
 						</Typography>
-						<Typography color="text.secondary">
+						<Typography
+							variant={isMobile ? 'body2' : 'body1'}
+							color="text.secondary"
+							sx={{ px: isMobile ? 2 : 0 }}>
 							Try adjusting your search terms
 						</Typography>
 					</Box>

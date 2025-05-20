@@ -15,6 +15,7 @@ import {
 	Button,
 	Skeleton,
 	IconButton,
+	useMediaQuery,
 } from '@mui/material'
 import axios from '../../utils/axios'
 import {
@@ -64,6 +65,7 @@ function PurchaseHistoryView() {
 	const [page, setPage] = useState(1)
 	const user = useSelector((state) => state.auth.user)
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	useEffect(() => {
 		const fetchPurchaseHistory = async () => {
@@ -91,8 +93,7 @@ function PurchaseHistoryView() {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit',
+			...(isMobile ? {} : { hour: '2-digit', minute: '2-digit' }),
 		}
 		return new Date(dateString).toLocaleDateString(undefined, options)
 	}
@@ -237,7 +238,7 @@ function PurchaseHistoryView() {
 
 	if (loading) {
 		return (
-			<Container sx={{ py: 8 }}>
+			<Container sx={{ py: isMobile ? 4 : 8 }}>
 				<Grid
 					container
 					spacing={3}>
@@ -248,7 +249,7 @@ function PurchaseHistoryView() {
 							key={item}>
 							<Skeleton
 								variant="rounded"
-								height={200}
+								height={isMobile ? 150 : 200}
 								sx={{ borderRadius: 3 }}
 							/>
 						</Grid>
@@ -260,17 +261,17 @@ function PurchaseHistoryView() {
 
 	if (error) {
 		return (
-			<Container sx={{ py: 5 }}>
+			<Container sx={{ py: isMobile ? 3 : 5 }}>
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}>
 					<Alert
 						severity="error"
-						icon={<Info fontSize="large" />}
+						icon={<Info fontSize={isMobile ? 'medium' : 'large'} />}
 						sx={{
 							borderRadius: 3,
 							alignItems: 'center',
-							fontSize: '1.1rem',
+							fontSize: isMobile ? '0.9rem' : '1.1rem',
 							boxShadow: theme.shadows[2],
 						}}
 						action={
@@ -289,13 +290,13 @@ function PurchaseHistoryView() {
 	}
 
 	return (
-		<Container sx={{ py: 8, maxWidth: { xl: 1400 } }}>
+		<Container sx={{ py: isMobile ? 4 : 8, maxWidth: { xl: 1400 } }}>
 			<motion.div
 				initial={{ y: 20 }}
 				animate={{ y: 0 }}>
-				<Box sx={{ textAlign: 'center', mb: 8 }}>
+				<Box sx={{ textAlign: 'center', mb: isMobile ? 4 : 8 }}>
 					<Typography
-						variant="h2"
+						variant={isMobile ? 'h3' : 'h2'}
 						sx={{
 							fontWeight: 800,
 							letterSpacing: '-1px',
@@ -307,14 +308,14 @@ function PurchaseHistoryView() {
 						}}>
 						<ShoppingBag
 							sx={{
-								fontSize: 48,
+								fontSize: isMobile ? 32 : 48,
 								color: theme.palette.primary.main,
 							}}
 						/>
 						Purchase History
 					</Typography>
 					<Typography
-						variant="h6"
+						variant={isMobile ? 'body1' : 'h6'}
 						color="text.secondary"
 						sx={{ maxWidth: 600, mx: 'auto' }}>
 						Review your past transactions and download receipts
@@ -329,16 +330,20 @@ function PurchaseHistoryView() {
 					<Box
 						sx={{
 							textAlign: 'center',
-							p: 8,
+							p: isMobile ? 4 : 8,
 							backgroundColor: theme.palette.background.paper,
 							borderRadius: 3,
 							boxShadow: theme.shadows[2],
 						}}>
 						<Receipt
-							sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }}
+							sx={{
+								fontSize: isMobile ? 60 : 80,
+								color: 'text.disabled',
+								mb: 2,
+							}}
 						/>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'h5' : 'h6'}
 							color="text.secondary"
 							gutterBottom>
 							No purchases found
@@ -351,7 +356,8 @@ function PurchaseHistoryView() {
 						</Typography>
 						<Button
 							variant="contained"
-							href="/products">
+							href="/products"
+							size={isMobile ? 'small' : 'medium'}>
 							Browse Products
 						</Button>
 					</Box>
@@ -364,10 +370,10 @@ function PurchaseHistoryView() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.1 }}>
 						<StyledCard>
-							<CardContent sx={{ p: 4 }}>
+							<CardContent sx={{ p: isMobile ? 2 : 4 }}>
 								<Grid
 									container
-									spacing={3}
+									spacing={isMobile ? 1 : 3}
 									alignItems="center">
 									<Grid
 										item
@@ -377,12 +383,12 @@ function PurchaseHistoryView() {
 											sx={{
 												display: 'flex',
 												alignItems: 'center',
-												gap: 3,
+												gap: isMobile ? 1 : 3,
 											}}>
 											<Box
 												sx={{
-													width: 56,
-													height: 56,
+													width: isMobile ? 40 : 56,
+													height: isMobile ? 40 : 56,
 													borderRadius: 2,
 													bgcolor:
 														theme.palette.primary
@@ -393,7 +399,9 @@ function PurchaseHistoryView() {
 												}}>
 												<Payments
 													sx={{
-														fontSize: 32,
+														fontSize: isMobile
+															? 24
+															: 32,
 														color: theme.palette
 															.primary.main,
 													}}
@@ -401,7 +409,11 @@ function PurchaseHistoryView() {
 											</Box>
 											<Box>
 												<Typography
-													variant="h6"
+													variant={
+														isMobile
+															? 'body1'
+															: 'h6'
+													}
 													fontWeight={700}
 													gutterBottom>
 													{formatDate(

@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Box, Typography, TextField, Button, Avatar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import axios from 'src/utils/axios'
 
 export default function ChatInterface({ activeChat }) {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { user } = useSelector((state) => state.auth)
 	const [messages, setMessages] = useState([])
 	const [newMessage, setNewMessage] = useState('')
@@ -71,7 +73,13 @@ export default function ChatInterface({ activeChat }) {
 	}
 
 	return (
-		<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+		<Box
+			sx={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				p: isMobile ? 1 : 2,
+			}}>
 			<Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
 				{messages.map((message) => (
 					<Box
@@ -85,27 +93,31 @@ export default function ChatInterface({ activeChat }) {
 							mb: 2,
 						}}>
 						<Avatar
-							sx={{ mx: 2 }}
+							sx={{
+								mx: isMobile ? 1 : 2,
+								width: isMobile ? 32 : 40,
+								height: isMobile ? 32 : 40,
+							}}
 							src={message.sender.photo}
 							alt={`${message.sender.first_name} ${message.sender.last_name}`}>
 							{message.sender.first_name.charAt(0).toUpperCase()}
 						</Avatar>
 						<Box
 							sx={{
-								p: 2,
+								p: isMobile ? 1 : 2,
 								borderRadius: 2,
 								bgcolor:
 									message.sender._id === user._id
 										? theme.palette.primary.light
 										: theme.palette.grey[300],
-								maxWidth: '70%',
+								maxWidth: isMobile ? '80%' : '70%',
 							}}>
-							<Typography variant="body1">
+							<Typography variant={isMobile ? 'body2' : 'body1'}>
 								{message.message}
 							</Typography>
 							<Typography
 								variant="caption"
-								sx={{ display: 'block', mt: 1 }}>
+								sx={{ display: 'block', mt: 0.5 }}>
 								{new Date(
 									message.createdAt
 								).toLocaleTimeString()}
@@ -120,6 +132,7 @@ export default function ChatInterface({ activeChat }) {
 				<TextField
 					fullWidth
 					variant="outlined"
+					size={isMobile ? 'small' : 'medium'}
 					placeholder="Type a message..."
 					value={newMessage}
 					onChange={(e) => setNewMessage(e.target.value)}
@@ -127,8 +140,9 @@ export default function ChatInterface({ activeChat }) {
 				/>
 				<Button
 					variant="contained"
+					size={isMobile ? 'small' : 'medium'}
 					onClick={handleSendMessage}
-					sx={{ ml: 2 }}>
+					sx={{ ml: isMobile ? 1 : 2 }}>
 					Send
 				</Button>
 			</Box>

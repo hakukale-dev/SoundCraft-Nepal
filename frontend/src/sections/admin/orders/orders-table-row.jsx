@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useTheme, useMediaQuery } from '@mui/material'
 
 import Stack from '@mui/material/Stack'
 import Popover from '@mui/material/Popover'
@@ -23,6 +24,8 @@ export default function OrdersTableRow({
 	handleClick,
 	handleInfoPopup,
 }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [open, setOpen] = useState(null)
 
 	const handleOpenMenu = (event) => {
@@ -42,20 +45,29 @@ export default function OrdersTableRow({
 				selected={selected}
 				onClick={handleClick}>
 				<TableCell>
-					<Typography variant="subtitle2">
+					<Typography variant={isMobile ? 'caption' : 'subtitle2'}>
 						{user || 'Guest'}
 					</Typography>
 				</TableCell>
 
-				<TableCell align="center">
-					{new Date(createdAt).toLocaleDateString()}
-				</TableCell>
+				{!isMobile && (
+					<TableCell align="center">
+						<Typography variant="body2">
+							{new Date(createdAt).toLocaleDateString()}
+						</Typography>
+					</TableCell>
+				)}
 
-				<TableCell>${total.toFixed(2)}</TableCell>
+				<TableCell>
+					<Typography variant={isMobile ? 'caption' : 'body2'}>
+						${total.toFixed(2)}
+					</Typography>
+				</TableCell>
 
 				<TableCell>
 					<Chip
 						label={status}
+						size={isMobile ? 'small' : 'medium'}
 						color={
 							status === 'completed'
 								? 'success'
@@ -67,7 +79,9 @@ export default function OrdersTableRow({
 				</TableCell>
 
 				<TableCell align="right">
-					<IconButton onClick={handleOpenMenu}>
+					<IconButton
+						onClick={handleOpenMenu}
+						size={isMobile ? 'small' : 'medium'}>
 						<Iconify icon="eva:more-vertical-fill" />
 					</IconButton>
 				</TableCell>
@@ -80,14 +94,20 @@ export default function OrdersTableRow({
 				anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
 				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 				PaperProps={{
-					sx: { width: 140 },
+					sx: { width: isMobile ? 120 : 140 },
 				}}>
 				<MenuItem onClick={handleInfoPopup}>
 					<Iconify
 						icon="eva:info-outline"
-						sx={{ mr: 2 }}
+						sx={{
+							mr: 2,
+							width: isMobile ? 16 : 20,
+							height: isMobile ? 16 : 20,
+						}}
 					/>
-					Info
+					<Typography variant={isMobile ? 'caption' : 'body2'}>
+						Info
+					</Typography>
 				</MenuItem>
 			</Popover>
 		</>

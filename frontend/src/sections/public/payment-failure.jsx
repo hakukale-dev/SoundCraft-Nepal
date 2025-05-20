@@ -1,17 +1,26 @@
 import { useTheme } from '@mui/material/styles'
 import { Error as ErrorIcon } from '@mui/icons-material'
-import { Container, Stack, Button, Typography, Card, Box } from '@mui/material'
+import {
+	Container,
+	Stack,
+	Button,
+	Typography,
+	Card,
+	Box,
+	useMediaQuery,
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 function PaymentFailureView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const navigate = useNavigate()
 
 	return (
-		<Container sx={{ py: 5 }}>
+		<Container sx={{ py: isMobile ? 3 : 5 }}>
 			<Card
 				sx={{
-					p: 5,
+					p: isMobile ? 2 : 5,
 					maxWidth: 720,
 					mx: 'auto',
 					backgroundColor: theme.palette.background.paper,
@@ -19,16 +28,16 @@ function PaymentFailureView() {
 				}}>
 				<Stack
 					alignItems="center"
-					spacing={3}>
+					spacing={isMobile ? 2 : 3}>
 					<ErrorIcon
 						sx={{
 							color: theme.palette.error.main,
-							fontSize: 80,
+							fontSize: isMobile ? 60 : 80,
 						}}
 					/>
 
 					<Typography
-						variant="h4"
+						variant={isMobile ? 'h5' : 'h4'}
 						align="center"
 						sx={{
 							color: theme.palette.error.main,
@@ -38,7 +47,7 @@ function PaymentFailureView() {
 					</Typography>
 
 					<Typography
-						variant="body1"
+						variant={isMobile ? 'body2' : 'body1'}
 						align="center">
 						We're sorry, your payment could not be processed. Please
 						check your payment details and try again.
@@ -50,6 +59,7 @@ function PaymentFailureView() {
 								fullWidth
 								variant="contained"
 								color="error"
+								size={isMobile ? 'medium' : 'large'}
 								onClick={() => navigate('/checkout')}>
 								Retry Payment
 							</Button>
@@ -57,6 +67,7 @@ function PaymentFailureView() {
 							<Button
 								fullWidth
 								variant="outlined"
+								size={isMobile ? 'medium' : 'large'}
 								onClick={() => navigate('/')}
 								sx={{
 									borderColor: theme.palette.error.main,

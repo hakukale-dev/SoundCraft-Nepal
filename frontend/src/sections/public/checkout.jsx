@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
+import { useTheme } from '@mui/material/styles'
 import {
 	Typography,
 	Grid,
@@ -14,14 +15,21 @@ import {
 	DialogTitle,
 	DialogContent,
 	DialogActions,
+	Box,
+	useMediaQuery,
 } from '@mui/material'
 import PaymentIcon from '@mui/icons-material/Payment'
 import { CiMoneyBill } from 'react-icons/ci'
 
 import axios from '../../utils/axios'
-import { selectCartDetails } from '../../store/cartSlice'
+import { clearCart, selectCartDetails } from '../../store/cartSlice'
+import { useNavigate } from 'react-router-dom'
 
 export default function CheckoutPageView() {
+	const theme = useTheme()
+	const dispatch = useDispatch()
+	const navigate = useNavigate()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
 	const { items, totalPrice } = useSelector((state) =>
 		selectCartDetails(state, user?._id)
@@ -69,8 +77,6 @@ export default function CheckoutPageView() {
 				items: items,
 			})
 
-			console.log(data)
-
 			const productsData = items.map((item) => ({
 				name: item.name,
 				qty: item.qty,
@@ -83,7 +89,6 @@ export default function CheckoutPageView() {
 			toast.error(
 				error.response?.data?.error || 'Payment initiation failed'
 			)
-			console.log(error)
 		}
 	}
 
@@ -97,21 +102,26 @@ export default function CheckoutPageView() {
 
 	const handleCashOnDelivery = () => {
 		toast.success('Order placed successfully with Cash on Delivery!')
+		dispatch(clearCart({ userId: user?._id }))
 		setOpenDialog(false)
+		setTimeout(() => {
+			navigate('/')
+		}, 1500)
 	}
 
 	return (
-		<Container maxWidth="xl">
+		<Container
+			maxWidth="xl"
+			sx={{ p: isMobile ? 1 : 4 }}>
 			<Grid
 				container
-				spacing={3}
-				sx={{ p: 4 }}>
+				spacing={isMobile ? 1 : 3}>
 				<Grid
 					item
 					xs={12}
 					md={8}>
 					<Typography
-						variant="h4"
+						variant={isMobile ? 'h5' : 'h4'}
 						gutterBottom>
 						Order Details
 					</Typography>
@@ -119,10 +129,10 @@ export default function CheckoutPageView() {
 						<Card
 							key={item.id}
 							sx={{ mb: 2 }}>
-							<CardContent>
+							<CardContent sx={{ p: isMobile ? 1 : 2 }}>
 								<Grid
 									container
-									spacing={2}>
+									spacing={1}>
 									<Grid
 										item
 										xs={4}>
@@ -131,7 +141,7 @@ export default function CheckoutPageView() {
 											image={item.image}
 											alt={item.name}
 											sx={{
-												height: 100,
+												height: isMobile ? 80 : 100,
 												objectFit: 'contain',
 											}}
 										/>
@@ -139,7 +149,8 @@ export default function CheckoutPageView() {
 									<Grid
 										item
 										xs={8}>
-										<Typography variant="h6">
+										<Typography
+											variant={isMobile ? 'body1' : 'h6'}>
 											{item.name}
 										</Typography>
 										<Typography
@@ -155,7 +166,7 @@ export default function CheckoutPageView() {
 										<Typography
 											variant="body2"
 											sx={{ mt: 1 }}>
-											Total: Rs.
+											Total: Rs.{' '}
 											{(item.qty * item.price).toFixed(2)}
 										</Typography>
 									</Grid>
@@ -170,15 +181,15 @@ export default function CheckoutPageView() {
 					xs={12}
 					md={4}>
 					<Card variant="outlined">
-						<CardContent>
+						<CardContent sx={{ p: isMobile ? 1 : 2 }}>
 							<Typography
-								variant="h5"
+								variant={isMobile ? 'h6' : 'h5'}
 								gutterBottom>
 								Payment Summary
 							</Typography>
-							<Divider sx={{ my: 2 }} />
+							<Divider sx={{ my: 1 }} />
 							<Typography
-								variant="h6"
+								variant={isMobile ? 'body1' : 'h6'}
 								sx={{ fontWeight: 'bold' }}>
 								Total: Rs. {totalPrice.toFixed(2)}
 							</Typography>
@@ -186,16 +197,19 @@ export default function CheckoutPageView() {
 							<Button
 								fullWidth
 								variant="contained"
-								size="large"
+								size={isMobile ? 'medium' : 'large'}
 								startIcon={
 									<img
 										src="esewa-icon.png"
 										alt="eSewa"
-										style={{ width: 24, height: 24 }}
+										style={{
+											width: isMobile ? 20 : 24,
+											height: isMobile ? 20 : 24,
+										}}
 									/>
 								}
 								sx={{
-									mt: 3,
+									mt: 2,
 									bgcolor: '#4ac924',
 									'&:hover': { bgcolor: '#3f7f2c' },
 								}}
@@ -205,16 +219,19 @@ export default function CheckoutPageView() {
 							<Button
 								fullWidth
 								variant="contained"
-								size="large"
+								size={isMobile ? 'medium' : 'large'}
 								startIcon={
 									<img
 										src="khalti-icon.png"
 										alt="Khalti"
-										style={{ width: 24, height: 24 }}
+										style={{
+											width: isMobile ? 20 : 24,
+											height: isMobile ? 20 : 24,
+										}}
 									/>
 								}
 								sx={{
-									mt: 2,
+									mt: 1,
 									bgcolor: '#8145cc',
 									'&:hover': { bgcolor: '#3d1a68' },
 								}}
@@ -224,9 +241,9 @@ export default function CheckoutPageView() {
 							<Button
 								fullWidth
 								variant="outlined"
-								size="large"
+								size={isMobile ? 'medium' : 'large'}
 								startIcon={<PaymentIcon />}
-								sx={{ mt: 2 }}
+								sx={{ mt: 1 }}
 								onClick={handleOpenDialog}>
 								Other Payment Method
 							</Button>
@@ -237,7 +254,8 @@ export default function CheckoutPageView() {
 
 			<Dialog
 				open={openDialog}
-				onClose={handleCloseDialog}>
+				onClose={handleCloseDialog}
+				fullScreen={isMobile}>
 				<DialogTitle>Select Payment Method</DialogTitle>
 				<DialogContent>
 					<Typography
@@ -249,9 +267,10 @@ export default function CheckoutPageView() {
 						fullWidth
 						variant="contained"
 						color="primary"
+						size={isMobile ? 'medium' : 'large'}
 						startIcon={<CiMoneyBill />}
 						onClick={handleCashOnDelivery}
-						sx={{ mt: 2 }}>
+						sx={{ mt: 1 }}>
 						Cash on Delivery
 					</Button>
 				</DialogContent>

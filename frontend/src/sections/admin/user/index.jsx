@@ -1,6 +1,8 @@
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import Card from '@mui/material/Card'
 import Stack from '@mui/material/Stack'
@@ -27,6 +29,8 @@ import { emptyRows, applyFilter, getComparator } from '../../../utils/utils'
 
 // ----------------------------------------------------------------------
 export default function UserView() {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { user } = useSelector((state) => state.auth)
 
 	const [page, setPage] = useState(0)
@@ -34,7 +38,7 @@ export default function UserView() {
 	const [selected, setSelected] = useState([])
 	const [orderBy, setOrderBy] = useState('name')
 	const [filterName, setFilterName] = useState('')
-	const [rowsPerPage, setRowsPerPage] = useState(5)
+	const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 5)
 
 	const [users, setUsers] = useState([])
 	const [editingUser, setEditingUser] = useState({})
@@ -199,7 +203,7 @@ export default function UserView() {
 	}, [user, fetchData])
 
 	return (
-		<Container>
+		<Container maxWidth={isMobile ? 'sm' : 'xl'}>
 			{open && (
 				<SimpleDialogForm
 					isAdd={isAdd}
@@ -214,14 +218,15 @@ export default function UserView() {
 				alignItems="center"
 				justifyContent="space-between"
 				mb={5}>
-				<Typography variant="h4">Users</Typography>
+				<Typography variant={isMobile ? 'h5' : 'h4'}>Users</Typography>
 
 				<Button
 					variant="contained"
 					color="inherit"
+					size={isMobile ? 'small' : 'medium'}
 					startIcon={<Iconify icon="eva:plus-fill" />}
 					onClick={handleOpen}>
-					New User
+					{isMobile ? 'New' : 'New User'}
 				</Button>
 			</Stack>
 
@@ -232,8 +237,8 @@ export default function UserView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<TableContainer sx={{ overflow: 'unset' }}>
-					<Table sx={{ minWidth: 800 }}>
+				<TableContainer sx={{ overflow: 'auto' }}>
+					<Table sx={{ minWidth: isMobile ? 0 : 800 }}>
 						<TableHeader
 							order={order}
 							orderBy={orderBy}
@@ -245,7 +250,7 @@ export default function UserView() {
 								{ id: 'username', label: 'Username' },
 								{ id: 'email', label: 'Email' },
 								{ id: 'phone_number', label: 'Phone' },
-								{ id: 'is_disabled', label: 'Is Disabled' },
+								{ id: 'is_disabled', label: 'Disabled' },
 								{ id: '' },
 							]}
 						/>

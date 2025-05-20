@@ -2,6 +2,8 @@ import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import Container from '@mui/material/Container'
 import { Grid, Typography } from '@mui/material'
@@ -25,6 +27,8 @@ import AppWidgetSummary from './app-widget-summary'
 // ----------------------------------------------------------------------
 
 export default function DashboardView() {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { user, isAuthenticated } = useSelector((state) => state.auth)
 
 	const [details, setDetails] = useState({
@@ -57,16 +61,18 @@ export default function DashboardView() {
 	}, [fetchData])
 
 	return isAuthenticated ? (
-		<Container maxWidth="xl">
+		<Container
+			maxWidth="xl"
+			sx={{ px: isMobile ? 1 : 3 }}>
 			<Typography
-				variant="h4"
-				sx={{ mb: 5 }}>
+				variant={isMobile ? 'h5' : 'h4'}
+				sx={{ mb: isMobile ? 3 : 5 }}>
 				Hi, Welcome back 👋
 			</Typography>
 
 			<Grid
 				container
-				spacing={3}>
+				spacing={isMobile ? 2 : 3}>
 				<Grid
 					item
 					xs={12}

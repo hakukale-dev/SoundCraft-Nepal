@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import Carousel from 'react-material-ui-carousel'
-import { Box, IconButton } from '@mui/material'
+import { Box, IconButton, useTheme, useMediaQuery } from '@mui/material'
 import Iconify from './iconify'
 
 export function ProductDetailsCarousel({ images }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [currentIndex, setCurrentIndex] = useState(0)
 
 	const handleNext = () => {
@@ -19,15 +21,16 @@ export function ProductDetailsCarousel({ images }) {
 			<Carousel
 				index={currentIndex}
 				onChange={(index) => setCurrentIndex(index)}
-				navButtonsAlwaysVisible
+				navButtonsAlwaysVisible={!isMobile}
 				fullHeightHover={false}
 				animation="fade"
 				NavButton={({ onClick, next, prev }) => (
 					<IconButton
 						onClick={onClick}
+						size={isMobile ? 'small' : 'medium'}
 						sx={{
 							position: 'absolute',
-							[prev ? 'left' : 'right']: 16,
+							[prev ? 'left' : 'right']: isMobile ? 8 : 16,
 							top: '50%',
 							transform: 'translateY(-50%)',
 							zIndex: 2,
@@ -40,6 +43,7 @@ export function ProductDetailsCarousel({ images }) {
 							icon={`eva:arrow-ios-${
 								prev ? 'back' : 'forward'
 							}-fill`}
+							width={isMobile ? 20 : 24}
 						/>
 					</IconButton>
 				)}>
@@ -48,7 +52,7 @@ export function ProductDetailsCarousel({ images }) {
 						key={index}
 						sx={{
 							position: 'relative',
-							paddingTop: '100%',
+							paddingTop: isMobile ? '80%' : '100%',
 							overflow: 'hidden',
 							borderRadius: 2,
 						}}>

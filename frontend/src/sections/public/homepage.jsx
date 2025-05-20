@@ -60,7 +60,7 @@ const MotionChip = motion(Chip)
 function HomepageView() {
 	const theme = useTheme()
 	const navigate = useNavigate()
-	const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [homepageData, setHomepageData] = useState({
 		categories: {},
 		featuredProducts: [],
@@ -89,27 +89,28 @@ function HomepageView() {
 	}, [])
 
 	return (
-		<Box sx={{ py: 8 }}>
+		<Box sx={{ py: isMobile ? 4 : 8 }}>
 			{/* Hero Carousel */}
-			<Box sx={{ mb: 10 }}>
+			<Box sx={{ mb: isMobile ? 5 : 10 }}>
 				{loading ? (
 					<Skeleton
 						variant="rectangular"
-						height={isMobile ? 400 : 600}
+						height={isMobile ? 300 : 600}
+						width="100%"
 					/>
 				) : (
 					<Carousel
 						animation="fade"
-						indicators={false}
+						indicators={!isMobile}
 						navButtonsAlwaysVisible={!isMobile}
-						height={isMobile ? 400 : 600}
+						height={isMobile ? 300 : 600}
 						autoPlay
 						interval={5000}
 						sx={{
-							borderRadius: 4,
+							borderRadius: 2,
 							overflow: 'hidden',
-							boxShadow: theme.shadows[6],
-							mx: 2,
+							boxShadow: theme.shadows[3],
+							mx: isMobile ? 0 : 2,
 						}}>
 						{carouselItems.map((item, i) => (
 							<Box
@@ -134,42 +135,49 @@ function HomepageView() {
 										textAlign: 'center',
 										color: 'white',
 										width: '90%',
+										px: isMobile ? 2 : 0,
 									}}>
 									<motion.div
 										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}>
 										<Typography
-											variant={isMobile ? 'h3' : 'h1'}
+											variant={isMobile ? 'h4' : 'h1'}
 											sx={{
 												fontWeight: 900,
-												mb: 2,
+												mb: isMobile ? 1 : 2,
 												textShadow:
 													'2px 2px 8px rgba(0,0,0,0.7)',
 												lineHeight: 1.2,
+												fontSize: isMobile
+													? '1.8rem'
+													: '3rem',
 											}}>
 											{item.title}
 										</Typography>
 										<Typography
-											variant={isMobile ? 'h6' : 'h5'}
+											variant={isMobile ? 'body1' : 'h5'}
 											sx={{
-												mb: 4,
+												mb: isMobile ? 2 : 4,
 												textShadow:
 													'1px 1px 4px rgba(0,0,0,0.7)',
 												maxWidth: 800,
 												mx: 'auto',
+												fontSize: isMobile
+													? '1rem'
+													: '1.5rem',
 											}}>
 											{item.description}
 										</Typography>
 										<MotionButton
 											whileHover={{ scale: 1.05 }}
 											variant="contained"
-											size="large"
+											size={isMobile ? 'medium' : 'large'}
 											endIcon={<KeyboardArrowRight />}
 											sx={{
-												px: 5,
-												py: 1.5,
+												px: isMobile ? 3 : 5,
+												py: isMobile ? 1 : 1.5,
 												fontSize: isMobile
-													? '1rem'
+													? '0.9rem'
 													: '1.1rem',
 												borderRadius: 3,
 												textTransform: 'none',
@@ -184,53 +192,120 @@ function HomepageView() {
 				)}
 			</Box>
 
-			<Container maxWidth="xl">
+			<Container
+				maxWidth="xl"
+				sx={{ px: isMobile ? 2 : 0 }}>
 				{/* Categories */}
-				<Box sx={{ mb: 10 }}>
+				<Box sx={{ mb: isMobile ? 5 : 10 }}>
 					<Typography
-						variant="h3"
+						variant={isMobile ? 'h4' : 'h3'}
 						gutterBottom
 						sx={{
 							fontWeight: 700,
 							color: 'text.primary',
 							textAlign: 'center',
-							mb: 6,
+							mb: isMobile ? 3 : 6,
 						}}>
 						Explore Categories
 					</Typography>
 					<Grid
 						container
-						spacing={3}
+						spacing={isMobile ? 1 : 3}
 						justifyContent="center">
 						{loading ? (
-							<Skeleton
-								variant="rectangular"
-								height={50}
-								width="100%"
-							/>
+							<>
+								{[...Array(6)].map((_, i) => (
+									<Grid
+										item
+										xs={6}
+										sm={4}
+										md={3}
+										lg={2}
+										key={i}>
+										<Skeleton
+											variant="rectangular"
+											height={50}
+										/>
+									</Grid>
+								))}
+							</>
 						) : (
 							Object.entries(homepageData.categories).map(
 								([category, count]) => {
 									const getCategoryIcon = () => {
 										switch (category) {
 											case 'String Instruments':
-												return <GiGuitar />
+												return (
+													<GiGuitar
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Woodwind Instruments':
-												return <GiFlute />
+												return (
+													<GiFlute
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Brass Instruments':
-												return <GiTrumpet />
+												return (
+													<GiTrumpet
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Percussion Instruments':
-												return <GiDrumKit />
+												return (
+													<GiDrumKit
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Keyboard Instruments':
-												return <GiKeyboard />
+												return (
+													<GiKeyboard
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Electronic Instruments':
-												return <GiDrumKit />
+												return (
+													<GiDrumKit
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Traditional Instruments':
-												return <GiHarp />
+												return (
+													<GiHarp
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											case 'Accessories':
-												return <GiHeadphones />
+												return (
+													<GiHeadphones
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 											default:
-												return <MusicNote />
+												return (
+													<MusicNote
+														size={
+															isMobile ? 20 : 24
+														}
+													/>
+												)
 										}
 									}
 
@@ -243,16 +318,25 @@ function HomepageView() {
 											md={3}
 											lg={2}>
 											<MotionChip
-												whileHover={{ scale: 1.05 }}
+												whileHover={{
+													scale: isMobile ? 1 : 1.05,
+												}}
 												clickable
 												variant="outlined"
 												label={
 													<Stack
 														direction="row"
 														alignItems="center"
-														gap={2}>
+														gap={isMobile ? 1 : 2}>
 														{getCategoryIcon()}
-														{category}
+														<Typography
+															variant={
+																isMobile
+																	? 'body2'
+																	: 'body1'
+															}>
+															{category}
+														</Typography>
 													</Stack>
 												}
 												onClick={() =>
@@ -262,10 +346,14 @@ function HomepageView() {
 												}
 												sx={{
 													width: '100%',
-													py: 2,
-													fontSize: '1.1rem',
+													py: isMobile ? 1 : 2,
+													fontSize: isMobile
+														? '0.9rem'
+														: '1.1rem',
 													borderRadius: 2,
-													borderWidth: 2,
+													borderWidth: isMobile
+														? 1
+														: 2,
 													borderColor: 'primary.main',
 													color: 'primary.main',
 													'&:hover': {
@@ -288,17 +376,21 @@ function HomepageView() {
 				{loading ? (
 					<Skeleton
 						variant="rectangular"
-						height={300}
+						height={isMobile ? 200 : 300}
 					/>
 				) : (
 					<ProductScrollSection
 						title="Featured Collection"
 						icon={
 							<Whatshot
-								sx={{ fontSize: 40, color: 'warning.main' }}
+								sx={{
+									fontSize: isMobile ? 30 : 40,
+									color: 'warning.main',
+								}}
 							/>
 						}
 						items={homepageData.featuredProducts}
+						mobile={isMobile}
 					/>
 				)}
 
@@ -306,17 +398,21 @@ function HomepageView() {
 				{loading ? (
 					<Skeleton
 						variant="rectangular"
-						height={300}
+						height={isMobile ? 200 : 300}
 					/>
 				) : (
 					<ProductScrollSection
 						title="Trending Now"
 						icon={
 							<Whatshot
-								sx={{ fontSize: 40, color: 'error.main' }}
+								sx={{
+									fontSize: isMobile ? 30 : 40,
+									color: 'error.main',
+								}}
 							/>
 						}
 						items={homepageData.trendingProducts}
+						mobile={isMobile}
 					/>
 				)}
 
@@ -324,17 +420,21 @@ function HomepageView() {
 				{loading ? (
 					<Skeleton
 						variant="rectangular"
-						height={300}
+						height={isMobile ? 200 : 300}
 					/>
 				) : (
 					<ProductScrollSection
 						title="New Arrivals"
 						icon={
 							<NewReleases
-								sx={{ fontSize: 40, color: 'success.main' }}
+								sx={{
+									fontSize: isMobile ? 30 : 40,
+									color: 'success.main',
+								}}
 							/>
 						}
 						items={homepageData.newArrivals}
+						mobile={isMobile}
 					/>
 				)}
 			</Container>

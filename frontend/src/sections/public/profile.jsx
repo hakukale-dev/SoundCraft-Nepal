@@ -22,6 +22,7 @@ import {
 	DialogContentText,
 	DialogActions,
 	Button,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -30,6 +31,7 @@ import { logout } from '../../store/authSlice'
 
 export default function ProfileView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const {
 		register,
 		handleSubmit,
@@ -71,8 +73,6 @@ export default function ProfileView() {
 							.split('T')[0]
 					)
 				}
-
-				console.log(fetchedUserData)
 			} catch (err) {
 				toast.error('Failed to fetch user data')
 				console.error('Fetch user error:', err)
@@ -85,7 +85,6 @@ export default function ProfileView() {
 	}, [isAuthenticated, user, setValue])
 
 	const handleImageUpload = async (event) => {
-		console.log(user)
 		const file = event.target.files[0]
 		if (!file) return
 
@@ -145,7 +144,6 @@ export default function ProfileView() {
 	const formSubmit = async (data) => {
 		setIsLoading(true)
 		try {
-			console.log(user)
 			await axios.patch(`api/account/user/${user._id}/`, data)
 			toast.success('Profile Updated Successfully')
 		} catch (err) {
@@ -195,7 +193,7 @@ export default function ProfileView() {
 			</Stack>
 
 			<Stack
-				direction="row"
+				direction={isMobile ? 'column' : 'row'}
 				spacing={2}>
 				<TextField
 					fullWidth
@@ -205,13 +203,6 @@ export default function ProfileView() {
 					error={!!errors.first_name}
 					helperText={errors.first_name?.message}
 					InputLabelProps={{ shrink: true }}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
 				/>
 				<TextField
 					fullWidth
@@ -221,13 +212,6 @@ export default function ProfileView() {
 					error={!!errors.last_name}
 					helperText={errors.last_name?.message}
 					InputLabelProps={{ shrink: true }}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
 				/>
 			</Stack>
 
@@ -240,13 +224,6 @@ export default function ProfileView() {
 				helperText={errors.username?.message}
 				InputLabelProps={{ shrink: true }}
 				disabled
-				sx={{
-					'& .MuiOutlinedInput-root': {
-						'&:hover fieldset': {
-							borderColor: theme.palette.primary.main,
-						},
-					},
-				}}
 			/>
 
 			<TextField
@@ -259,13 +236,6 @@ export default function ProfileView() {
 				helperText={errors.email?.message}
 				InputLabelProps={{ shrink: true }}
 				disabled
-				sx={{
-					'& .MuiOutlinedInput-root': {
-						'&:hover fieldset': {
-							borderColor: theme.palette.primary.main,
-						},
-					},
-				}}
 			/>
 
 			<TextField
@@ -276,19 +246,12 @@ export default function ProfileView() {
 				error={!!errors.phone_number}
 				helperText={errors.phone_number?.message}
 				InputLabelProps={{ shrink: true }}
-				sx={{
-					'& .MuiOutlinedInput-root': {
-						'&:hover fieldset': {
-							borderColor: theme.palette.primary.main,
-						},
-					},
-				}}
 			/>
 
 			<Stack spacing={2}>
 				<Typography
 					variant="subtitle1"
-					sx={{ color: theme.palette.primary.main }}>
+					color="primary">
 					Address
 				</Typography>
 				<TextField
@@ -299,16 +262,9 @@ export default function ProfileView() {
 					error={!!errors.address?.street}
 					helperText={errors.address?.street?.message}
 					InputLabelProps={{ shrink: true }}
-					sx={{
-						'& .MuiOutlinedInput-root': {
-							'&:hover fieldset': {
-								borderColor: theme.palette.primary.main,
-							},
-						},
-					}}
 				/>
 				<Stack
-					direction="row"
+					direction={isMobile ? 'column' : 'row'}
 					spacing={2}>
 					<TextField
 						fullWidth
@@ -318,13 +274,6 @@ export default function ProfileView() {
 						error={!!errors.address?.city}
 						helperText={errors.address?.city?.message}
 						InputLabelProps={{ shrink: true }}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
 					/>
 					<TextField
 						fullWidth
@@ -334,13 +283,6 @@ export default function ProfileView() {
 						error={!!errors.address?.state}
 						helperText={errors.address?.state?.message}
 						InputLabelProps={{ shrink: true }}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'&:hover fieldset': {
-									borderColor: theme.palette.primary.main,
-								},
-							},
-						}}
 					/>
 				</Stack>
 				<TextField

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import {
 	Dialog,
@@ -25,6 +27,9 @@ export const SimpleDialogForm = ({
 	onClose,
 	onSubmit,
 }) => {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
 	const {
 		register,
 		handleSubmit,
@@ -77,8 +82,9 @@ export const SimpleDialogForm = ({
 		<Dialog
 			open
 			onClose={onClose}
-			maxWidth="md"
-			fullWidth>
+			maxWidth={isMobile ? 'xs' : 'md'}
+			fullWidth
+			fullScreen={isMobile}>
 			<DialogTitle>{isAdd ? 'Add New User' : 'Edit User'}</DialogTitle>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<DialogContent>
@@ -92,6 +98,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="First Name"
+								size={isMobile ? 'small' : 'medium'}
 								{...register(
 									'first_name',
 									validationRules.first_name
@@ -107,6 +114,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="Last Name"
+								size={isMobile ? 'small' : 'medium'}
 								{...register(
 									'last_name',
 									validationRules.last_name
@@ -122,6 +130,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="Username"
+								size={isMobile ? 'small' : 'medium'}
 								{...register(
 									'username',
 									validationRules.username
@@ -138,6 +147,7 @@ export const SimpleDialogForm = ({
 								fullWidth
 								label="Email"
 								type="email"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('email', validationRules.email)}
 								error={!!errors.email}
 								helperText={errors.email?.message}
@@ -149,6 +159,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="Phone Number"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('phone_number')}
 								error={!!errors.phone_number}
 								helperText={errors.phone_number?.message}
@@ -161,7 +172,9 @@ export const SimpleDialogForm = ({
 								<FormControl
 									fullWidth
 									variant="outlined">
-									<InputLabel htmlFor="password">
+									<InputLabel
+										htmlFor="password"
+										size={isMobile ? 'small' : 'normal'}>
 										Password
 									</InputLabel>
 									<OutlinedInput
@@ -169,6 +182,7 @@ export const SimpleDialogForm = ({
 										type={
 											showPassword ? 'text' : 'password'
 										}
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'password',
 											validationRules.password
@@ -178,11 +192,28 @@ export const SimpleDialogForm = ({
 											<InputAdornment position="end">
 												<IconButton
 													onClick={handleShowPassword}
-													edge="end">
+													edge="end"
+													size={
+														isMobile
+															? 'small'
+															: 'medium'
+													}>
 													{showPassword ? (
-														<VisibilityOff />
+														<VisibilityOff
+															fontSize={
+																isMobile
+																	? 'small'
+																	: 'medium'
+															}
+														/>
 													) : (
-														<Visibility />
+														<Visibility
+															fontSize={
+																isMobile
+																	? 'small'
+																	: 'medium'
+															}
+														/>
 													)}
 												</IconButton>
 											</InputAdornment>
@@ -209,6 +240,7 @@ export const SimpleDialogForm = ({
 								fullWidth
 								label="Date of Birth"
 								type="date"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('dob')}
 								InputLabelProps={{ shrink: true }}
 							/>
@@ -219,6 +251,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="Street"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('street')}
 							/>
 						</Grid>
@@ -229,6 +262,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="City"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('city')}
 							/>
 						</Grid>
@@ -239,6 +273,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="State"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('state')}
 							/>
 						</Grid>
@@ -249,6 +284,7 @@ export const SimpleDialogForm = ({
 							<TextField
 								fullWidth
 								label="ZIP Code"
+								size={isMobile ? 'small' : 'medium'}
 								{...register('zip_code')}
 							/>
 						</Grid>
@@ -256,18 +292,28 @@ export const SimpleDialogForm = ({
 							item
 							xs={12}>
 							<FormControlLabel
-								control={<Checkbox {...register('is_admin')} />}
+								control={
+									<Checkbox
+										{...register('is_admin')}
+										size={isMobile ? 'small' : 'medium'}
+									/>
+								}
 								label="Admin User"
 							/>
 						</Grid>
 					</Grid>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={onClose}>Cancel</Button>
+					<Button
+						onClick={onClose}
+						size={isMobile ? 'small' : 'medium'}>
+						Cancel
+					</Button>
 					<Button
 						type="submit"
 						variant="contained"
-						color="primary">
+						color="primary"
+						size={isMobile ? 'small' : 'medium'}>
 						{isAdd ? 'Add User' : 'Save Changes'}
 					</Button>
 				</DialogActions>

@@ -9,11 +9,13 @@ import {
 	Grid,
 	Avatar,
 	Chip,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	const isYoutubeUrl = (url) => {
 		return url.includes('youtube.com') || url.includes('youtu.be')
@@ -36,12 +38,15 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 			open={open}
 			onClose={onClose}
 			maxWidth="md"
-			fullWidth>
-			<DialogTitle>{lesson.title}</DialogTitle>
+			fullWidth
+			fullScreen={isMobile}>
+			<DialogTitle sx={{ fontSize: isMobile ? '1.2rem' : '1.5rem' }}>
+				{lesson.title}
+			</DialogTitle>
 			<DialogContent dividers>
 				<Grid
 					container
-					spacing={3}>
+					spacing={isMobile ? 1 : 3}>
 					{lesson.thumbnailUrl && (
 						<Grid
 							item
@@ -52,7 +57,7 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 								variant="rounded"
 								sx={{
 									width: '100%',
-									height: 300,
+									height: isMobile ? 200 : 300,
 									bgcolor: theme.palette.grey[200],
 								}}
 							/>
@@ -63,30 +68,33 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 						xs={12}
 						md={lesson.thumbnailUrl ? 8 : 12}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							Category: {lesson.category}
 						</Typography>
 						<Typography
 							variant="body1"
-							gutterBottom>
+							gutterBottom
+							sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
 							{lesson.description}
 						</Typography>
 						<Grid
 							container
-							spacing={2}
-							sx={{ mt: 2 }}>
+							spacing={1}
+							sx={{ mt: 1 }}>
 							<Grid
 								item
 								xs={6}>
-								<Typography variant="subtitle1">
+								<Typography
+									variant={isMobile ? 'body2' : 'subtitle1'}>
 									Difficulty: {lesson.difficultyLevel}
 								</Typography>
 							</Grid>
 							<Grid
 								item
 								xs={6}>
-								<Typography variant="subtitle1">
+								<Typography
+									variant={isMobile ? 'body2' : 'subtitle1'}>
 									Created:{' '}
 									{new Date(
 										lesson.createdAt
@@ -97,15 +105,15 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 						{lesson.videoUrl && (
 							<Grid
 								container
-								spacing={2}
-								sx={{ mt: 2 }}>
+								spacing={1}
+								sx={{ mt: 1 }}>
 								<Grid
 									item
 									xs={12}>
 									{isYoutubeUrl(lesson.videoUrl) ? (
 										<iframe
 											width="100%"
-											height="400"
+											height={isMobile ? 200 : 400}
 											src={getYoutubeEmbedUrl(
 												lesson.videoUrl
 											)}
@@ -119,7 +127,9 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 											controls
 											style={{
 												width: '100%',
-												maxHeight: '400px',
+												maxHeight: isMobile
+													? '200px'
+													: '400px',
 											}}
 											src={lesson.videoUrl}
 										/>
@@ -130,19 +140,26 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 						{lesson.resources && lesson.resources.length > 0 && (
 							<Grid
 								container
-								spacing={2}
-								sx={{ mt: 2 }}>
+								spacing={1}
+								sx={{ mt: 1 }}>
 								<Grid
 									item
 									xs={12}>
-									<Typography variant="h6">
+									<Typography
+										variant={isMobile ? 'subtitle1' : 'h6'}>
 										Resources:
 									</Typography>
 									{lesson.resources.map((resource, index) => (
 										<Chip
 											key={index}
 											label={`${resource.type}: ${resource.description}`}
-											sx={{ mr: 1, mb: 1 }}
+											sx={{
+												mr: 0.5,
+												mb: 0.5,
+												fontSize: isMobile
+													? '0.7rem'
+													: '0.8rem',
+											}}
 											onClick={() =>
 												window.open(
 													resource.url,
@@ -161,15 +178,21 @@ const LearningHubInfoPopup = ({ lesson, open, onClose, onEdit, onDelete }) => {
 			<DialogActions>
 				<Button
 					onClick={onDelete}
-					color="error">
+					color="error"
+					size={isMobile ? 'small' : 'medium'}>
 					Delete
 				</Button>
 				<Button
 					onClick={onEdit}
-					color="primary">
+					color="primary"
+					size={isMobile ? 'small' : 'medium'}>
 					Edit
 				</Button>
-				<Button onClick={onClose}>Close</Button>
+				<Button
+					onClick={onClose}
+					size={isMobile ? 'small' : 'medium'}>
+					Close
+				</Button>
 			</DialogActions>
 		</Dialog>
 	)

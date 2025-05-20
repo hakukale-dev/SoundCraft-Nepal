@@ -12,11 +12,13 @@ import {
 	TableCell,
 	TableRow,
 	Chip,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 const OrderInfoPopup = ({ order, open, onClose }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	if (!order) return null
 
@@ -25,22 +27,23 @@ const OrderInfoPopup = ({ order, open, onClose }) => {
 			open={open}
 			onClose={onClose}
 			maxWidth="md"
-			fullWidth>
+			fullWidth
+			fullScreen={isMobile}>
 			<DialogTitle>Order #{order._id}</DialogTitle>
 			<DialogContent dividers>
 				<Grid
 					container
-					spacing={3}>
+					spacing={isMobile ? 1 : 3}>
 					<Grid
 						item
 						xs={12}
 						md={6}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							Customer Information
 						</Typography>
-						<Typography variant="body1">
+						<Typography variant={isMobile ? 'body2' : 'body1'}>
 							{order.user_id
 								? `${order.user_id.first_name} ${order.user_id.last_name}`
 								: 'Guest User'}
@@ -52,20 +55,21 @@ const OrderInfoPopup = ({ order, open, onClose }) => {
 						xs={12}
 						md={6}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							Order Details
 						</Typography>
-						<Typography variant="body1">
+						<Typography variant={isMobile ? 'body2' : 'body1'}>
 							Date: {new Date(order.createdAt).toLocaleString()}
 						</Typography>
-						<Typography variant="body1">
+						<Typography variant={isMobile ? 'body2' : 'body1'}>
 							Payment Method: {order.payment_method}
 						</Typography>
-						<Typography variant="body1">
+						<Typography variant={isMobile ? 'body2' : 'body1'}>
 							Status:{' '}
 							<Chip
 								label={order.status}
+								size={isMobile ? 'small' : 'medium'}
 								color={
 									order.status === 'completed'
 										? 'success'
@@ -75,7 +79,7 @@ const OrderInfoPopup = ({ order, open, onClose }) => {
 								}
 							/>
 						</Typography>
-						<Typography variant="body1">
+						<Typography variant={isMobile ? 'body2' : 'body1'}>
 							Total: ${order.amount}
 						</Typography>
 					</Grid>
@@ -84,23 +88,40 @@ const OrderInfoPopup = ({ order, open, onClose }) => {
 						item
 						xs={12}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							gutterBottom>
 							Order Items
 						</Typography>
-						<Table>
+						<Table size={isMobile ? 'small' : 'medium'}>
 							<TableBody>
 								{order.items?.map((item) => (
 									<TableRow key={item._id}>
-										<TableCell>
-											{item.product_id?.name ||
-												'Product not available'}
+										<TableCell sx={{ p: isMobile ? 1 : 2 }}>
+											<Typography
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}>
+												{item.product_id?.name ||
+													'Product not available'}
+											</Typography>
 										</TableCell>
-										<TableCell>
-											{item.quantity} x ${item.price_per}
+										<TableCell sx={{ p: isMobile ? 1 : 2 }}>
+											<Typography
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}>
+												{item.quantity} x $
+												{item.price_per}
+											</Typography>
 										</TableCell>
-										<TableCell>
-											${item.quantity * item.price_per}
+										<TableCell sx={{ p: isMobile ? 1 : 2 }}>
+											<Typography
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}>
+												$
+												{item.quantity * item.price_per}
+											</Typography>
 										</TableCell>
 									</TableRow>
 								))}
@@ -110,7 +131,11 @@ const OrderInfoPopup = ({ order, open, onClose }) => {
 				</Grid>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={onClose}>Close</Button>
+				<Button
+					onClick={onClose}
+					size={isMobile ? 'small' : 'medium'}>
+					Close
+				</Button>
 			</DialogActions>
 		</Dialog>
 	)

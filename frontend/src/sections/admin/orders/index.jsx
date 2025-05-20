@@ -160,7 +160,7 @@ export default function OrdersView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<TableContainer sx={{ overflow: 'unset' }}>
+				<TableContainer sx={{ overflowX: 'auto' }}>
 					<Table sx={{ minWidth: 800 }}>
 						<TableHeader
 							showCheckBox={false}

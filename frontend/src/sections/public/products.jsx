@@ -17,6 +17,7 @@ import {
 	Tooltip,
 	Pagination,
 	Chip,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import axios from 'src/utils/axios'
@@ -35,6 +36,7 @@ const MotionGrid = motion(Grid)
 
 const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const canAdd = useSelector((state) =>
 		selectCanAddToCart(state, userId, product._id, 1)
 	)
@@ -51,17 +53,19 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}>
 			<MotionCard
-				whileHover={{ scale: 1.02 }}
+				whileHover={{ scale: isMobile ? 1 : 1.02 }}
 				sx={{
 					height: '100%',
 					display: 'flex',
 					flexDirection: 'column',
-					borderRadius: 4,
+					borderRadius: 2,
 					overflow: 'hidden',
-					boxShadow: theme.shadows[2],
+					boxShadow: theme.shadows[1],
 					transition: 'all 0.3s ease',
 					'&:hover': {
-						boxShadow: theme.shadows[6],
+						boxShadow: isMobile
+							? theme.shadows[1]
+							: theme.shadows[6],
 					},
 				}}>
 				{/* Product Image */}
@@ -86,7 +90,9 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 							objectFit: 'cover',
 							transition: 'transform 0.3s ease',
 							'&:hover': {
-								transform: 'scale(1.05)',
+								transform: isMobile
+									? 'scale(1)'
+									: 'scale(1.05)',
 							},
 						}}
 					/>
@@ -113,10 +119,10 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 				</Box>
 
 				{/* Product Details */}
-				<CardContent sx={{ flexGrow: 1, p: 3 }}>
-					<Stack spacing={1.5}>
+				<CardContent sx={{ flexGrow: 1, p: isMobile ? 1.5 : 3 }}>
+					<Stack spacing={1}>
 						<Typography
-							variant="h6"
+							variant={isMobile ? 'subtitle1' : 'h6'}
 							fontWeight={700}
 							noWrap>
 							{product.name}
@@ -125,7 +131,8 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 						<Stack
 							direction="row"
 							spacing={1}
-							alignItems="center">
+							alignItems="center"
+							flexWrap="wrap">
 							<Typography
 								variant="body2"
 								color="text.secondary">
@@ -144,7 +151,7 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 						</Stack>
 
 						<Typography
-							variant="h5"
+							variant={isMobile ? 'subtitle2' : 'h5'}
 							fontWeight={800}
 							color="primary">
 							Rs. {product.price.toLocaleString()}
@@ -163,24 +170,34 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 
 							<Stack
 								direction="row"
-								spacing={1}>
+								spacing={0.5}>
 								<Tooltip title="Quick View">
 									<IconButton
 										color="primary"
+										size={isMobile ? 'small' : 'medium'}
 										onClick={() =>
 											onViewDetails(product._id)
 										}>
-										<Info />
+										<Info
+											fontSize={
+												isMobile ? 'small' : 'medium'
+											}
+										/>
 									</IconButton>
 								</Tooltip>
 								<Tooltip title="Add to Cart">
 									<IconButton
 										color="primary"
+										size={isMobile ? 'small' : 'medium'}
 										onClick={() => onAddToCart(product)}
 										disabled={
 											product.stock <= 0 || !canAdd
 										}>
-										<ShoppingCart />
+										<ShoppingCart
+											fontSize={
+												isMobile ? 'small' : 'medium'
+											}
+										/>
 									</IconButton>
 								</Tooltip>
 							</Stack>
@@ -194,6 +211,7 @@ const ProductCard = ({ product, userId, onAddToCart, onViewDetails }) => {
 
 export default function ProductsView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -216,7 +234,7 @@ export default function ProductsView() {
 		searchParams.get('search') || ''
 	)
 	const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
-	const productsPerPage = 12
+	const productsPerPage = isMobile ? 6 : 12
 
 	// Fetch products from API
 	useEffect(() => {
@@ -349,29 +367,28 @@ export default function ProductsView() {
 		setFilterCategory('all')
 		setPage(1)
 	}, [])
-
 	// Loading state
 	if (loading) {
 		return (
-			<Container sx={{ py: 8 }}>
+			<Container sx={{ py: { xs: 4, md: 8 } }}>
 				<Grid
 					container
-					spacing={4}>
+					spacing={{ xs: 2, md: 4 }}>
 					{[...Array(8)].map((_, i) => (
 						<Grid
 							item
-							xs={12}
+							xs={6}
 							sm={6}
 							md={4}
 							lg={3}
 							key={i}>
 							<Skeleton
 								variant="rectangular"
-								height={300}
+								height={{ xs: 200, md: 300 }}
 							/>
 							<Skeleton
 								variant="text"
-								height={40}
+								height={{ xs: 30, md: 40 }}
 							/>
 							<Skeleton
 								variant="text"
@@ -391,17 +408,23 @@ export default function ProductsView() {
 	// Error state
 	if (error) {
 		return (
-			<Container sx={{ py: 8, textAlign: 'center' }}>
+			<Container sx={{ py: { xs: 3, md: 8 }, textAlign: 'center' }}>
 				<Typography
 					variant="h5"
 					color="error"
-					gutterBottom>
+					gutterBottom
+					sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
 					Error Loading Products
 				</Typography>
-				<Typography color="text.secondary">{error}</Typography>
+				<Typography
+					color="text.secondary"
+					sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
+					{error}
+				</Typography>
 				<Button
 					variant="contained"
-					sx={{ mt: 3 }}
+					size="small"
+					sx={{ mt: 2 }}
 					onClick={() => window.location.reload()}>
 					Retry
 				</Button>
@@ -413,32 +436,37 @@ export default function ProductsView() {
 	return (
 		<Container
 			maxWidth="xl"
-			sx={{ py: 8 }}>
+			sx={{ py: { xs: 3, md: 8 } }}>
 			<Stack
-				spacing={3}
-				mb={6}>
+				spacing={2}
+				mb={{ xs: 3, md: 6 }}>
 				<Typography
 					variant="h2"
-					sx={{ fontWeight: 800, textAlign: 'center' }}>
+					sx={{
+						fontWeight: 800,
+						textAlign: 'center',
+						fontSize: { xs: '1.8rem', md: '2.4rem' },
+					}}>
 					Explore Our Collection
 				</Typography>
 
 				{/* Filters Section */}
 				<Stack
 					direction={{ xs: 'column', md: 'row' }}
-					spacing={3}
+					spacing={2}
 					alignItems="center">
 					<TextField
 						select
 						variant="outlined"
 						label="Category"
+						size="small"
 						value={filterCategory}
 						onChange={(e) => {
 							setFilterCategory(e.target.value)
 							setPage(1)
 						}}
 						sx={{
-							minWidth: 200,
+							minWidth: { xs: '100%', md: 200 },
 							'& .MuiOutlinedInput-root': {
 								borderRadius: 4,
 								boxShadow: theme.shadows[1],
@@ -457,6 +485,7 @@ export default function ProductsView() {
 					<TextField
 						fullWidth
 						variant="outlined"
+						size="small"
 						placeholder="Search instruments..."
 						value={searchQuery}
 						onChange={(e) => {
@@ -490,7 +519,8 @@ export default function ProductsView() {
 				<Typography
 					variant="body1"
 					color="text.secondary"
-					textAlign="center">
+					textAlign="center"
+					sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
 					Showing {filteredProducts.length} of {products.length}{' '}
 					instruments
 				</Typography>
@@ -501,7 +531,7 @@ export default function ProductsView() {
 				<>
 					<Grid
 						container
-						spacing={4}>
+						spacing={{ xs: 2, md: 4 }}>
 						<AnimatePresence initial={false}>
 							{paginatedProducts.map((product) => (
 								<ProductCard
@@ -520,18 +550,21 @@ export default function ProductsView() {
 							sx={{
 								display: 'flex',
 								justifyContent: 'center',
-								mt: 6,
+								mt: { xs: 3, md: 6 },
 							}}>
 							<Pagination
 								count={totalPages}
 								page={page}
 								onChange={handlePageChange}
 								color="primary"
-								size="large"
+								size={isMobile ? 'small' : 'large'}
 								shape="rounded"
 								sx={{
 									'& .MuiPaginationItem-root': {
-										fontSize: '1.1rem',
+										fontSize: {
+											xs: '0.9rem',
+											md: '1.1rem',
+										},
 										borderRadius: 2,
 									},
 								}}
@@ -540,19 +573,21 @@ export default function ProductsView() {
 					)}
 				</>
 			) : (
-				<Box sx={{ textAlign: 'center', py: 8 }}>
+				<Box sx={{ textAlign: 'center', py: { xs: 3, md: 8 } }}>
 					<Typography
 						variant="h5"
-						gutterBottom>
+						gutterBottom
+						sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
 						No products found
 					</Typography>
 					<Typography
 						color="text.secondary"
-						sx={{ mb: 3 }}>
+						sx={{ mb: 2, fontSize: { xs: '0.9rem', md: '1rem' } }}>
 						Try adjusting your search or filters
 					</Typography>
 					<Button
 						variant="outlined"
+						size="small"
 						startIcon={<Close />}
 						onClick={handleClearSearch}>
 						Clear Filters

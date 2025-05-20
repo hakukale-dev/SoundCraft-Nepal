@@ -12,13 +12,12 @@ import {
 	Button,
 	useTheme,
 	IconButton,
+	useMediaQuery,
 } from '@mui/material'
 import { motion } from 'framer-motion'
 import {
 	KeyboardArrowRight,
 	Star,
-	ShoppingCart,
-	Add,
 	ShoppingCartSharp,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
@@ -32,6 +31,7 @@ const MotionButton = motion(Button)
 
 const ProductScrollSection = ({ title, icon, items }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
@@ -49,7 +49,6 @@ const ProductScrollSection = ({ title, icon, items }) => {
 				return
 			}
 
-			// Get fresh state from store
 			const currentState = store.getState()
 			const canAdd = selectCanAddToCart(
 				currentState,
@@ -82,27 +81,29 @@ const ProductScrollSection = ({ title, icon, items }) => {
 	)
 
 	return (
-		<Box sx={{ mb: 10, position: 'relative' }}>
+		<Box sx={{ mb: isMobile ? 6 : 10, position: 'relative' }}>
 			<Box
 				sx={{
 					display: 'flex',
 					alignItems: 'center',
-					mb: 6,
+					mb: isMobile ? 3 : 6,
 					px: 2,
 				}}>
 				{React.cloneElement(icon, {
 					sx: {
-						fontSize: '2.5rem',
+						fontSize: isMobile ? '1.8rem' : '2.5rem',
 						color: 'primary.main',
 						filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
 					},
 				})}
 				<Typography
-					variant="h3"
+					variant={isMobile ? 'h4' : 'h3'}
 					sx={{
 						fontWeight: 800,
 						ml: 2,
-						fontSize: { xs: '1.8rem', md: '2.4rem' },
+						fontSize: isMobile
+							? '1.4rem'
+							: { xs: '1.8rem', md: '2.4rem' },
 						textShadow: '0 2px 4px rgba(0,0,0,0.1)',
 					}}>
 					{title}
@@ -111,15 +112,15 @@ const ProductScrollSection = ({ title, icon, items }) => {
 
 			<Grid
 				container
-				spacing={3}
+				spacing={isMobile ? 2 : 3}
 				sx={{
 					display: 'flex',
 					flexWrap: 'nowrap',
 					overflowX: 'auto',
-					py: 4,
+					py: isMobile ? 2 : 4,
 					px: 2,
 					'&::-webkit-scrollbar': {
-						height: '6px',
+						height: '4px',
 						backgroundColor: 'transparent',
 					},
 					'&::-webkit-scrollbar-thumb': {
@@ -135,22 +136,26 @@ const ProductScrollSection = ({ title, icon, items }) => {
 						item
 						key={product._id}
 						sx={{
-							minWidth: { xs: '75vw', sm: '380px', md: '400px' },
-							pr: 3,
+							minWidth: isMobile
+								? '85vw'
+								: { xs: '75vw', sm: '380px', md: '400px' },
+							pr: isMobile ? 2 : 3,
 						}}>
 						<MotionCard
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							whileHover={{ scale: 1.02 }}
+							whileHover={{ scale: isMobile ? 1 : 1.02 }}
 							sx={{
 								height: '100%',
-								borderRadius: 3,
+								borderRadius: 2,
 								overflow: 'hidden',
-								boxShadow: theme.shadows[2],
+								boxShadow: theme.shadows[1],
 								transition:
 									'all 0.3s cubic-bezier(.25,.8,.25,1)',
 								'&:hover': {
-									boxShadow: theme.shadows[6],
+									boxShadow: isMobile
+										? theme.shadows[1]
+										: theme.shadows[6],
 								},
 							}}>
 							<Box
@@ -163,11 +168,13 @@ const ProductScrollSection = ({ title, icon, items }) => {
 									image={product.image}
 									alt={product.name}
 									sx={{
-										height: 280,
+										height: isMobile ? 180 : 280,
 										objectFit: 'cover',
 										transition: 'transform 0.3s ease',
 										'&:hover': {
-											transform: 'scale(1.05)',
+											transform: isMobile
+												? 'none'
+												: 'scale(1.05)',
 										},
 									}}
 								/>
@@ -185,8 +192,8 @@ const ProductScrollSection = ({ title, icon, items }) => {
 								<Box
 									sx={{
 										position: 'absolute',
-										top: 12,
-										left: 12,
+										top: 8,
+										left: 8,
 										display: 'flex',
 										gap: 1,
 										flexWrap: 'wrap',
@@ -198,9 +205,9 @@ const ProductScrollSection = ({ title, icon, items }) => {
 											size="small"
 											sx={{
 												fontWeight: 700,
-												borderRadius: 1.5,
+												borderRadius: 1,
 												px: 1,
-												height: 28,
+												height: 24,
 												'& .MuiChip-label': { px: 0.5 },
 											}}
 										/>
@@ -212,28 +219,33 @@ const ProductScrollSection = ({ title, icon, items }) => {
 											size="small"
 											sx={{
 												fontWeight: 700,
-												borderRadius: 1.5,
+												borderRadius: 1,
 												px: 1,
-												height: 28,
+												height: 24,
 												'& .MuiChip-label': { px: 0.5 },
 											}}
 										/>
 									)}
 								</Box>
 							</Box>
-							<CardContent sx={{ p: 2.5 }}>
-								<Stack spacing={1.5}>
+							<CardContent sx={{ p: isMobile ? 1.5 : 2.5 }}>
+								<Stack spacing={1}>
 									<Typography
-										variant="h6"
+										variant={isMobile ? 'subtitle1' : 'h6'}
 										sx={{
 											fontWeight: 800,
 											color: 'text.primary',
 											lineHeight: 1.3,
-											minHeight: '3.2em',
+											minHeight: isMobile
+												? '2.8em'
+												: '3.2em',
 											display: '-webkit-box',
 											WebkitLineClamp: 2,
 											WebkitBoxOrient: 'vertical',
 											overflow: 'hidden',
+											fontSize: isMobile
+												? '0.9rem'
+												: '1rem',
 										}}>
 										{product.name}
 									</Typography>
@@ -244,6 +256,9 @@ const ProductScrollSection = ({ title, icon, items }) => {
 											fontWeight: 500,
 											textTransform: 'uppercase',
 											letterSpacing: 0.5,
+											fontSize: isMobile
+												? '0.7rem'
+												: '0.8rem',
 										}}>
 										{product.category}
 									</Typography>
@@ -256,7 +271,7 @@ const ProductScrollSection = ({ title, icon, items }) => {
 											value={product.rating}
 											readOnly
 											precision={0.5}
-											size="medium"
+											size={isMobile ? 'small' : 'medium'}
 											emptyIcon={
 												<Star
 													sx={{
@@ -278,6 +293,9 @@ const ProductScrollSection = ({ title, icon, items }) => {
 											sx={{
 												fontWeight: 600,
 												color: 'text.secondary',
+												fontSize: isMobile
+													? '0.7rem'
+													: '0.8rem',
 											}}>
 											({product.reviews})
 										</Typography>
@@ -290,11 +308,14 @@ const ProductScrollSection = ({ title, icon, items }) => {
 										sx={{ mt: 1 }}>
 										<Stack spacing={0.25}>
 											<Typography
-												variant="h5"
+												variant={isMobile ? 'h6' : 'h5'}
 												sx={{
 													fontWeight: 800,
 													color: 'primary.main',
 													lineHeight: 1,
+													fontSize: isMobile
+														? '1rem'
+														: '1.5rem',
 												}}>
 												Rs. {product.price}
 											</Typography>
@@ -305,6 +326,9 @@ const ProductScrollSection = ({ title, icon, items }) => {
 														color: 'text.disabled',
 														textDecoration:
 															'line-through',
+														fontSize: isMobile
+															? '0.7rem'
+															: '0.8rem',
 													}}>
 													Rs. {product.originalPrice}
 												</Typography>
@@ -312,13 +336,13 @@ const ProductScrollSection = ({ title, icon, items }) => {
 										</Stack>
 										<Stack
 											direction={{
-												xs: 'column',
+												xs: 'row',
 												sm: 'row',
 											}}
 											spacing={1}
 											sx={{
 												width: {
-													xs: '100%',
+													xs: 'auto',
 													sm: 'auto',
 												},
 											}}>
@@ -327,40 +351,65 @@ const ProductScrollSection = ({ title, icon, items }) => {
 												whileTap={{ scale: 0.95 }}
 												variant="outlined"
 												color="primary"
-												size="medium"
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												onClick={() =>
 													navigate(
 														`/products/${product._id}`
 													)
 												}
 												endIcon={
-													<motion.div
-														animate={{
-															x: [0, 4, 0],
-														}}
-														transition={{
-															repeat: Infinity,
-															duration: 1.5,
-														}}>
-														<KeyboardArrowRight />
-													</motion.div>
+													isMobile ? null : (
+														<motion.div
+															animate={{
+																x: [0, 4, 0],
+															}}
+															transition={{
+																repeat: Infinity,
+																duration: 1.5,
+															}}>
+															<KeyboardArrowRight />
+														</motion.div>
+													)
 												}
 												sx={{
 													fontWeight: 700,
 													borderRadius: 2,
 													textTransform: 'none',
-													fontSize: '0.875rem',
+													fontSize: isMobile
+														? '0.75rem'
+														: '0.875rem',
 													whiteSpace: 'nowrap',
+													minWidth: isMobile
+														? 'auto'
+														: '100px',
+													p: isMobile
+														? '6px 8px'
+														: '8px 16px',
 												}}>
-												Details
+												{isMobile ? 'View' : 'Details'}
 											</MotionButton>
 
 											<IconButton
 												color="primary"
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												onClick={() =>
 													handleAddToCart(product)
 												}>
-												<ShoppingCartSharp />
+												<ShoppingCartSharp
+													fontSize={
+														isMobile
+															? 'small'
+															: 'medium'
+													}
+												/>
 											</IconButton>
 										</Stack>
 									</Stack>

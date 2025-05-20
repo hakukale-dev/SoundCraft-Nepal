@@ -1,6 +1,8 @@
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from '@mui/material/styles'
+import { useMediaQuery } from '@mui/material'
 
 import Card from '@mui/material/Card'
 import Stack from '@mui/material/Stack'
@@ -23,6 +25,8 @@ import QueryInfoPopup from './query-info'
 
 // ----------------------------------------------------------------------
 export default function QueriesView() {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { user } = useSelector((state) => state.auth)
 
 	const [page, setPage] = useState(0)
@@ -30,7 +34,7 @@ export default function QueriesView() {
 	const [selected, setSelected] = useState([])
 	const [orderBy, setOrderBy] = useState('name')
 	const [filterName, setFilterName] = useState('')
-	const [rowsPerPage, setRowsPerPage] = useState(5)
+	const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 5)
 
 	const [queries, setQueries] = useState([])
 	const [infoQuery, setInfoQuery] = useState(null)
@@ -143,7 +147,9 @@ export default function QueriesView() {
 				alignItems="center"
 				justifyContent="space-between"
 				mb={5}>
-				<Typography variant="h4">Customer Queries</Typography>
+				<Typography variant={isMobile ? 'h5' : 'h4'}>
+					Customer Queries
+				</Typography>
 			</Stack>
 
 			<Card>
@@ -153,8 +159,8 @@ export default function QueriesView() {
 					onFilterName={handleFilterByName}
 				/>
 
-				<TableContainer sx={{ overflow: 'unset' }}>
-					<Table sx={{ minWidth: 800 }}>
+				<TableContainer sx={{ overflow: 'auto' }}>
+					<Table sx={{ minWidth: isMobile ? 600 : 800 }}>
 						<TableHeader
 							showCheckBox={false}
 							order={order}
@@ -184,9 +190,18 @@ export default function QueriesView() {
 								.map((row) => (
 									<tr key={row._id}>
 										<td align="center">{row.name}</td>
-										<td>{row.email}</td>
 										<td>
-											{row.message.substring(0, 50)}...
+											{isMobile
+												? row.email.substring(0, 10) +
+												  '...'
+												: row.email}
+										</td>
+										<td>
+											{isMobile
+												? row.message.substring(0, 20) +
+												  '...'
+												: row.message.substring(0, 50) +
+												  '...'}
 										</td>
 										<td>
 											{new Date(
@@ -195,6 +210,11 @@ export default function QueriesView() {
 										</td>
 										<td>
 											<Button
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												variant="text"
 												onClick={(e) =>
 													handleInfoPopup(e, row._id)
@@ -202,6 +222,11 @@ export default function QueriesView() {
 												View
 											</Button>
 											<Button
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												variant="text"
 												color="error"
 												onClick={(e) =>
@@ -233,7 +258,7 @@ export default function QueriesView() {
 					count={queries.length}
 					rowsPerPage={rowsPerPage}
 					onPageChange={handleChangePage}
-					rowsPerPageOptions={[5, 10, 25]}
+					rowsPerPageOptions={isMobile ? [3, 5, 10] : [5, 10, 25]}
 					onRowsPerPageChange={handleChangeRowsPerPage}
 				/>
 			</Card>

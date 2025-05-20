@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import Card from '@mui/material/Card'
 import Stack from '@mui/material/Stack'
@@ -28,6 +30,8 @@ export default function ArticleCard({
 	handleDelete,
 	handleInfoPopup,
 }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [open, setOpen] = useState(null)
 
 	const handleOpenMenu = (event) => {
@@ -39,15 +43,21 @@ export default function ArticleCard({
 	}
 
 	return (
-		<Card sx={{ maxWidth: 345, m: 2, borderRadius: 2, boxShadow: 3 }}>
+		<Card
+			sx={{
+				maxWidth: isMobile ? '100%' : 345,
+				m: isMobile ? 1 : 2,
+				borderRadius: 2,
+				boxShadow: 3,
+			}}>
 			{/* Thumbnail */}
 			<CardMedia
 				component="img"
-				height="180"
+				height={isMobile ? '140' : '180'}
 				image={thumbnail}
 				alt={title}
 				sx={{
-					objectFit: 'cover', // Ensure the image is covered properly
+					objectFit: 'cover',
 					borderTopLeftRadius: 2,
 					borderTopRightRadius: 2,
 				}}
@@ -60,7 +70,7 @@ export default function ArticleCard({
 					component="div"
 					sx={{
 						fontWeight: 'bold',
-						fontSize: 18,
+						fontSize: isMobile ? 16 : 18,
 						color: 'text.primary',
 					}}>
 					{title}
@@ -69,27 +79,38 @@ export default function ArticleCard({
 					<Typography
 						variant="body2"
 						color="text.secondary"
-						sx={{ fontWeight: 'bold' }}>
+						sx={{
+							fontWeight: 'bold',
+							fontSize: isMobile ? 12 : 14,
+						}}>
 						Category: {category}
 					</Typography>
 					<Typography
 						variant="body2"
 						color="text.secondary"
-						sx={{ fontWeight: 'bold' }}>
+						sx={{
+							fontWeight: 'bold',
+							fontSize: isMobile ? 12 : 14,
+						}}>
 						Difficulty: {difficultyLevel}
 					</Typography>
 					<Typography
 						variant="body2"
 						color="text.secondary"
-						sx={{ fontSize: 14 }}>
+						sx={{ fontSize: isMobile ? 12 : 14 }}>
 						{description}
 					</Typography>
 				</Stack>
 			</CardContent>
 			{/* Card Actions */}
 			<CardActions disableSpacing>
-				<IconButton onClick={handleOpenMenu}>
-					<Iconify icon="eva:more-vertical-fill" />
+				<IconButton
+					onClick={handleOpenMenu}
+					size={isMobile ? 'small' : 'medium'}>
+					<Iconify
+						icon="eva:more-vertical-fill"
+						width={isMobile ? 20 : 24}
+					/>
 				</IconButton>
 			</CardActions>
 
@@ -102,7 +123,7 @@ export default function ArticleCard({
 				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 				PaperProps={{
 					sx: {
-						width: 160,
+						width: isMobile ? 140 : 160,
 						borderRadius: 2,
 						boxShadow: 2,
 					},
@@ -110,14 +131,22 @@ export default function ArticleCard({
 				<MenuItem onClick={handleInfoPopup}>
 					<Iconify
 						icon="eva:info-outline"
-						sx={{ mr: 2, color: 'info.main' }}
+						sx={{
+							mr: 2,
+							color: 'info.main',
+							width: isMobile ? 18 : 20,
+						}}
 					/>
 					Info
 				</MenuItem>
 				<MenuItem onClick={handleEdit}>
 					<Iconify
 						icon="eva:edit-fill"
-						sx={{ mr: 2, color: 'primary.main' }}
+						sx={{
+							mr: 2,
+							color: 'primary.main',
+							width: isMobile ? 18 : 20,
+						}}
 					/>
 					Edit
 				</MenuItem>
@@ -126,7 +155,7 @@ export default function ArticleCard({
 					sx={{ color: 'error.main' }}>
 					<Iconify
 						icon="eva:trash-2-outline"
-						sx={{ mr: 2 }}
+						sx={{ mr: 2, width: isMobile ? 18 : 20 }}
 					/>
 					Delete
 				</MenuItem>

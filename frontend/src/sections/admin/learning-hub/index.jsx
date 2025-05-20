@@ -7,6 +7,8 @@ import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import Typography from '@mui/material/Typography'
 import Pagination from '@mui/material/Pagination'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import { useTheme } from '@mui/material/styles'
 
 import axios from 'src/utils/axios'
 import Iconify from 'src/components/iconify'
@@ -14,15 +16,19 @@ import { SimpleDialogForm } from './article-form'
 import LearningHubInfoPopup from './article-info'
 import ArticleCard from './article-card'
 import { applyFilter, getComparator } from '../../../utils/utils'
+import { TextField } from '@mui/material'
 
 // ----------------------------------------------------------------------
 export default function AdminLearningHubView() {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
 	const [page, setPage] = useState(0)
 	const [order, setOrder] = useState('asc')
 	const [selected, setSelected] = useState([])
 	const [orderBy, setOrderBy] = useState('title')
 	const [filterName, setFilterName] = useState('')
-	const [rowsPerPage, setRowsPerPage] = useState(6)
+	const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 6)
 
 	const [lessons, setLessons] = useState([])
 	const [editingLesson, setEditingLesson] = useState({})
@@ -157,7 +163,7 @@ export default function AdminLearningHubView() {
 	}, [fetchData])
 
 	return (
-		<Container>
+		<Container maxWidth={isMobile ? false : 'lg'}>
 			{open && (
 				<SimpleDialogForm
 					isAdd={isAdd}
@@ -178,38 +184,43 @@ export default function AdminLearningHubView() {
 			)}
 
 			<Stack
-				direction="row"
+				direction={isMobile ? 'column' : 'row'}
 				alignItems="center"
 				justifyContent="space-between"
-				mb={5}>
-				<Typography variant="h4">Learning Hub</Typography>
+				mb={5}
+				spacing={isMobile ? 2 : 0}>
+				<Typography variant={isMobile ? 'h5' : 'h4'}>
+					Learning Hub
+				</Typography>
 
 				<Button
 					variant="contained"
 					color="inherit"
+					size={isMobile ? 'small' : 'medium'}
 					startIcon={<Iconify icon="eva:plus-fill" />}
 					onClick={handleOpen}>
 					New Lesson
 				</Button>
 			</Stack>
 
-			<Card sx={{ p: 3 }}>
+			<Card sx={{ p: isMobile ? 2 : 3 }}>
 				<Stack spacing={3}>
 					<Stack
-						direction="row"
+						direction={isMobile ? 'column' : 'row'}
 						justifyContent="space-between"
-						alignItems="center">
-						<Typography variant="h6">Lessons</Typography>
-						<input
-							type="text"
+						alignItems={isMobile ? 'flex-start' : 'center'}
+						spacing={isMobile ? 2 : 0}>
+						<Typography variant={isMobile ? 'subtitle1' : 'h6'}>
+							Lessons
+						</Typography>
+						<TextField
+							fullWidth={isMobile}
+							size="small"
 							placeholder="Search lessons..."
 							value={filterName}
 							onChange={handleFilterByName}
-							style={{
-								padding: '8px',
-								borderRadius: '4px',
-								border: '1px solid #ccc',
-								minWidth: '300px',
+							sx={{
+								minWidth: isMobile ? '100%' : 300,
 							}}
 						/>
 					</Stack>
@@ -223,7 +234,7 @@ export default function AdminLearningHubView() {
 					) : (
 						<Grid
 							container
-							spacing={3}>
+							spacing={isMobile ? 2 : 3}>
 							{dataFiltered
 								.slice(
 									page * rowsPerPage,
@@ -256,6 +267,7 @@ export default function AdminLearningHubView() {
 													lesson._id
 												)
 											}
+											isMobile={isMobile}
 										/>
 									</Grid>
 								))}
@@ -271,6 +283,7 @@ export default function AdminLearningHubView() {
 							page={page + 1}
 							onChange={handleChangePage}
 							color="primary"
+							size={isMobile ? 'small' : 'medium'}
 						/>
 					</Stack>
 				</Stack>

@@ -9,6 +9,7 @@ import {
 	IconButton,
 	Skeleton,
 	Alert,
+	useMediaQuery,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { motion } from 'framer-motion'
@@ -20,6 +21,7 @@ const MotionBox = motion(Box)
 
 export default function WishlistView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
 	const [wishlist, setWishlist] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -56,10 +58,10 @@ export default function WishlistView() {
 
 	if (error) {
 		return (
-			<Container sx={{ py: 4 }}>
+			<Container sx={{ py: 2 }}>
 				<Alert
 					severity="error"
-					sx={{ mb: 3 }}>
+					sx={{ mb: 2 }}>
 					{error}
 				</Alert>
 			</Container>
@@ -69,16 +71,20 @@ export default function WishlistView() {
 	return (
 		<Container
 			maxWidth="xl"
-			sx={{ py: 4 }}>
-			<Stack spacing={3}>
+			sx={{ py: isMobile ? 2 : 4 }}>
+			<Stack spacing={isMobile ? 2 : 3}>
 				<Typography
-					variant="h3"
+					variant={isMobile ? 'h4' : 'h3'}
 					sx={{ fontWeight: 800 }}>
 					My Wishlist
 					<Typography
 						component="span"
 						color="text.secondary"
-						sx={{ ml: 1.5, fontWeight: 400 }}>
+						sx={{
+							ml: 1,
+							fontWeight: 400,
+							fontSize: isMobile ? '0.875rem' : 'inherit',
+						}}>
 						({wishlist.length} items)
 					</Typography>
 				</Typography>
@@ -86,17 +92,17 @@ export default function WishlistView() {
 				{loading ? (
 					<Grid
 						container
-						spacing={3}>
+						spacing={isMobile ? 2 : 3}>
 						{[...Array(6)].map((_, index) => (
 							<Grid
 								item
-								xs={12}
+								xs={6}
 								sm={6}
 								md={4}
 								key={index}>
 								<Skeleton
 									variant="rounded"
-									height={320}
+									height={isMobile ? 200 : 320}
 								/>
 							</Grid>
 						))}
@@ -104,11 +110,11 @@ export default function WishlistView() {
 				) : wishlist.length > 0 ? (
 					<Grid
 						container
-						spacing={3}>
+						spacing={isMobile ? 2 : 3}>
 						{wishlist?.map((item) => (
 							<Grid
 								item
-								xs={12}
+								xs={6}
 								sm={6}
 								md={4}
 								lg={3}
@@ -116,22 +122,28 @@ export default function WishlistView() {
 								<MotionBox
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
-									whileHover={{ scale: 1.02 }}
+									whileHover={
+										!isMobile ? { scale: 1.02 } : {}
+									}
 									sx={{
-										p: 2.5,
+										p: isMobile ? 1.5 : 2.5,
 										height: '100%',
-										borderRadius: 2.5,
+										borderRadius: 2,
 										border: '1px solid',
 										borderColor: 'divider',
 										transition: 'all 0.3s ease',
 										backgroundColor: 'background.paper',
 										'&:hover': {
-											boxShadow: theme.shadows[6],
-											borderColor: 'transparent',
+											boxShadow: !isMobile
+												? theme.shadows[6]
+												: 'none',
+											borderColor: !isMobile
+												? 'transparent'
+												: 'divider',
 										},
 									}}>
 									<Stack
-										spacing={2.5}
+										spacing={isMobile ? 1.5 : 2.5}
 										sx={{ height: '100%' }}>
 										<Box
 											component="img"
@@ -139,20 +151,27 @@ export default function WishlistView() {
 											alt={item.name}
 											sx={{
 												width: '100%',
-												height: 240,
+												height: isMobile ? 120 : 240,
 												objectFit: 'contain',
-												borderRadius: 1.5,
+												borderRadius: 1,
 												backgroundColor:
 													'background.default',
-												p: 2,
+												p: 1,
 											}}
 										/>
-										<Stack spacing={1.5}>
+										<Stack spacing={1}>
 											<Typography
-												variant="h6"
+												variant={
+													isMobile
+														? 'subtitle1'
+														: 'h6'
+												}
 												sx={{
 													fontWeight: 700,
 													lineHeight: 1.3,
+													fontSize: isMobile
+														? '0.875rem'
+														: '1rem',
 												}}>
 												{item.name}
 											</Typography>
@@ -161,9 +180,16 @@ export default function WishlistView() {
 												justifyContent="space-between"
 												alignItems="center">
 												<Typography
-													variant="h5"
+													variant={
+														isMobile ? 'h6' : 'h5'
+													}
 													color="primary"
-													sx={{ fontWeight: 800 }}>
+													sx={{
+														fontWeight: 800,
+														fontSize: isMobile
+															? '1rem'
+															: '1.25rem',
+													}}>
 													${item.price}
 												</Typography>
 												<IconButton
@@ -171,6 +197,11 @@ export default function WishlistView() {
 														handleRemoveItem(
 															item._id
 														)
+													}
+													size={
+														isMobile
+															? 'small'
+															: 'medium'
 													}
 													sx={{
 														color: 'error.main',
@@ -181,7 +212,9 @@ export default function WishlistView() {
 													}}>
 													<Iconify
 														icon="mdi:heart-remove"
-														width={24}
+														width={
+															isMobile ? 20 : 24
+														}
 													/>
 												</IconButton>
 											</Stack>
@@ -189,16 +222,22 @@ export default function WishlistView() {
 										<Button
 											fullWidth
 											variant="contained"
-											size="large"
+											size={isMobile ? 'small' : 'large'}
 											startIcon={
-												<Iconify icon="mdi:cart-plus" />
+												<Iconify
+													icon="mdi:cart-plus"
+													width={isMobile ? 16 : 20}
+												/>
 											}
 											sx={{
 												mt: 'auto',
 												fontWeight: 700,
-												borderRadius: 2,
-												py: 1.5,
+												borderRadius: 1,
+												py: isMobile ? 0.75 : 1.5,
 												textTransform: 'none',
+												fontSize: isMobile
+													? '0.75rem'
+													: '0.875rem',
 											}}>
 											Add to Cart
 										</Button>
@@ -210,27 +249,28 @@ export default function WishlistView() {
 				) : (
 					<Box
 						sx={{
-							height: '60vh',
+							height: isMobile ? '50vh' : '60vh',
 							display: 'flex',
 							flexDirection: 'column',
 							alignItems: 'center',
 							justifyContent: 'center',
 							textAlign: 'center',
-							p: 4,
+							p: isMobile ? 2 : 4,
 						}}>
 						<Iconify
 							icon="mdi:heart-outline"
-							width={80}
-							sx={{ color: 'text.disabled', mb: 3 }}
+							width={isMobile ? 60 : 80}
+							sx={{ color: 'text.disabled', mb: 2 }}
 						/>
 						<Typography
-							variant="h5"
-							sx={{ mb: 1.5 }}>
+							variant={isMobile ? 'h6' : 'h5'}
+							sx={{ mb: 1 }}>
 							Your Wishlist is Empty
 						</Typography>
 						<Typography
-							variant="body1"
-							color="text.secondary">
+							variant="body2"
+							color="text.secondary"
+							sx={{ fontSize: isMobile ? '0.875rem' : '1rem' }}>
 							Start adding items you love by clicking the heart
 							icon
 						</Typography>

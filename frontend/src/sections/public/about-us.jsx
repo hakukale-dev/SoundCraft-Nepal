@@ -1,27 +1,36 @@
-import { Box, Grid, Avatar, Container, Typography, Stack } from '@mui/material'
+import {
+	Box,
+	Grid,
+	Avatar,
+	Container,
+	Typography,
+	Stack,
+	useMediaQuery,
+} from '@mui/material'
 import { MusicNote } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 
 export default function AboutUsView() {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	return (
 		<Box
 			sx={{
 				minHeight: 'calc(100vh - 100px)',
-				pt: 8,
-				pb: 6,
+				pt: isMobile ? 4 : 8,
+				pb: isMobile ? 4 : 6,
 			}}>
 			<Container maxWidth="lg">
 				<Grid
 					container
-					spacing={5}
+					spacing={isMobile ? 3 : 5}
 					alignItems="center">
 					<Grid
 						item
 						xs={12}
 						md={6}>
-						<Stack spacing={3}>
+						<Stack spacing={isMobile ? 2 : 3}>
 							<Box
 								sx={{
 									display: 'flex',
@@ -31,11 +40,11 @@ export default function AboutUsView() {
 								<MusicNote
 									sx={{
 										color: theme.palette.primary.main,
-										fontSize: 40,
+										fontSize: isMobile ? 30 : 40,
 									}}
 								/>
 								<Typography
-									variant="h3"
+									variant={isMobile ? 'h4' : 'h3'}
 									sx={{
 										fontFamily: theme.typography.fontFamily,
 										color: theme.palette.primary.main,
@@ -48,7 +57,7 @@ export default function AboutUsView() {
 								paragraph
 								sx={{
 									color: theme.palette.text.primary,
-									fontSize: '1.1rem',
+									fontSize: isMobile ? '1rem' : '1.1rem',
 									lineHeight: 1.8,
 									fontFamily: theme.typography.fontFamily,
 								}}>
@@ -68,7 +77,7 @@ export default function AboutUsView() {
 								paragraph
 								sx={{
 									color: theme.palette.text.primary,
-									fontSize: '1.1rem',
+									fontSize: isMobile ? '1rem' : '1.1rem',
 									lineHeight: 1.8,
 									fontFamily: theme.typography.fontFamily,
 								}}>
@@ -91,38 +100,42 @@ export default function AboutUsView() {
 						container
 						xs={12}
 						md={6}
-						spacing={4}>
+						spacing={isMobile ? 2 : 4}>
 						<Grid
 							item
 							xs={12}>
 							<Box
 								sx={{
-									p: 4,
+									p: isMobile ? 2 : 4,
 									bgcolor: theme.palette.background.paper,
 									borderRadius: 2,
 									boxShadow: theme.shadows[2],
 								}}>
 								<Stack
-									direction="row"
-									spacing={3}
+									direction={isMobile ? 'column' : 'row'}
+									spacing={isMobile ? 2 : 3}
 									alignItems="center">
 									<Avatar
 										alt="Master Craftsman"
 										src="/assets/images/craftsman.jpg"
 										sx={{
-											width: 120,
-											height: 120,
+											width: isMobile ? 80 : 120,
+											height: isMobile ? 80 : 120,
 											border: `3px solid ${theme.palette.primary.main}`,
+											mb: isMobile ? 2 : 0,
 										}}
 									/>
-									<Stack spacing={2}>
+									<Stack spacing={isMobile ? 1 : 2}>
 										<Typography
-											variant="h5"
+											variant={isMobile ? 'h6' : 'h5'}
 											sx={{
 												fontFamily:
 													theme.typography.fontFamily,
 												color: theme.palette.primary
 													.main,
+												textAlign: isMobile
+													? 'center'
+													: 'left',
 											}}>
 											Our Craftsmen
 										</Typography>
@@ -134,6 +147,9 @@ export default function AboutUsView() {
 												lineHeight: 1.6,
 												fontFamily:
 													theme.typography.fontFamily,
+												fontSize: isMobile
+													? '0.9rem'
+													: '1rem',
 											}}>
 											At SoundCraft Nepal, we proudly
 											support skilled local craftsmen who
@@ -143,7 +159,7 @@ export default function AboutUsView() {
 											for music are reflected in every
 											product they make. By featuring
 											their handcrafted instruments on our
-											platform, we help preserve Nepal’s
+											platform, we help preserve Nepal's
 											musical heritage while giving them a
 											space to reach wider audiences. Each
 											instrument carries a story of

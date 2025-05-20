@@ -11,7 +11,7 @@ import {
 	Grid,
 	MenuItem,
 	Avatar,
-	Typography,
+	useMediaQuery,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 
@@ -33,6 +33,7 @@ export const SimpleDialogForm = ({
 	onSubmit,
 }) => {
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const {
 		register,
 		handleSubmit,
@@ -125,7 +126,8 @@ export const SimpleDialogForm = ({
 			open
 			onClose={onClose}
 			maxWidth="md"
-			fullWidth>
+			fullWidth
+			fullScreen={isMobile}>
 			<DialogTitle>
 				{isAdd ? 'Add New Product' : 'Edit Product'}
 			</DialogTitle>
@@ -133,7 +135,8 @@ export const SimpleDialogForm = ({
 				<DialogContent dividers>
 					<Grid
 						container
-						spacing={3}>
+						spacing={isMobile ? 1 : 3}
+						direction={isMobile ? 'column' : 'row'}>
 						<Grid
 							item
 							xs={12}
@@ -143,7 +146,7 @@ export const SimpleDialogForm = ({
 								variant="rounded"
 								sx={{
 									width: '100%',
-									height: 300,
+									height: isMobile ? 200 : 300,
 									bgcolor: theme.palette.grey[200],
 									mb: 2,
 								}}
@@ -173,14 +176,7 @@ export const SimpleDialogForm = ({
 								})}
 								error={!!errors.image}
 								helperText={errors.image?.message}
-								sx={{
-									'& .MuiOutlinedInput-root': {
-										'&:hover fieldset': {
-											borderColor:
-												theme.palette.primary.main,
-										},
-									},
-								}}
+								size={isMobile ? 'small' : 'medium'}
 							/>
 						</Grid>
 						<Grid
@@ -189,7 +185,7 @@ export const SimpleDialogForm = ({
 							md={8}>
 							<Grid
 								container
-								spacing={2}>
+								spacing={isMobile ? 1 : 2}>
 								<Grid
 									item
 									xs={12}
@@ -197,6 +193,7 @@ export const SimpleDialogForm = ({
 									<TextField
 										fullWidth
 										label="Product Name"
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'name',
 											validationRules.name
@@ -212,6 +209,7 @@ export const SimpleDialogForm = ({
 									<TextField
 										fullWidth
 										label="Model"
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'model',
 											validationRules.model
@@ -227,7 +225,8 @@ export const SimpleDialogForm = ({
 										fullWidth
 										label="Description"
 										multiline
-										rows={4}
+										rows={isMobile ? 2 : 4}
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'description',
 											validationRules.description
@@ -245,6 +244,7 @@ export const SimpleDialogForm = ({
 										label="Price"
 										type="text"
 										inputMode="decimal"
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'price',
 											validationRules.price
@@ -261,6 +261,7 @@ export const SimpleDialogForm = ({
 										fullWidth
 										select
 										label="Category"
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'category',
 											validationRules.category
@@ -291,6 +292,7 @@ export const SimpleDialogForm = ({
 										label="Stock"
 										type="text"
 										inputMode="numeric"
+										size={isMobile ? 'small' : 'medium'}
 										{...register(
 											'stock',
 											validationRules.stock
@@ -304,7 +306,11 @@ export const SimpleDialogForm = ({
 					</Grid>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={onClose}>Cancel</Button>
+					<Button
+						onClick={onClose}
+						size={isMobile ? 'small' : 'medium'}>
+						Cancel
+					</Button>
 					<Button
 						type="submit"
 						variant="contained"

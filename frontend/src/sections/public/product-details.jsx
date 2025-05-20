@@ -34,12 +34,18 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const StyledRoot = styled('div')(({ theme }) => ({
-	padding: theme.spacing(6, 0),
+	padding: theme.spacing(3, 0),
+	[theme.breakpoints.up('md')]: {
+		padding: theme.spacing(6, 0),
+	},
 	backgroundColor: theme.palette.background.default,
 }))
 
 const ProductInfoCard = styled('div')(({ theme }) => ({
-	padding: theme.spacing(4),
+	padding: theme.spacing(2),
+	[theme.breakpoints.up('md')]: {
+		padding: theme.spacing(4),
+	},
 	borderRadius: theme.shape.borderRadius * 2,
 	backgroundColor: theme.palette.background.paper,
 	boxShadow: theme.shadows[10],
@@ -47,17 +53,25 @@ const ProductInfoCard = styled('div')(({ theme }) => ({
 
 const PriceBox = styled('div')(({ theme }) => ({
 	display: 'flex',
-	alignItems: 'center',
-	gap: theme.spacing(2),
-	padding: theme.spacing(3),
+	flexDirection: 'column',
+	gap: theme.spacing(1),
+	padding: theme.spacing(2),
 	borderRadius: theme.shape.borderRadius,
 	border: `1px solid ${theme.palette.divider}`,
+	[theme.breakpoints.up('sm')]: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: theme.spacing(2),
+		padding: theme.spacing(3),
+	},
 }))
 
 const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 	const { isAuthenticated, user } = useSelector((state) => state.auth)
 	const [rating, setRating] = useState(0)
 	const [comment, setComment] = useState('')
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	const handleRatingChange = (event, newValue) => {
 		setRating(newValue)
@@ -76,8 +90,8 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 	}
 
 	return (
-		<Box sx={{ maxHeight: 400, overflowY: 'auto', pr: 2 }}>
-			<Stack spacing={4}>
+		<Box sx={{ maxHeight: 400, overflowY: 'auto', pr: 1 }}>
+			<Stack spacing={3}>
 				{isAuthenticated && (
 					<Box>
 						<Typography
@@ -88,7 +102,7 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 						<TextField
 							fullWidth
 							multiline
-							rows={4}
+							rows={isMobile ? 2 : 4}
 							value={comment}
 							onChange={handleCommentChange}
 							placeholder="Share your experience with this product..."
@@ -96,22 +110,25 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 							sx={{ mb: 2 }}
 						/>
 						<Stack
-							direction="row"
-							alignItems="center"
-							justifyContent="space-between">
+							direction={isMobile ? 'column' : 'row'}
+							alignItems={isMobile ? 'flex-start' : 'center'}
+							justifyContent="space-between"
+							spacing={2}>
 							<Rating
 								name="product-rating"
 								value={rating}
 								onChange={handleRatingChange}
 								precision={0.5}
-								size="large"
-								sx={{ mb: 2 }}
+								size={isMobile ? 'medium' : 'large'}
+								sx={{ mb: isMobile ? 1 : 2 }}
 							/>
 							<Button
 								onClick={handleSubmitReview}
 								variant="contained"
 								color="primary"
-								disabled={!rating || !comment.trim()}>
+								size={isMobile ? 'small' : 'medium'}
+								disabled={!rating || !comment.trim()}
+								fullWidth={isMobile}>
 								Submit Review
 							</Button>
 						</Stack>
@@ -119,7 +136,7 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 				)}
 
 				{reviews?.length > 0 ? (
-					<Stack spacing={3}>
+					<Stack spacing={2}>
 						<Typography variant="h6">
 							Customer Reviews ({reviews.length})
 						</Typography>
@@ -127,25 +144,36 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 							<Box
 								key={review._id}
 								sx={{
-									p: 2,
+									p: 1,
 									border: '1px solid',
 									borderColor: 'divider',
 									borderRadius: 1,
 								}}>
 								<Stack
-									direction="row"
-									spacing={2}
-									alignItems="center"
+									direction={isMobile ? 'column' : 'row'}
+									spacing={1}
+									alignItems={
+										isMobile ? 'flex-start' : 'center'
+									}
 									sx={{ mb: 1 }}>
-									<Avatar src={review.user?.photo} />
-									<Typography variant="subtitle1">
-										{review.user?.first_name}{' '}
-										{review.user?.last_name}
-									</Typography>
+									<Stack
+										direction="row"
+										spacing={1}
+										alignItems="center">
+										<Avatar
+											src={review.user?.photo}
+											sx={{ width: 32, height: 32 }}
+										/>
+										<Typography variant="subtitle1">
+											{review.user?.first_name}{' '}
+											{review.user?.last_name}
+										</Typography>
+									</Stack>
 									<Rating
 										value={review.rating}
 										precision={0.5}
 										readOnly
+										size={isMobile ? 'small' : 'medium'}
 									/>
 									<Typography
 										variant="caption"
@@ -155,7 +183,13 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 										).toLocaleDateString()}
 									</Typography>
 								</Stack>
-								<Typography variant="body1">
+								<Typography
+									variant="body1"
+									sx={{
+										fontSize: isMobile
+											? '0.875rem'
+											: '1rem',
+									}}>
 									{review.comment}
 								</Typography>
 							</Box>
@@ -176,6 +210,7 @@ const ReviewSection = ({ productId, reviews, handleSubmit }) => {
 export default function ProductDetailsPage() {
 	const dispatch = useDispatch()
 	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const navigate = useNavigate()
 	const { id } = useParams()
 	const [rawProductData, setRawProductData] = useState(null)
@@ -194,29 +229,52 @@ export default function ProductDetailsPage() {
 	)
 
 	useEffect(() => {
-		const fetchProduct = async () => {
-			try {
-				const response = await axios.get(`/api/products/${id}`)
-				const data = response.data
+		const fetchData = async () => {
+			if (!id) {
+				setError('Invalid product ID')
+				setLoading(false)
+				return
+			}
 
+			try {
+				const [productRes, reviewsRes, wishlistRes] = await Promise.all(
+					[
+						axios.get(`/api/products/${id}`),
+						axios.get(`/api/reviews/product/${id}`),
+						isAuthenticated
+							? axios.get('/api/wishlist')
+							: Promise.resolve(null),
+					]
+				)
+
+				const productData = productRes.data
 				const transformedProduct = {
-					...data,
-					images: [data.image, ...(data.additionalImages || [])],
-					details: data.description
-						? data.description.split('. ').filter(Boolean)
-						: [],
+					...productData,
+					images: [
+						productData.image,
+						...(productData.additionalImages || []),
+					],
+					details:
+						productData.description?.split('. ').filter(Boolean) ||
+						[],
 					categoryLabel:
-						data.category?.replace(' Instruments', '') || '',
-					specifications: data.specifications || [],
-					faqs: data.faqs || [],
-					isInStock: (data.stock || 0) > 0,
-					hasDiscount: (data.price || 0) < 100,
+						productData.category?.replace(' Instruments', '') || '',
+					specifications: productData.specifications || [],
+					faqs: productData.faqs || [],
+					isInStock: (productData.stock || 0) > 0,
+					hasDiscount: (productData.price || 0) < 100,
 				}
 
-				setRawProductData(data)
+				setRawProductData(productData)
 				setProduct(transformedProduct)
+				setReviews(reviewsRes.data.data)
+				if (wishlistRes) {
+					setIsInWishlist(
+						wishlistRes.data.products.some((p) => p._id === id)
+					)
+				}
 			} catch (err) {
-				console.error('Error fetching product:', err)
+				console.error('Error fetching data:', err)
 				setError(
 					err.response?.data?.message ||
 						'Failed to fetch product details'
@@ -226,40 +284,8 @@ export default function ProductDetailsPage() {
 			}
 		}
 
-		const fetchReviews = async () => {
-			try {
-				const response = await axios.get(`/api/reviews/product/${id}`)
-				setReviews(response.data.data)
-			} catch (err) {
-				console.error('Error fetching reviews:', err)
-				setError(
-					err.response?.data?.message ||
-						'Failed to fetch product reviews'
-				)
-			}
-		}
-
-		const fetchWishlist = async () => {
-			try {
-				const response = await axios.get('/api/wishlist')
-				setIsInWishlist(
-					response.data.products.some((p) => p._id === id)
-				)
-			} catch (err) {
-				console.error('Error fetching wishlist:', err)
-			}
-		}
-
-		// Only fetch if id exists
-		if (id) {
-			fetchProduct()
-			fetchReviews()
-			fetchWishlist()
-		} else {
-			setError('Invalid product ID')
-			setLoading(false)
-		}
-	}, [id])
+		fetchData()
+	}, [id, isAuthenticated])
 
 	const handleTabChange = (event, newValue) => {
 		setCurrentTab(newValue)
@@ -273,16 +299,16 @@ export default function ProductDetailsPage() {
 
 		if (!product || !product._id || !product.price) {
 			toast.error('Invalid product information', {
-				position: 'bottom-right',
+				position: isMobile ? 'top-center' : 'bottom-right',
 			})
 			return
 		}
 
 		if (!canAdd) {
 			toast.error('This item is out of stock', {
-				position: 'bottom-right',
+				position: isMobile ? 'top-center' : 'bottom-right',
 				autoClose: 3000,
-				hideProgressBar: false,
+				hideProgressBar: true,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
@@ -305,14 +331,13 @@ export default function ProductDetailsPage() {
 				})
 			)
 
-			// Optional: Check current quantity for more specific feedback
 			const currentItem = items?.find((item) => item._id === product._id)
 			const verb = currentItem?.qty ? 'updated in' : 'added to'
 
 			toast.success(`Product ${verb} cart!`, {
-				position: 'bottom-right',
+				position: isMobile ? 'top-center' : 'bottom-right',
 				autoClose: 3000,
-				hideProgressBar: false,
+				hideProgressBar: true,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
@@ -320,7 +345,7 @@ export default function ProductDetailsPage() {
 			})
 		} catch (error) {
 			toast.error('Failed to update cart', {
-				position: 'bottom-right',
+				position: isMobile ? 'top-center' : 'bottom-right',
 				autoClose: 3000,
 				theme: 'colored',
 			})
@@ -330,19 +355,17 @@ export default function ProductDetailsPage() {
 	const handleReviewSubmission = async (data) => {
 		try {
 			const response = await axios.post('/api/reviews', data)
-
 			if (response.data.success) {
 				toast.success('Review submitted successfully!', {
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 					autoClose: 3000,
-					hideProgressBar: false,
+					hideProgressBar: true,
 					closeOnClick: true,
 					pauseOnHover: true,
 					draggable: true,
 					theme: 'light',
 				})
 
-				// Update product state to include new review
 				setProduct((prev) => ({
 					...prev,
 					reviews: [
@@ -361,9 +384,9 @@ export default function ProductDetailsPage() {
 			toast.error(
 				error.response?.data?.message || 'Failed to submit review',
 				{
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 					autoClose: 3000,
-					hideProgressBar: false,
+					hideProgressBar: true,
 					closeOnClick: true,
 					pauseOnHover: true,
 					draggable: true,
@@ -381,12 +404,11 @@ export default function ProductDetailsPage() {
 			}
 
 			const response = await axios.post(`/api/wishlist/${product._id}`)
-
 			if (response.data.success) {
 				toast.success('Added to wishlist!', {
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 					autoClose: 3000,
-					hideProgressBar: false,
+					hideProgressBar: true,
 					closeOnClick: true,
 					pauseOnHover: true,
 					draggable: true,
@@ -399,9 +421,9 @@ export default function ProductDetailsPage() {
 			toast.error(
 				error.response?.data?.message || 'Failed to add to wishlist',
 				{
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 					autoClose: 3000,
-					hideProgressBar: false,
+					hideProgressBar: true,
 					closeOnClick: true,
 					pauseOnHover: true,
 					draggable: true,
@@ -413,20 +435,20 @@ export default function ProductDetailsPage() {
 
 	if (error)
 		return (
-			<Box sx={{ textAlign: 'center', py: 10 }}>
+			<Box sx={{ textAlign: 'center', py: { xs: 5, md: 10 } }}>
 				<Iconify
 					icon="ic:round-error-outline"
-					width={60}
+					width={{ xs: 40, md: 60 }}
 					color="error.main"
 				/>
 				<Typography
-					variant="h4"
+					variant={isMobile ? 'h5' : 'h4'}
 					color="error"
 					sx={{ mt: 2 }}>
 					Failed to load product
 				</Typography>
 				<Typography
-					variant="body1"
+					variant={isMobile ? 'body2' : 'body1'}
 					sx={{ mt: 1, color: 'text.secondary' }}>
 					{error}
 				</Typography>
@@ -440,10 +462,10 @@ export default function ProductDetailsPage() {
 			<StyledRoot>
 				<Container>
 					<ToastContainer />
-					<Box sx={{ mb: 4 }}>
+					<Box sx={{ mb: { xs: 2, md: 4 } }}>
 						<Breadcrumbs
 							aria-label="breadcrumb"
-							sx={{ mb: 4 }}>
+							sx={{ mb: { xs: 2, md: 4 } }}>
 							<Link
 								color="inherit"
 								onClick={() => navigate('/')}
@@ -467,7 +489,7 @@ export default function ProductDetailsPage() {
 
 						<Grid
 							container
-							spacing={4}>
+							spacing={{ xs: 2, md: 4 }}>
 							<Grid
 								item
 								xs={12}
@@ -475,7 +497,7 @@ export default function ProductDetailsPage() {
 								{loading ? (
 									<Skeleton
 										variant="rectangular"
-										height={500}
+										height={{ xs: 300, md: 500 }}
 									/>
 								) : (
 									<ProductDetailsCarousel
@@ -491,7 +513,9 @@ export default function ProductDetailsPage() {
 								<ProductInfoCard>
 									{loading ? (
 										<>
-											<Skeleton height={60} />
+											<Skeleton
+												height={isMobile ? 40 : 60}
+											/>
 											<Skeleton width="40%" />
 										</>
 									) : (
@@ -500,13 +524,21 @@ export default function ProductDetailsPage() {
 												label={product.categoryLabel}
 												color="primary"
 												variant="outlined"
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												sx={{ mb: 2 }}
 											/>
 											<Typography
-												variant="h2"
+												variant={isMobile ? 'h3' : 'h2'}
 												gutterBottom
 												sx={{
 													fontWeight: 700,
+													fontSize: isMobile
+														? '1.5rem'
+														: '2rem',
 												}}>
 												{product.name}
 											</Typography>
@@ -525,7 +557,9 @@ export default function ProductDetailsPage() {
 												value={product.averageRating}
 												precision={0.5}
 												readOnly
-												size="large"
+												size={
+													isMobile ? 'small' : 'large'
+												}
 											/>
 											<Typography
 												variant="body2"
@@ -540,13 +574,17 @@ export default function ProductDetailsPage() {
 									) : (
 										<PriceBox>
 											<Typography
-												variant="h3"
+												variant={isMobile ? 'h4' : 'h3'}
 												color="primary.main">
 												Rs. {product.price}
 											</Typography>
 											{product.hasDiscount && (
 												<Typography
-													variant="h6"
+													variant={
+														isMobile
+															? 'body1'
+															: 'h6'
+													}
 													color="text.disabled"
 													sx={{
 														textDecoration:
@@ -555,21 +593,25 @@ export default function ProductDetailsPage() {
 													Rs. {product.originalPrice}
 												</Typography>
 											)}
-											{product.isInStock ? (
-												<Chip
-													label="In Stock"
-													color="success"
-													variant="filled"
-													sx={{ ml: 'auto' }}
-												/>
-											) : (
-												<Chip
-													label="Out of Stock"
-													color="error"
-													variant="filled"
-													sx={{ ml: 'auto' }}
-												/>
-											)}
+											<Chip
+												label={
+													product.isInStock
+														? 'In Stock'
+														: 'Out of Stock'
+												}
+												color={
+													product.isInStock
+														? 'success'
+														: 'error'
+												}
+												variant="filled"
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
+												sx={{ ml: 'auto' }}
+											/>
 										</PriceBox>
 									)}
 
@@ -577,7 +619,9 @@ export default function ProductDetailsPage() {
 										value={currentTab}
 										onChange={handleTabChange}
 										sx={{ mb: 3 }}
-										variant="scrollable">
+										variant="scrollable"
+										scrollButtons="auto"
+										allowScrollButtonsMobile>
 										<Tab
 											label="Description"
 											value="description"
@@ -601,21 +645,30 @@ export default function ProductDetailsPage() {
 											sx={{
 												maxHeight: 400,
 												overflowY: 'auto',
-												pr: 2,
+												pr: 1,
 											}}>
-											<Stack spacing={2}>
+											<Stack spacing={1}>
 												{product.details?.map(
 													(detail, index) => (
 														<Stack
 															key={index}
 															direction="row"
-															spacing={2}>
+															spacing={1}>
 															<Iconify
 																icon="mdi:check-circle-outline"
-																width={24}
+																width={
+																	isMobile
+																		? 20
+																		: 24
+																}
 																color="primary.main"
 															/>
-															<Typography variant="body1">
+															<Typography
+																variant={
+																	isMobile
+																		? 'body2'
+																		: 'body1'
+																}>
 																{detail}
 															</Typography>
 														</Stack>
@@ -628,18 +681,27 @@ export default function ProductDetailsPage() {
 									{currentTab === 'specifications' && (
 										<Grid
 											container
-											spacing={2}>
+											spacing={1}>
 											{product.specifications?.map(
 												(spec, index) => (
 													<Grid
 														item
 														xs={6}
 														key={index}>
-														<Typography variant="subtitle1">
+														<Typography
+															variant={
+																isMobile
+																	? 'body2'
+																	: 'subtitle1'
+															}>
 															{spec.key}:
 														</Typography>
 														<Typography
-															variant="body2"
+															variant={
+																isMobile
+																	? 'caption'
+																	: 'body2'
+															}
 															color="text.secondary">
 															{spec.value}
 														</Typography>
@@ -661,25 +723,29 @@ export default function ProductDetailsPage() {
 
 									<Stack
 										direction="row"
-										spacing={2}
-										sx={{ mt: 4 }}>
+										spacing={1}
+										sx={{ mt: 3 }}>
 										<Button
 											variant="contained"
-											size="large"
+											size={isMobile ? 'medium' : 'large'}
 											startIcon={
 												<Iconify icon="mdi:cart-plus" />
 											}
 											disabled={!product.isInStock}
-											sx={{ flex: 1, py: 2 }}
+											sx={{
+												flex: 1,
+												py: isMobile ? 1 : 2,
+											}}
 											onClick={handleAddToCart}>
 											Add to Cart
 										</Button>
 										<IconButton
 											onClick={handleAddToWishlist}
 											color="primary"
+											size={isMobile ? 'small' : 'medium'}
 											sx={{
 												border: `1px solid ${theme.palette.divider}`,
-												borderRadius: 2,
+												borderRadius: 1,
 											}}>
 											<Iconify
 												icon={
@@ -687,24 +753,41 @@ export default function ProductDetailsPage() {
 														? 'mdi:heart'
 														: 'mdi:heart-outline'
 												}
+												width={isMobile ? 20 : 24}
 											/>
 										</IconButton>
 									</Stack>
 
 									<Stack
 										direction="row"
-										spacing={2}
-										alignItems="center">
-										<Typography variant="body2">
+										spacing={1}
+										alignItems="center"
+										sx={{ mt: 2 }}>
+										<Typography
+											variant={
+												isMobile ? 'caption' : 'body2'
+											}>
 											Share:
 										</Typography>
-										<IconButton color="primary">
+										<IconButton
+											color="primary"
+											size={
+												isMobile ? 'small' : 'medium'
+											}>
 											<Iconify icon="mdi:facebook" />
 										</IconButton>
-										<IconButton color="primary">
+										<IconButton
+											color="primary"
+											size={
+												isMobile ? 'small' : 'medium'
+											}>
 											<Iconify icon="mdi:twitter" />
 										</IconButton>
-										<IconButton color="primary">
+										<IconButton
+											color="primary"
+											size={
+												isMobile ? 'small' : 'medium'
+											}>
 											<Iconify icon="mdi:instagram" />
 										</IconButton>
 									</Stack>
@@ -712,26 +795,26 @@ export default function ProductDetailsPage() {
 							</Grid>
 						</Grid>
 					</Box>
-
-					{/* FAQ Section */}
 					{currentTab === 'faq' && product.faqs?.length > 0 && (
-						<Box sx={{ mt: 6 }}>
+						<Box sx={{ mt: { xs: 3, md: 6 } }}>
 							<Typography
-								variant="h4"
+								variant={isMobile ? 'h5' : 'h4'}
 								gutterBottom>
 								Frequently Asked Questions
 							</Typography>
 							{product.faqs.map((faq, index) => (
 								<Box
 									key={index}
-									sx={{ mb: 3 }}>
+									sx={{ mb: { xs: 2, md: 3 } }}>
 									<Typography
-										variant="subtitle1"
+										variant={
+											isMobile ? 'body1' : 'subtitle1'
+										}
 										sx={{ fontWeight: 600 }}>
 										{faq.question}
 									</Typography>
 									<Typography
-										variant="body1"
+										variant={isMobile ? 'body2' : 'body1'}
 										color="text.secondary">
 										{faq.answer}
 									</Typography>

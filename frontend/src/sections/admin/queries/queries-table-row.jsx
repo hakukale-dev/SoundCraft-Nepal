@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
-
-import Stack from '@mui/material/Stack'
-import Popover from '@mui/material/Popover'
+import { useTheme } from '@mui/material/styles'
 import TableRow from '@mui/material/TableRow'
-import MenuItem from '@mui/material/MenuItem'
 import TableCell from '@mui/material/TableCell'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
-
+import { useMediaQuery } from '@mui/material'
 import Iconify from 'src/components/iconify'
 
 // ----------------------------------------------------------------------
@@ -23,6 +20,8 @@ export default function QueryTableRow({
 	handleDelete,
 	handleInfoPopup,
 }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [open, setOpen] = useState(null)
 
 	const handleOpenMenu = (event) => {
@@ -41,29 +40,41 @@ export default function QueryTableRow({
 				role="checkbox"
 				selected={selected}>
 				<TableCell align="center">
-					<Typography variant="subtitle2">{name}</Typography>
-				</TableCell>
-				<TableCell>{email}</TableCell>
-				<TableCell>
-					<Typography noWrap>
-						{message.substring(0, 50)}...
+					<Typography variant={isMobile ? 'body2' : 'subtitle2'}>
+						{name}
 					</Typography>
 				</TableCell>
 				<TableCell>
-					{new Date(createdAt).toLocaleDateString()}
+					<Typography variant={isMobile ? 'body2' : 'subtitle2'}>
+						{email}
+					</Typography>
+				</TableCell>
+				<TableCell>
+					<Typography
+						noWrap
+						variant={isMobile ? 'body2' : 'subtitle2'}>
+						{isMobile
+							? `${message.substring(0, 20)}...`
+							: `${message.substring(0, 50)}...`}
+					</Typography>
+				</TableCell>
+				<TableCell>
+					<Typography variant={isMobile ? 'body2' : 'subtitle2'}>
+						{new Date(createdAt).toLocaleDateString()}
+					</Typography>
 				</TableCell>
 				<TableCell align="right">
-					<Button
-						variant="text"
+					<IconButton
+						size={isMobile ? 'small' : 'medium'}
 						onClick={(e) => handleInfoPopup(e, id)}>
-						View
-					</Button>
-					<Button
-						variant="text"
+						<Iconify icon="eva:eye-outline" />
+					</IconButton>
+					<IconButton
+						size={isMobile ? 'small' : 'medium'}
 						color="error"
 						onClick={(e) => handleDelete(e, id)}>
-						Delete
-					</Button>
+						<Iconify icon="eva:trash-2-outline" />
+					</IconButton>
 				</TableCell>
 			</TableRow>
 		</>

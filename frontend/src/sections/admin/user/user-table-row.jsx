@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import Stack from '@mui/material/Stack'
 import Avatar from '@mui/material/Avatar'
@@ -29,6 +31,8 @@ export default function UserTableRow({
 	handleDisable,
 	handleEnable,
 }) {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const [open, setOpen] = useState(null)
 
 	const handleOpenMenu = (event) => {
@@ -48,6 +52,7 @@ export default function UserTableRow({
 				selected={selected}>
 				<TableCell padding="checkbox">
 					<Checkbox
+						size={isMobile ? 'small' : 'medium'}
 						disableRipple
 						checked={selected}
 						onChange={handleClick}
@@ -57,26 +62,38 @@ export default function UserTableRow({
 				<TableCell
 					component="th"
 					scope="row"
-					padding="none">
+					padding={isMobile ? 'none' : 'normal'}>
 					<Stack
 						direction="row"
 						alignItems="center"
-						spacing={2}>
+						spacing={isMobile ? 1 : 2}>
 						<Avatar
 							alt={username}
 							src={avatarUrl}
+							sx={{
+								width: isMobile ? 32 : 40,
+								height: isMobile ? 32 : 40,
+							}}
 						/>
 						<Typography
-							variant="subtitle2"
+							variant={isMobile ? 'body2' : 'subtitle2'}
 							noWrap>
 							{username}
 						</Typography>
 					</Stack>
 				</TableCell>
 
-				<TableCell>{email}</TableCell>
+				<TableCell sx={{ display: isMobile ? 'none' : 'table-cell' }}>
+					<Typography
+						variant="body2"
+						noWrap>
+						{email}
+					</Typography>
+				</TableCell>
 
-				<TableCell>{phone_number}</TableCell>
+				<TableCell sx={{ display: isMobile ? 'none' : 'table-cell' }}>
+					{phone_number}
+				</TableCell>
 
 				<TableCell>
 					<Tooltip title={is_disabled ? 'Disabled' : 'Enabled'}>
@@ -90,15 +107,17 @@ export default function UserTableRow({
 								color: is_disabled
 									? 'error.main'
 									: 'success.main',
-								width: 24,
-								height: 24,
+								width: isMobile ? 20 : 24,
+								height: isMobile ? 20 : 24,
 							}}
 						/>
 					</Tooltip>
 				</TableCell>
 
 				<TableCell align="right">
-					<IconButton onClick={handleOpenMenu}>
+					<IconButton
+						size={isMobile ? 'small' : 'medium'}
+						onClick={handleOpenMenu}>
 						<Iconify icon="eva:more-vertical-fill" />
 					</IconButton>
 				</TableCell>
@@ -111,7 +130,7 @@ export default function UserTableRow({
 				anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
 				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 				PaperProps={{
-					sx: { width: 140 },
+					sx: { width: isMobile ? 120 : 140 },
 				}}>
 				<MenuItem onClick={handleEdit}>
 					<Iconify

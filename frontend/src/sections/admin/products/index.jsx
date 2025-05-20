@@ -1,6 +1,8 @@
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import Card from '@mui/material/Card'
 import Stack from '@mui/material/Stack'
@@ -28,6 +30,8 @@ import ProductInfoPopup from './product-info'
 
 // ----------------------------------------------------------------------
 export default function ProductsView() {
+	const theme = useTheme()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 	const { user } = useSelector((state) => state.auth)
 
 	const [page, setPage] = useState(0)
@@ -35,7 +39,7 @@ export default function ProductsView() {
 	const [selected, setSelected] = useState([])
 	const [orderBy, setOrderBy] = useState('name')
 	const [filterName, setFilterName] = useState('')
-	const [rowsPerPage, setRowsPerPage] = useState(5)
+	const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 3 : 5)
 
 	const [products, setProducts] = useState([])
 	const [editingProduct, setEditingProduct] = useState({})
@@ -214,7 +218,7 @@ export default function ProductsView() {
 	}, [fetchData])
 
 	return (
-		<Container>
+		<Container maxWidth={isMobile ? 'sm' : 'xl'}>
 			{open && (
 				<SimpleDialogForm
 					isAdd={isAdd}
@@ -241,26 +245,33 @@ export default function ProductsView() {
 				alignItems="center"
 				justifyContent="space-between"
 				mb={5}>
-				<Typography variant="h4">Products</Typography>
+				<Typography variant={isMobile ? 'h5' : 'h4'}>
+					Products
+				</Typography>
 
 				<Button
 					variant="contained"
 					color="inherit"
+					size={isMobile ? 'small' : 'medium'}
 					startIcon={<Iconify icon="eva:plus-fill" />}
 					onClick={handleOpen}>
-					New Product
+					{isMobile ? 'New' : 'New Product'}
 				</Button>
 			</Stack>
 
-			<Card>
+			<Card sx={{ overflowX: 'auto' }}>
 				<TableToolbar
 					numSelected={selected.length}
 					filterName={filterName}
 					onFilterName={handleFilterByName}
 				/>
 
-				<TableContainer sx={{ overflow: 'unset' }}>
-					<Table sx={{ minWidth: 800 }}>
+				<TableContainer
+					component={Scrollbar}
+					sx={{ maxHeight: 440 }}>
+					<Table
+						stickyHeader
+						sx={{ minWidth: isMobile ? 600 : 800 }}>
 						<TableHeader
 							showCheckBox={false}
 							order={order}
@@ -317,6 +328,7 @@ export default function ProductsView() {
 											handleInfoPopup(event, row._id)
 										}
 										showPopover
+										isMobile={isMobile}
 									/>
 								))}
 
@@ -340,7 +352,7 @@ export default function ProductsView() {
 					count={products.length}
 					rowsPerPage={rowsPerPage}
 					onPageChange={handleChangePage}
-					rowsPerPageOptions={[5, 10, 25]}
+					rowsPerPageOptions={isMobile ? [3, 5, 10] : [5, 10, 25]}
 					onRowsPerPageChange={handleChangeRowsPerPage}
 				/>
 			</Card>

@@ -196,32 +196,37 @@ router.get('/verify-esewa', async (req, res) => {
 		// Get billing history entry by payment reference ID
 		const billingHistoryEntry = await BillingHistory.findOne({
 			payment_reference_id: json_data.transaction_uuid,
-		})
+		}).populate('user_id')
+
+		if (!billingHistoryEntry) {
+			throw new Error('Billing history entry not found')
+		}
 
 		// Update product stock for each item in the order
-		for (const item of billingHistoryEntry.items) {
+		const productUpdates = billingHistoryEntry.items.map(async (item) => {
 			const product = await Product.findById(item.product_id)
 			if (product) {
 				product.stock = Math.max(0, product.stock - item.quantity)
 				await product.save()
 			}
-		}
+		})
+		await Promise.all(productUpdates)
 
 		// Update billing history status to completed
 		billingHistoryEntry.status = 'completed'
 		await billingHistoryEntry.save()
 
 		// Send email confirmation
-		const user = await User.findById(billingHistoryEntry.user_id)
-		if (user) {
+		const user = billingHistoryEntry.user_id
+		if (user?.email) {
 			await sendEmail({
 				email: user.email,
 				subject: 'Payment Confirmation',
 				html: `
 					<h1>Thank you for your purchase!</h1>
-					<p>Your payment of ${parseFloat(
-						json_data.total_amount
-					).toLocaleString()} has been successfully processed.</p>
+					<p>Your payment of ${parseFloat(json_data.total_amount).toFixed(
+						2
+					)} has been successfully processed.</p>
 					<p>Transaction ID: ${json_data.transaction_uuid}</p>
 				`,
 			})
@@ -229,22 +234,14 @@ router.get('/verify-esewa', async (req, res) => {
 
 		res.redirect(
 			`http://localhost:5173/payment-success?transaction_code=${
-				json_data.transaction_code
-			}&total_amount=${parseFloat(
-				json_data.total_amount
-			).toLocaleString()}&transaction_uuid=${json_data.transaction_uuid}`
+				json_data.transaction_code || ''
+			}&total_amount=${parseFloat(json_data.total_amount).toFixed(
+				2
+			)}&transaction_uuid=${json_data.transaction_uuid}`
 		)
 	} catch (error) {
-		if (error instanceof SyntaxError) {
-			console.log({ message: 'Invalid data format' })
-			res.redirect(`http://localhost:5173/payment-failure`)
-		} else {
-			console.log({
-				message: 'Verification failed',
-				error: error.message,
-			})
-			res.redirect(`http://localhost:5173/payment-failure`)
-		}
+		console.error('ESewa verification error:', error)
+		res.redirect(`http://localhost:5173/payment-failure`)
 	}
 })
 

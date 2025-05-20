@@ -16,6 +16,7 @@ import {
 	DialogTitle,
 	DialogContent,
 	DialogActions,
+	useMediaQuery,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -38,6 +39,7 @@ export default function CartPageView() {
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
 	const store = useStore()
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
 	const [recommendedItems, setRecommendedItems] = useState([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -76,11 +78,9 @@ export default function CartPageView() {
 				return
 			}
 
-			console.log(item)
-
 			if (!item?._id || !item?.price) {
 				toast.error('Invalid product information', {
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 				})
 				return
 			}
@@ -95,7 +95,7 @@ export default function CartPageView() {
 
 			if (!canAdd) {
 				toast.error('This item is out of stock', {
-					position: 'bottom-right',
+					position: isMobile ? 'top-center' : 'bottom-right',
 					autoClose: 3000,
 					hideProgressBar: false,
 					closeOnClick: true,
@@ -129,12 +129,13 @@ export default function CartPageView() {
 		const item = items.find((item) => item._id === itemId)
 		if (!item) return
 
-		// Get fresh stock information
 		const currentState = store.getState()
 		const canAdd = selectCanAddToCart(currentState, user._id, item._id, 1)
 
 		if (!canAdd) {
-			toast.error('Cannot add more items than available stock')
+			toast.error('Cannot add more items than available stock', {
+				position: isMobile ? 'top-center' : 'bottom-right',
+			})
 			return
 		}
 
@@ -151,7 +152,9 @@ export default function CartPageView() {
 		if (!item) return
 
 		if (item.qty <= 1) {
-			toast.error('Quantity cannot be less than 1')
+			toast.error('Quantity cannot be less than 1', {
+				position: isMobile ? 'top-center' : 'bottom-right',
+			})
 			return
 		}
 
@@ -170,12 +173,16 @@ export default function CartPageView() {
 				productId: itemId,
 			})
 		)
-		toast.success('Item removed from cart')
+		toast.success('Item removed from cart', {
+			position: isMobile ? 'top-center' : 'bottom-right',
+		})
 	}
 
 	const handleCheckout = () => {
 		if (items.length === 0) {
-			toast.error('Your cart is empty')
+			toast.error('Your cart is empty', {
+				position: isMobile ? 'top-center' : 'bottom-right',
+			})
 			return
 		}
 		navigate('/checkout')
@@ -188,7 +195,9 @@ export default function CartPageView() {
 	const handleConfirmClearCart = () => {
 		dispatch(clearCart({ userId: user?._id }))
 		setOpenConfirmDialog(false)
-		toast.success('Cart cleared successfully!')
+		toast.success('Cart cleared successfully!', {
+			position: isMobile ? 'top-center' : 'bottom-right',
+		})
 	}
 
 	const handleCloseConfirmDialog = () => {
@@ -198,7 +207,10 @@ export default function CartPageView() {
 	return (
 		<Container
 			maxWidth="xl"
-			sx={{ mt: '100px', px: { lg: 20 } }}>
+			sx={{
+				mt: isMobile ? '80px' : '100px',
+				px: isMobile ? 2 : { lg: 20 },
+			}}>
 			<Grid
 				container
 				spacing={3}>
@@ -207,15 +219,19 @@ export default function CartPageView() {
 					xs={12}
 					md={8}>
 					<Stack
-						direction="row"
-						alignItems="center"
+						direction={isMobile ? 'column' : 'row'}
+						alignItems={isMobile ? 'flex-start' : 'center'}
 						justifyContent="space-between"
-						mb={5}>
+						mb={5}
+						spacing={isMobile ? 2 : 0}>
 						<Typography
-							variant="h4"
+							variant={isMobile ? 'h5' : 'h4'}
 							fontFamily={theme.typography.fontFamily}
 							color={theme.palette.primary.main}
-							sx={{ fontSize: '2.5rem', fontWeight: 600 }}>
+							sx={{
+								fontSize: isMobile ? '1.8rem' : '2.5rem',
+								fontWeight: 600,
+							}}>
 							Shopping Cart
 						</Typography>
 						<Typography
@@ -241,7 +257,7 @@ export default function CartPageView() {
 									key={item._id}
 									sx={{
 										mb: 2,
-										p: 3,
+										p: isMobile ? 2 : 3,
 										transition: 'all 0.3s ease-in-out',
 										border: `1px solid ${theme.palette.divider}`,
 										'&:hover': {
@@ -252,7 +268,7 @@ export default function CartPageView() {
 									<Grid
 										container
 										alignItems="center"
-										spacing={3}>
+										spacing={2}>
 										<Grid
 											item
 											xs={12}
@@ -262,7 +278,9 @@ export default function CartPageView() {
 												image={item.image}
 												alt={item.name}
 												sx={{
-													height: 150,
+													height: isMobile
+														? 100
+														: 150,
 													objectFit: 'contain',
 													borderRadius: 2,
 													bgcolor:
@@ -275,7 +293,11 @@ export default function CartPageView() {
 											xs={12}
 											sm={5}>
 											<Typography
-												variant="h6"
+												variant={
+													isMobile
+														? 'subtitle1'
+														: 'h6'
+												}
 												fontFamily={
 													theme.typography.fontFamily
 												}
@@ -297,16 +319,52 @@ export default function CartPageView() {
 										<Grid
 											item
 											xs={12}
+											sm={5}>
+											<Typography
+												variant={
+													isMobile
+														? 'subtitle1'
+														: 'h6'
+												}
+												fontFamily={
+													theme.typography.fontFamily
+												}
+												mb={1}>
+												{item.name}
+											</Typography>
+											<Typography
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}
+												color="text.secondary">
+												Unit Price: Rs.
+												{item.price.toLocaleString(
+													undefined,
+													{
+														maximumFractionDigits: 2,
+													}
+												)}
+											</Typography>
+										</Grid>
+										<Grid
+											item
+											xs={12}
 											sm={2}>
 											<Box
 												display="flex"
 												alignItems="center"
-												justifyContent="center"
+												justifyContent={
+													isMobile
+														? 'flex-start'
+														: 'center'
+												}
 												sx={{
 													border: `1px solid ${theme.palette.divider}`,
 													borderRadius: 2,
 													p: 1,
 													width: 'fit-content',
+													ml: isMobile ? 0 : 'auto',
+													mr: isMobile ? 0 : 'auto',
 												}}>
 												<IconButton
 													onClick={() =>
@@ -338,14 +396,20 @@ export default function CartPageView() {
 												</IconButton>
 											</Box>
 											<Typography
-												variant="subtitle1"
+												variant={
+													isMobile
+														? 'body1'
+														: 'subtitle1'
+												}
 												fontFamily={
 													theme.typography.fontFamily
 												}
 												fontWeight={600}
 												sx={{
 													mt: 1,
-													textAlign: 'center',
+													textAlign: isMobile
+														? 'left'
+														: 'center',
 												}}>
 												Rs.
 												{(
@@ -361,7 +425,11 @@ export default function CartPageView() {
 											sm={2}>
 											<Stack
 												direction="row"
-												justifyContent="flex-end">
+												justifyContent={
+													isMobile
+														? 'flex-start'
+														: 'flex-end'
+												}>
 												<IconButton
 													onClick={() =>
 														handleRemoveItem(
@@ -371,6 +439,9 @@ export default function CartPageView() {
 													sx={{
 														color: theme.palette
 															.error.main,
+														ml: isMobile
+															? 0
+															: 'auto',
 													}}>
 													<DeleteIcon fontSize="small" />
 												</IconButton>
@@ -383,34 +454,52 @@ export default function CartPageView() {
 							<Box
 								sx={{
 									display: 'flex',
+									flexDirection: isMobile ? 'column' : 'row',
 									justifyContent: 'space-between',
+									alignItems: isMobile ? 'stretch' : 'center',
 									mt: 5,
 									p: 3,
 									bgcolor: theme.palette.grey[100],
 									borderRadius: 2,
+									gap: isMobile ? 2 : 0,
 								}}>
 								<Stack
-									direction="row"
-									spacing={2}>
+									direction={isMobile ? 'column' : 'row'}
+									spacing={2}
+									width={isMobile ? '100%' : 'auto'}>
 									<Button
 										variant="outlined"
 										color="error"
 										onClick={handleClearCart}
-										sx={{ px: 5, fontWeight: 600 }}>
+										sx={{
+											px: 5,
+											fontWeight: 600,
+											width: isMobile ? '100%' : 'auto',
+										}}>
 										Clear Cart
 									</Button>
 									<Button
 										variant="contained"
 										onClick={handleCheckout}
-										sx={{ px: 5, fontWeight: 600 }}>
+										sx={{
+											px: 5,
+											fontWeight: 600,
+											width: isMobile ? '100%' : 'auto',
+										}}>
 										Checkout
 									</Button>
 								</Stack>
 								<Typography
-									variant="h5"
+									variant={isMobile ? 'h6' : 'h5'}
 									fontFamily={theme.typography.fontFamily}
 									color={theme.palette.primary.main}
-									fontWeight={700}>
+									fontWeight={700}
+									sx={{
+										mt: isMobile ? 2 : 0,
+										textAlign: isMobile
+											? 'center'
+											: 'right',
+									}}>
 									Total: Rs.
 									{totalPrice.toLocaleString(undefined, {
 										maximumFractionDigits: 2,
@@ -425,9 +514,15 @@ export default function CartPageView() {
 					item
 					xs={12}
 					md={4}>
-					<Card sx={{ p: 3, position: 'sticky', top: 100 }}>
+					<Card
+						sx={{
+							p: 3,
+							position: isMobile ? 'static' : 'sticky',
+							top: isMobile ? 0 : 100,
+							mt: isMobile ? 4 : 0,
+						}}>
 						<Typography
-							variant="h5"
+							variant={isMobile ? 'h6' : 'h5'}
 							fontFamily={theme.typography.fontFamily}
 							color={theme.palette.primary.main}
 							mb={3}>
@@ -450,20 +545,26 @@ export default function CartPageView() {
 											image={item.image}
 											alt={item.name}
 											sx={{
-												height: 120,
+												height: isMobile ? 100 : 120,
 												objectFit: 'contain',
 											}}
 										/>
 										<Box sx={{ mt: 2 }}>
 											<Typography
-												variant="subtitle1"
+												variant={
+													isMobile
+														? 'body1'
+														: 'subtitle1'
+												}
 												fontFamily={
 													theme.typography.fontFamily
 												}>
 												{item.name}
 											</Typography>
 											<Typography
-												variant="body1"
+												variant={
+													isMobile ? 'body2' : 'body1'
+												}
 												color="text.secondary"
 												mt={1}>
 												Rs.{' '}
@@ -472,6 +573,11 @@ export default function CartPageView() {
 											<Button
 												fullWidth
 												variant="contained"
+												size={
+													isMobile
+														? 'small'
+														: 'medium'
+												}
 												sx={{ mt: 2 }}
 												onClick={() =>
 													handleAddToCart(item)
@@ -491,26 +597,38 @@ export default function CartPageView() {
 			<Dialog
 				open={openConfirmDialog}
 				onClose={handleCloseConfirmDialog}
+				fullScreen={isMobile}
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description">
-				<DialogTitle id="alert-dialog-title">
+				<DialogTitle
+					id="alert-dialog-title"
+					sx={{ fontSize: isMobile ? '1.2rem' : '1.5rem' }}>
 					Clear Cart Confirmation
 				</DialogTitle>
 				<DialogContent>
-					<Typography>
+					<Typography sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
 						Are you sure you want to clear your cart? This action
 						cannot be undone.
 					</Typography>
 				</DialogContent>
-				<DialogActions>
+				<DialogActions
+					sx={{
+						flexDirection: isMobile ? 'column' : 'row',
+						gap: isMobile ? 1 : 0,
+						padding: isMobile ? 2 : 1,
+					}}>
 					<Button
 						onClick={handleCloseConfirmDialog}
-						color="primary">
+						color="primary"
+						fullWidth={isMobile}
+						size={isMobile ? 'medium' : 'small'}>
 						Cancel
 					</Button>
 					<Button
 						onClick={handleConfirmClearCart}
 						color="error"
+						fullWidth={isMobile}
+						size={isMobile ? 'medium' : 'small'}
 						autoFocus>
 						Clear Cart
 					</Button>
