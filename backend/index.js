@@ -4,12 +4,13 @@ const path = require('path')
 const dotenv = require('dotenv').config()
 
 const cors = require('cors')
-const mongo_uri =
-	'mongodb+srv://np03cs4a220481:Thisis5%3A55@g-shop.jqnzz.mongodb.net/?retryWrites=true&w=majority&appName=G-Shop'
+const mongo_uri = process.env.MONGODB_URI 
+	
 
 app.use(cors())
 app.use(express.json())
 
+console.log(process.env.EMAIL_USER)
 const baseRoutes = require('./routes/baseRoutes')
 const authRoutes = require('./routes/authRoutes')
 const accountRoutes = require('./routes/accountRoutes')

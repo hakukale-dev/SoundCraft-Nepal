@@ -18,7 +18,7 @@ const navConfig = [
 		path: '/contact',
 	},
 	{
-		title: 'Learn',
+		title: 'Learn Hub',
 		path: '/learning-zone',
 	},
 ]

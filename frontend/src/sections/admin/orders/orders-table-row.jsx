@@ -60,7 +60,7 @@ export default function OrdersTableRow({
 
 				<TableCell>
 					<Typography variant={isMobile ? 'caption' : 'body2'}>
-						${total.toFixed(2)}
+						Rs. {total.toFixed(2)}
 					</Typography>
 				</TableCell>
 

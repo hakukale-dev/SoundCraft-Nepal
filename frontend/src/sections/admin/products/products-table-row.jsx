@@ -79,7 +79,7 @@ export default function ProductTableRow({
 					{model}
 				</TableCell>
 
-				<TableCell>${price}</TableCell>
+				<TableCell>Rs. {price}</TableCell>
 
 				<TableCell sx={{ display: isMobile ? 'body2' : 'subtitle2' }}>
 					{category}
