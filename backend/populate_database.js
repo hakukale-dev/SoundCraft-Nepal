@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const Product = require('./models/product') // Update with the correct path
-const mongo_uri =
-	'mongodb+srv://np03cs4a220481:Thisis5%3A55@g-shop.jqnzz.mongodb.net/?retryWrites=true&w=majority&appName=G-Shop'
+const mongo_uri = Process.env.MONGODB_URI 
 
 const sampleProducts = [
 	{
